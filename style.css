@@ -980,12 +980,12 @@ body {
 }
 
 .skin-x .calm-body {
-  font-size: 20px;
-  /* Standard tweet size */
+  font-size: 17px;
   line-height: 1.5;
   color: var(--text-x);
   font-weight: 400;
   white-space: pre-wrap;
+  text-align: left;
 }
 
 .skin-x .x-post-meta {

@@ -579,7 +579,8 @@ class SkinRenderer {
 
         // Pick station name using seed
         const stations = PRAISE_DATA.newsStationNames || ['KASU NEWS'];
-        const stationIdx = Math.abs(pack.seed.charCodeAt(0) || 0) % stations.length;
+        const seedStr = String(pack.seed);
+        const stationIdx = Math.abs(seedStr.charCodeAt(0) || 0) % stations.length;
         const stationName = stations[stationIdx];
 
         // Current time
