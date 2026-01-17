@@ -140,6 +140,12 @@ class PraiseEngine {
             };
         }
 
+        // 6. Stock Pack (if data available)
+        let stockPack = null;
+        if (d.stock) {
+            stockPack = this.generateStockPack(text, rng, d);
+        }
+
         return {
             id: crypto.randomUUID(),
             createdAt: seed,
@@ -148,6 +154,7 @@ class PraiseEngine {
             dmProfileId: dmProfile.id,
             xMeta: xMeta, // Attach X Meta
             ytMeta: ytMeta, // Attach YouTube Meta
+            stockPack: stockPack, // Attach Stock Pack
             headlines: fmt(rng.pick(d.headlineTemplates)),
             postBody: fmt(rng.pick(d.postBodyTemplates)),
             expertQuote: fmt(rng.pick(d.expertTemplates)),
@@ -160,6 +167,184 @@ class PraiseEngine {
             stats: stats,
             hashtags: hashtags
         };
+    }
+
+    generateStockPack(text, rng, d) {
+        const stock = d.stock;
+        const ranges = stock.numberRanges;
+
+        // Category detection
+        let category = 'other';
+        for (const [cat, keywords] of Object.entries(stock.categoryMatch)) {
+            if (keywords.some(kw => text.includes(kw))) {
+                category = cat;
+                break;
+            }
+        }
+
+        // Keyword extraction (first 12 chars or full text)
+        const keyword = text.length > 12 ? text.substring(0, 12) : text;
+
+        // Ticker selection
+        const tickerOptions = stock.tickerPresetsByCategory[category] || stock.tickerPresetsByCategory.other;
+        const ticker = rng.pick(tickerOptions);
+
+        // Company name
+        const companyTemplate = rng.pick(stock.companyNameTemplates);
+        const companyName = companyTemplate.replace(/{keyword}/g, keyword);
+
+        // Market mood
+        const marketMood = rng.pick(stock.marketMoodLabels);
+
+        // Price data
+        const priceNow = this.randFloat(rng, ranges.price.min, ranges.price.max, ranges.price.decimals);
+        const isSpike = rng.next() < (ranges.pctChangeSpike?.probability || 0.08);
+        const pctChange = isSpike
+            ? this.randFloat(rng, ranges.pctChangeSpike.min, ranges.pctChangeSpike.max, ranges.pctChangeSpike.decimals)
+            : this.randFloat(rng, ranges.pctChange.min, ranges.pctChange.max, ranges.pctChange.decimals);
+        const changeAbs = parseFloat((priceNow * pctChange / 100).toFixed(1));
+        const volume = rng.nextInt(ranges.volume.min, ranges.volume.max);
+        const marketCap = rng.nextInt(ranges.marketCap.min, ranges.marketCap.max);
+        const volatility = this.randFloat(rng, ranges.volatility.min, ranges.volatility.max, ranges.volatility.decimals);
+
+        // Chart marker
+        const markerTemplate = rng.pick(stock.chartEventMarkerTemplates);
+        const markerLabel = markerTemplate.replace(/{text}/g, text).replace(/{keyword}/g, keyword);
+
+        // World tickers
+        const worldTickers = stock.worldTickerPresets.map(t => {
+            let move;
+            if (t.symbol === 'KASU500') move = this.randFloat(rng, ranges.worldMove.min, ranges.worldMove.max, ranges.worldMove.decimals);
+            else if (t.symbol === 'WORLD_GDP') move = this.randFloat(rng, ranges.worldGdpMove.min, ranges.worldGdpMove.max, ranges.worldGdpMove.decimals);
+            else move = this.randFloat(rng, ranges.oilMove.min, ranges.oilMove.max, ranges.oilMove.decimals);
+            return { ...t, move };
+        });
+
+        // Market news (3 items)
+        const newsTemplates = rng.pickUnique(stock.marketNewsTemplates, 3);
+        const newsItems = newsTemplates.map((tpl, i) => ({
+            text: tpl.replace(/{keyword}/g, keyword),
+            ago: [2, 7, 15][i] || (i + 1) * 5
+        }));
+
+        // Order book (8 levels)
+        const orderBook = {
+            bids: [],
+            asks: []
+        };
+        const step = priceNow * 0.001; // 0.1% step
+        for (let i = 0; i < 8; i++) {
+            orderBook.bids.push({
+                price: parseFloat((priceNow - step * (i + 1)).toFixed(1)),
+                size: rng.nextInt(100, 5000),
+                label: rng.pick(stock.orderBookBidLabels)
+            });
+            orderBook.asks.push({
+                price: parseFloat((priceNow + step * (i + 1)).toFixed(1)),
+                size: rng.nextInt(50, 2000),
+                label: rng.pick(stock.orderBookAskLabels)
+            });
+        }
+
+        // Tape trades (12 items)
+        const tape = [];
+        let lastPrice = priceNow;
+        for (let i = 0; i < 12; i++) {
+            const delta = (rng.next() - 0.4) * 0.5; // slight upward bias
+            lastPrice = parseFloat((lastPrice + delta).toFixed(1));
+            tape.push({
+                time: `${10 + i}:${Math.floor(rng.next() * 60).toString().padStart(2, '0')}`,
+                price: lastPrice,
+                size: rng.nextInt(10, 500),
+                side: rng.next() > 0.3 ? 'buy' : 'sell'
+            });
+        }
+
+        // Chart data for each tab
+        const charts = {};
+        const tabs = ['1D', '1W', '1M', '1Y', 'ALL'];
+        const chartRules = stock.renderRules.chartTypeByTab;
+
+        tabs.forEach(tab => {
+            const chartType = chartRules[tab] || 'line';
+            const n = tab === '1D' ? 48 : tab === '1W' ? 35 : tab === '1M' ? 30 : tab === '1Y' ? 52 : 100;
+            const eventIdx = Math.floor(n * (0.55 + rng.next() * 0.2));
+
+            if (chartType === 'candles') {
+                const candles = this.genCandles(rng, n, priceNow * 0.85);
+                charts[tab] = { type: 'candles', data: candles, eventIdx };
+            } else {
+                const series = this.genLineSeries(rng, n, priceNow * 0.85);
+                charts[tab] = { type: 'line', data: series, eventIdx };
+            }
+        });
+
+        return {
+            category,
+            keyword,
+            ticker,
+            companyName,
+            marketMood,
+            priceNow,
+            pctChange,
+            changeAbs,
+            volume,
+            marketCap,
+            volatility,
+            high: parseFloat((priceNow * 1.02).toFixed(1)),
+            low: parseFloat((priceNow * 0.97).toFixed(1)),
+            markerLabel,
+            worldTickers,
+            newsItems,
+            orderBook,
+            tape,
+            charts
+        };
+    }
+
+    randFloat(rng, min, max, decimals = 2) {
+        const val = rng.next() * (max - min) + min;
+        return parseFloat(val.toFixed(decimals));
+    }
+
+    genLineSeries(rng, n, base) {
+        let p = base;
+        const eventIdx = Math.floor(n * (0.55 + rng.next() * 0.2));
+        const gap = 1 + (0.05 + rng.next() * 0.25);
+        const series = [];
+        for (let i = 0; i < n; i++) {
+            const drift = 1 + (0.002 + rng.next() * 0.02);
+            const wiggle = 1 + ((rng.next() - 0.5) * 0.06);
+            p = p * drift * wiggle;
+            if (i === eventIdx) p = p * gap;
+            series.push(parseFloat(p.toFixed(1)));
+        }
+        return series;
+    }
+
+    genCandles(rng, n, base) {
+        let p = base;
+        const eventIdx = Math.floor(n * (0.55 + rng.next() * 0.2));
+        const gap = 1 + (0.06 + rng.next() * 0.28);
+        const candles = [];
+        for (let i = 0; i < n; i++) {
+            const open = p;
+            const body = (rng.next() - 0.5) * 0.06;
+            let close = open * (1 + body);
+            const wickUp = open * (1 + rng.next() * 0.04);
+            const wickDn = open * (1 - rng.next() * 0.04);
+            if (i === eventIdx) close = close * gap;
+            const high = Math.max(open, close, wickUp);
+            const low = Math.min(open, close, wickDn);
+            candles.push({
+                o: parseFloat(open.toFixed(1)),
+                h: parseFloat(high.toFixed(1)),
+                l: parseFloat(low.toFixed(1)),
+                c: parseFloat(close.toFixed(1))
+            });
+            p = close;
+        }
+        return candles;
     }
 
     generateHashtags(text, rng) {
@@ -328,6 +513,14 @@ class SkinRenderer {
                     this.renderYouTube(praisePack);
                 } else {
                     this.renderPlaceholder('YouTube', '文字を入力して送信すると、動画コメントが生成されます');
+                }
+                break;
+            case 'stock':
+                console.log('RENDER_STOCK', { hasPack: !!praisePack, hasStockPack: !!(praisePack && praisePack.stockPack) });
+                if (praisePack && praisePack.stockPack) {
+                    this.renderStock(praisePack);
+                } else {
+                    this.renderPlaceholder('株価', '文字を入力して送信すると、株価チャートが生成されます');
                 }
                 break;
         }
@@ -705,6 +898,226 @@ class SkinRenderer {
             </div>
         `;
         this.container.appendChild(d);
+    }
+
+    /* --- STOCK RENDERER --- */
+    renderStock(pack) {
+        const sp = pack.stockPack;
+        const d = document.createElement('div');
+        d.className = 'skin-stock';
+
+        // State
+        let selectedTab = '1D';
+
+        // Formatters
+        const formatComma = n => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        const formatSigned = (n, dec = 1) => (n >= 0 ? '+' : '') + n.toFixed(dec);
+        const formatSignedPct = (n, dec = 2) => (n >= 0 ? '+' : '') + n.toFixed(dec) + '%';
+        const formatMarketCap = n => {
+            const T = 1e12, HM = 1e8;
+            if (n >= T) return (n / T).toFixed(1) + '兆';
+            if (n >= HM) return Math.round(n / HM) + '億';
+            return formatComma(n);
+        };
+        const formatAgo = m => m < 60 ? `${m}分前` : `${Math.floor(m / 60)}時間前`;
+
+        // Build SVG helpers
+        const buildLineSvg = (series, eventIdx, width, height, padding) => {
+            if (!series || series.length === 0) return '';
+            const min = Math.min(...series);
+            const max = Math.max(...series) || min + 1;
+            const range = max - min || 1;
+            const usableH = height - padding * 2;
+            const usableW = width - 20;
+            const dx = usableW / (series.length - 1 || 1);
+
+            let path = 'M ';
+            const points = series.map((v, i) => {
+                const x = 10 + dx * i;
+                const y = padding + (1 - (v - min) / range) * usableH;
+                return { x, y };
+            });
+            path += points.map(p => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' L ');
+
+            const marker = eventIdx >= 0 && eventIdx < points.length ? points[eventIdx] : null;
+            return { path, points, marker };
+        };
+
+        const buildCandlesSvg = (candles, eventIdx, width, height, padding) => {
+            if (!candles || candles.length === 0) return { items: [], marker: null };
+            const allVals = candles.flatMap(c => [c.h, c.l]);
+            const min = Math.min(...allVals);
+            const max = Math.max(...allVals) || min + 1;
+            const range = max - min || 1;
+            const usableH = height - padding * 2;
+            const usableW = width - 20;
+            const step = usableW / candles.length;
+            const bodyW = Math.min(step * 0.6, 8);
+
+            const toY = v => padding + (1 - (v - min) / range) * usableH;
+
+            const items = candles.map((c, i) => {
+                const cx = 10 + step * i + step / 2;
+                const up = c.c >= c.o;
+                return {
+                    wickX: cx, wickY1: toY(c.h), wickY2: toY(c.l),
+                    bodyX: cx - bodyW / 2, bodyY: toY(Math.max(c.o, c.c)), bodyH: Math.abs(toY(c.o) - toY(c.c)) || 1, bodyW,
+                    up
+                };
+            });
+
+            const markerX = eventIdx >= 0 && eventIdx < items.length ? items[eventIdx].wickX : null;
+            return { items, markerX };
+        };
+
+        // Render chart
+        const renderChart = (tabId) => {
+            const chart = sp.charts[tabId];
+            if (!chart) return '<div class="stock-chart-empty">No data</div>';
+
+            const width = 300, height = 140, padding = 10;
+
+            if (chart.type === 'line') {
+                const { path, marker } = buildLineSvg(chart.data, chart.eventIdx, width, height, padding);
+                return `
+                    <svg class="stock-chart-svg" viewBox="0 0 ${width} ${height}">
+                        <path class="stock-line" d="${path}" fill="none" stroke="#4ade80" stroke-width="2"/>
+                        ${marker ? `
+                            <line class="stock-marker-line" x1="${marker.x}" y1="0" x2="${marker.x}" y2="${height}" stroke="#fbbf24" stroke-dasharray="2"/>
+                            <circle cx="${marker.x}" cy="${marker.y}" r="4" fill="#fbbf24"/>
+                        ` : ''}
+                    </svg>
+                    <div class="stock-marker-label">${sp.markerLabel}</div>
+                `;
+            } else {
+                const { items, markerX } = buildCandlesSvg(chart.data, chart.eventIdx, width, height, padding);
+                return `
+                    <svg class="stock-chart-svg" viewBox="0 0 ${width} ${height}">
+                        ${items.map(c => `
+                            <line class="stock-wick" x1="${c.wickX}" y1="${c.wickY1}" x2="${c.wickX}" y2="${c.wickY2}" stroke="${c.up ? '#4ade80' : '#f87171'}" stroke-width="1"/>
+                            <rect class="stock-body ${c.up ? 'up' : 'down'}" x="${c.bodyX}" y="${c.bodyY}" width="${c.bodyW}" height="${c.bodyH}" fill="${c.up ? '#4ade80' : '#f87171'}"/>
+                        `).join('')}
+                        ${markerX !== null ? `<line class="stock-marker-line" x1="${markerX}" y1="0" x2="${markerX}" y2="${height}" stroke="#fbbf24" stroke-dasharray="2"/>` : ''}
+                    </svg>
+                    <div class="stock-marker-label">${sp.markerLabel}</div>
+                `;
+            }
+        };
+
+        // Build HTML
+        d.innerHTML = `
+            <div class="stock-header">
+                <div class="stock-ticker-row">
+                    <span class="stock-ticker">${sp.ticker}</span>
+                    <span class="stock-mood-badge">${sp.marketMood}</span>
+                    <button class="stock-action-btn">⭐</button>
+                    <button class="stock-action-btn">↗️</button>
+                </div>
+                <div class="stock-company">${sp.companyName}</div>
+            </div>
+            
+            <div class="stock-price-card">
+                <div class="stock-price-main">
+                    <span class="stock-price-now">${formatComma(sp.priceNow)}</span>
+                    <span class="stock-price-change ${sp.pctChange >= 0 ? 'up' : 'down'}">
+                        ${formatSigned(sp.changeAbs)} (${formatSignedPct(sp.pctChange)})
+                    </span>
+                </div>
+                <div class="stock-metrics-row">
+                    <div class="stock-metric"><span class="stock-metric-label">出来高</span><span class="stock-metric-val">${formatComma(sp.volume)}</span></div>
+                    <div class="stock-metric"><span class="stock-metric-label">時価総額</span><span class="stock-metric-val">${formatMarketCap(sp.marketCap)}</span></div>
+                    <div class="stock-metric"><span class="stock-metric-label">ボラ</span><span class="stock-metric-val">${sp.volatility.toFixed(1)}%</span></div>
+                </div>
+                <div class="stock-metrics-row">
+                    <div class="stock-metric"><span class="stock-metric-label">高値</span><span class="stock-metric-val">${formatComma(sp.high)}</span></div>
+                    <div class="stock-metric"><span class="stock-metric-label">安値</span><span class="stock-metric-val">${formatComma(sp.low)}</span></div>
+                </div>
+                <div class="stock-analyst-note">📊 ${pack.expertQuote}</div>
+            </div>
+            
+            <div class="stock-chart-section">
+                <div class="stock-chart-tabs">
+                    ${['1D', '1W', '1M', '1Y', 'ALL'].map(tab => `
+                        <button class="stock-chart-tab ${tab === selectedTab ? 'active' : ''}" data-tab="${tab}">${tab}</button>
+                    `).join('')}
+                </div>
+                <div class="stock-chart-area" id="stockChartArea">
+                    ${renderChart(selectedTab)}
+                </div>
+            </div>
+            
+            <div class="stock-world-tickers">
+                ${sp.worldTickers.map(t => `
+                    <div class="stock-world-item">
+                        <span class="stock-world-name">${t.name}</span>
+                        <span class="stock-world-move ${t.move >= 0 ? 'up' : 'down'}">${formatSignedPct(t.move)}</span>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="stock-news-section">
+                <div class="stock-news-header">📰 Market News</div>
+                ${sp.newsItems.map(n => `
+                    <div class="stock-news-item">
+                        <span class="stock-news-text">${n.text}</span>
+                        <span class="stock-news-ago">${formatAgo(n.ago)}</span>
+                    </div>
+                `).join('')}
+                <div class="stock-overseas-note">🌍 ${pack.influencerQuote}</div>
+            </div>
+            
+            <div class="stock-book-section">
+                <div class="stock-book-header">📈 Order Book</div>
+                <div class="stock-book-grid">
+                    <div class="stock-book-col bids">
+                        <div class="stock-book-col-header">Bid (買い)</div>
+                        ${sp.orderBook.bids.map(b => `
+                            <div class="stock-book-row bid">
+                                <span class="stock-book-price">${b.price.toFixed(1)}</span>
+                                <span class="stock-book-size">${formatComma(b.size)}</span>
+                                <span class="stock-book-label">${b.label}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="stock-book-col asks">
+                        <div class="stock-book-col-header">Ask (売り)</div>
+                        ${sp.orderBook.asks.map(a => `
+                            <div class="stock-book-row ask">
+                                <span class="stock-book-price">${a.price.toFixed(1)}</span>
+                                <span class="stock-book-size">${formatComma(a.size)}</span>
+                                <span class="stock-book-label">${a.label}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stock-tape-section">
+                <div class="stock-tape-header">📜 Tape (約定履歴)</div>
+                <div class="stock-tape-list">
+                    ${sp.tape.map(t => `
+                        <div class="stock-tape-row ${t.side}">
+                            <span class="stock-tape-time">${t.time}</span>
+                            <span class="stock-tape-price">${t.price.toFixed(1)}</span>
+                            <span class="stock-tape-size">${formatComma(t.size)}</span>
+                            <span class="stock-tape-side">${t.side === 'buy' ? '買' : '売'}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        this.container.appendChild(d);
+
+        // Tab switching
+        d.querySelectorAll('.stock-chart-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                d.querySelectorAll('.stock-chart-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                selectedTab = tab.dataset.tab;
+                d.querySelector('#stockChartArea').innerHTML = renderChart(selectedTab);
+            });
+        });
     }
 
     /* --- YOUTUBE RENDERER --- */

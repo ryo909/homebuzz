@@ -1830,3 +1830,400 @@ body {
 .skin-youtube .yt-comment-input-bar input::placeholder {
   color: #666;
 }
+
+/* ============================================= */
+/* === SKIN: STOCK (Chart Primary) ============ */
+/* ============================================= */
+.skin-stock {
+  background: linear-gradient(180deg, #0a0f14 0%, #0d1117 100%);
+  color: #e6edf3;
+  min-height: 700px;
+  font-family: var(--font-main);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Header */
+.skin-stock .stock-header {
+  padding: 16px;
+  border-bottom: 1px solid #21262d;
+}
+
+.skin-stock .stock-ticker-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.skin-stock .stock-ticker {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  color: #58a6ff;
+}
+
+.skin-stock .stock-mood-badge {
+  background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.skin-stock .stock-action-btn {
+  background: transparent;
+  border: 1px solid #30363d;
+  color: #8b949e;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.skin-stock .stock-company {
+  font-size: 13px;
+  color: #8b949e;
+}
+
+/* Price Card */
+.skin-stock .stock-price-card {
+  background: #161b22;
+  margin: 12px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #21262d;
+}
+
+.skin-stock .stock-price-main {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.skin-stock .stock-price-now {
+  font-size: 32px;
+  font-weight: 700;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+.skin-stock .stock-price-change {
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+.skin-stock .stock-price-change.up {
+  color: #4ade80;
+}
+
+.skin-stock .stock-price-change.down {
+  color: #f87171;
+}
+
+.skin-stock .stock-metrics-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.skin-stock .stock-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.skin-stock .stock-metric-label {
+  font-size: 11px;
+  color: #6e7681;
+  text-transform: uppercase;
+}
+
+.skin-stock .stock-metric-val {
+  font-size: 13px;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  color: #e6edf3;
+}
+
+.skin-stock .stock-analyst-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #1f2937;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #9ca3af;
+  line-height: 1.5;
+}
+
+/* Chart Section */
+.skin-stock .stock-chart-section {
+  margin: 12px;
+  background: #161b22;
+  border-radius: 8px;
+  border: 1px solid #21262d;
+  overflow: hidden;
+}
+
+.skin-stock .stock-chart-tabs {
+  display: flex;
+  border-bottom: 1px solid #21262d;
+}
+
+.skin-stock .stock-chart-tab {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  color: #8b949e;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.skin-stock .stock-chart-tab.active {
+  color: #58a6ff;
+  background: rgba(88, 166, 255, 0.1);
+  border-bottom: 2px solid #58a6ff;
+}
+
+.skin-stock .stock-chart-area {
+  padding: 12px;
+  min-height: 160px;
+  position: relative;
+}
+
+.skin-stock .stock-chart-svg {
+  width: 100%;
+  height: 140px;
+  display: block;
+}
+
+.skin-stock .stock-marker-label {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-size: 10px;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.15);
+  padding: 4px 8px;
+  border-radius: 4px;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* World Tickers */
+.skin-stock .stock-world-tickers {
+  display: flex;
+  gap: 8px;
+  margin: 0 12px 12px;
+  overflow-x: auto;
+}
+
+.skin-stock .stock-world-item {
+  flex-shrink: 0;
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.skin-stock .stock-world-name {
+  font-size: 11px;
+  color: #6e7681;
+}
+
+.skin-stock .stock-world-move {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+.skin-stock .stock-world-move.up {
+  color: #4ade80;
+}
+
+.skin-stock .stock-world-move.down {
+  color: #f87171;
+}
+
+/* News Section */
+.skin-stock .stock-news-section {
+  margin: 0 12px 12px;
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.skin-stock .stock-news-header {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #e6edf3;
+}
+
+.skin-stock .stock-news-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #21262d;
+}
+
+.skin-stock .stock-news-item:last-of-type {
+  border-bottom: none;
+}
+
+.skin-stock .stock-news-text {
+  font-size: 12px;
+  color: #c9d1d9;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.skin-stock .stock-news-ago {
+  font-size: 11px;
+  color: #6e7681;
+  white-space: nowrap;
+}
+
+.skin-stock .stock-overseas-note {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: #1f2937;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* Order Book */
+.skin-stock .stock-book-section {
+  margin: 0 12px 12px;
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.skin-stock .stock-book-header {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.skin-stock .stock-book-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.skin-stock .stock-book-col-header {
+  font-size: 11px;
+  color: #6e7681;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.skin-stock .stock-book-row {
+  display: grid;
+  grid-template-columns: 60px 50px 1fr;
+  gap: 6px;
+  font-size: 11px;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  padding: 3px 0;
+}
+
+.skin-stock .stock-book-row.bid .stock-book-price {
+  color: #4ade80;
+}
+
+.skin-stock .stock-book-row.ask .stock-book-price {
+  color: #f87171;
+}
+
+.skin-stock .stock-book-size {
+  color: #8b949e;
+}
+
+.skin-stock .stock-book-label {
+  font-family: var(--font-main);
+  color: #6e7681;
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tape */
+.skin-stock .stock-tape-section {
+  margin: 0 12px 12px;
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.skin-stock .stock-tape-header {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.skin-stock .stock-tape-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.skin-stock .stock-tape-row {
+  display: grid;
+  grid-template-columns: 50px 60px 50px 24px;
+  gap: 8px;
+  font-size: 11px;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  padding: 4px 0;
+  border-bottom: 1px solid #21262d;
+}
+
+.skin-stock .stock-tape-row.buy {
+  background: rgba(74, 222, 128, 0.05);
+}
+
+.skin-stock .stock-tape-row.sell {
+  background: rgba(248, 113, 113, 0.05);
+}
+
+.skin-stock .stock-tape-time {
+  color: #6e7681;
+}
+
+.skin-stock .stock-tape-price {
+  color: #e6edf3;
+}
+
+.skin-stock .stock-tape-size {
+  color: #8b949e;
+}
+
+.skin-stock .stock-tape-side {
+  font-family: var(--font-main);
+  font-weight: 600;
+  text-align: center;
+}
+
+.skin-stock .stock-tape-row.buy .stock-tape-side {
+  color: #4ade80;
+}
+
+.skin-stock .stock-tape-row.sell .stock-tape-side {
+  color: #f87171;
+}

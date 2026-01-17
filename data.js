@@ -579,5 +579,126 @@ const PRAISE_DATA = {
     "comments": { "min": 100, "max": 5000 },
     "commentLikes": { "min": 10, "max": 3000 },
     "replies": { "min": 1, "max": 50 }
+  },
+  "skinRecipes": {
+    "stock": {
+      "layout": "chartPrimary",
+      "tabs": ["1D", "1W", "1M", "1Y", "ALL"],
+      "defaultTab": "1D",
+      "useSeedFixed": true,
+      "showWorldTickers": true,
+      "showMarketNews": true,
+      "showOrderBook": true
+    }
+  },
+  "stock": {
+    "tickerPrefix": "KS",
+    "tickerPresetsByCategory": {
+      "clean": ["KSCLEAN", "KSWASH", "KSSWEEP"],
+      "learn": ["KSLEARN", "KSREAD", "KSSTUDY"],
+      "fitness": ["KSFIT", "KSTRAIN", "KSMOVE"],
+      "work": ["KSWORK", "KSSALES", "KSBUILD"],
+      "cook": ["KSCOOK", "KSMEAL", "KSKITCH"],
+      "health": ["KSHEAL", "KSSLEEP", "KSHYDR"],
+      "social": ["KSCARE", "KSTHANK", "KSLOVE"],
+      "other": ["KSDOIT", "KSDONE", "KSPLUS"]
+    },
+    "companyNameTemplates": [
+      "{keyword}グローバル・ホールディングス",
+      "{keyword}需給改善インデックス",
+      "{keyword}宇宙経済連動ETF",
+      "{keyword}国際流動性テック",
+      "{keyword}世界線更新キャピタル",
+      "{keyword}拍手供給チェーン",
+      "{keyword}地味強オペレーションズ",
+      "{keyword}コツコツ財閥（仮）",
+      "{keyword}静かな覇者ファンド",
+      "{keyword}積み上げ産業"
+    ],
+    "marketMoodLabels": [
+      "BUY祭り",
+      "祝儀相場",
+      "需給崩壊（良い意味）",
+      "拍手買い優勢",
+      "空売り絶滅",
+      "機関投資家が土下座",
+      "市場、尊さに耐えられず",
+      "世界線が上方向に確定"
+    ],
+    "chartEventMarkerTemplates": [
+      "【発表】{text} 実行",
+      "{text} 完了で相場が跳ねる",
+      "{text}→世界経済に波及",
+      "あなたの{text}でギャップアップ",
+      "{text}が市場の心を動かす"
+    ],
+    "worldTickerPresets": [
+      { "symbol": "KASU500", "name": "KASU500", "unit": "%" },
+      { "symbol": "WORLD_GDP", "name": "WORLD GDP (LIVE)", "unit": "%" },
+      { "symbol": "OIL_BRENT", "name": "OIL (Brent)", "unit": "%" }
+    ],
+    "marketNewsTemplates": [
+      "【速報】{keyword}完了で港湾物流が回復、世界の流れがスムーズに",
+      "【市況】投資家、{keyword}に'安心'を見出し一斉に買い",
+      "【国際】{keyword}の影響で海外市場も連れ高、なぜか原油は下落",
+      "【経済】中央銀行、'あなたの行動'に言及（※していない）",
+      "【金融】{keyword}が需給の常識を破壊、買い板が拍手で埋まる",
+      "【指数】KASU500、{keyword}で上方向に確定",
+      "【分析】{keyword}は'世界線を整える実需'として再評価",
+      "【現場】トレーダー『結局、{keyword}なんだよね』"
+    ],
+    "orderBookBidLabels": [
+      "尊い買い",
+      "拍手買い",
+      "世界線更新買い",
+      "地味強買い",
+      "祝儀買い",
+      "ガチで買い",
+      "今買わないと損買い"
+    ],
+    "orderBookAskLabels": [
+      "売る理由がない",
+      "手放せない",
+      "利確不可（尊）",
+      "売り板うすい",
+      "売りが迷子",
+      "売り注文キャンセル",
+      "売れない（気持ち的に）"
+    ],
+    "numberRanges": {
+      "price": { "min": 120.0, "max": 9800.0, "decimals": 1 },
+      "pctChange": { "min": 0.8, "max": 18.0, "decimals": 2 },
+      "pctChangeSpike": { "min": 35.0, "max": 99.0, "decimals": 2, "probability": 0.08 },
+      "volume": { "min": 120000, "max": 98000000 },
+      "marketCap": { "min": 300000000000, "max": 98000000000000 },
+      "volatility": { "min": 12.0, "max": 240.0, "decimals": 1 },
+      "worldMove": { "min": -2.5, "max": 3.8, "decimals": 2 },
+      "worldGdpMove": { "min": 0.01, "max": 0.12, "decimals": 2 },
+      "oilMove": { "min": -6.0, "max": 6.0, "decimals": 2 }
+    },
+    "renderRules": {
+      "chartTypeByTab": {
+        "1D": "candles",
+        "1W": "candles",
+        "1M": "line",
+        "1Y": "line",
+        "ALL": "line"
+      },
+      "markerAt": "eventTime",
+      "priceCountUpMs": 900,
+      "changeBlinkMs": 450,
+      "newsCount": 3,
+      "orderBookLevels": 8,
+      "tapeTrades": 12
+    },
+    "categoryMatch": {
+      "clean": ["皿", "洗", "掃除", "片付", "整理", "ゴミ", "風呂", "トイレ", "床", "拭"],
+      "learn": ["勉強", "読書", "学", "暗記", "教材", "ノート", "復習", "予習", "課題"],
+      "fitness": ["運動", "筋", "ジム", "走", "ラン", "散歩", "ストレッチ", "トレ", "ヨガ"],
+      "work": ["仕事", "営業", "商談", "資料", "作業", "会議", "メール", "提案", "納品"],
+      "cook": ["料理", "自炊", "ごはん", "弁当", "切", "煮", "焼", "炒"],
+      "health": ["睡眠", "寝", "水", "瞑想", "風邪", "休", "健康", "呼吸"],
+      "social": ["連絡", "返信", "感謝", "手伝", "相談", "褒め", "家族", "友達"]
+    }
   }
 };
