@@ -490,6 +490,72 @@ class PraiseEngine {
         return this.cleanSuffix(text.substring(0, 12));
     }
     cleanSuffix(str) { return str.replace(/(した|する|やった|やる|できた|完了|終了|ました|ます)$/, ""); }
+    generateNewsDigitalPack(text, seed, d, praisePack) {
+        // Seeded RNG
+        const s = typeof seed === 'number' ? seed : Date.now();
+        // Create a simple RNG function compatible with Utils
+        // Using Xoshiro-like or simple weak RNG for deterministic UI
+        let localSeed = s + 9999;
+        const rng = () => {
+            localSeed = (localSeed * 9301 + 49297) % 233280;
+            return localSeed / 233280;
+        };
+
+        const nd = d.newsDigital;
+        const brand = NewsUtils.pick(rng, nd.brandPresets);
+        const label = NewsUtils.pick(rng, nd.labelPresets);
+        const byline = NewsUtils.pick(rng, nd.bylinePresets);
+        const updatedAgo = NewsUtils.pick(rng, nd.updatedAgoPresets) || NewsUtils.pickUpdatedAgo(rng);
+        const keyword = NewsUtils.extractKeyword(text);
+
+        const subhead = NewsUtils.pick(rng, nd.subheadTemplates).replace(/{keyword}/g, keyword);
+        const lead = NewsUtils.pick(rng, nd.leadTemplates).replace(/{text}/g, text);
+
+        // Timeline
+        const offset = NewsUtils.pick(rng, nd.timelineMinuteOffsets);
+        const step1 = NewsUtils.pick(rng, nd.timelineTemplates.step1).replace(/{text}/g, text).replace(/{text}/g, keyword).replace(/{keyword}/g, keyword);
+        const step2 = NewsUtils.pick(rng, nd.timelineTemplates.step2);
+        const step3 = NewsUtils.pick(rng, nd.timelineTemplates.step3);
+        const createdAt = new Date(praisePack.createdAt);
+        const timeline = NewsUtils.buildTimeline(createdAt, offset, step1, step2, step3);
+
+        // Markets
+        const markets = nd.marketsPanelPresets.map(preset => {
+            let key = 'oil';
+            if (preset.symbol === 'KASU500') key = 'kasu500';
+            else if (preset.symbol === 'WORLD_GDP') key = 'worldGdp';
+
+            // Try to reuse Stock Pack data if reasonable? 
+            // stockPack might not match symbol exactly or logic differs. 
+            // We use newsDigital ranges for consistency with request.
+            const range = nd.marketsMoveRanges[key] || { min: -1, max: 1, decimals: 2 };
+            const val = NewsUtils.randInt(rng, range.min * 100, range.max * 100) / 100;
+            return {
+                ...preset,
+                value: val,
+                formatted: NewsUtils.formatSignedPercent(val, range.decimals)
+            };
+        });
+
+        // Related
+        const related = NewsUtils.pickUnique(rng, nd.relatedHeadlineTemplates, 3).map(t => t.replace(/{keyword}/g, keyword));
+
+        // Newsletter
+        const newsletter = {
+            title: NewsUtils.pick(rng, nd.newsletterTemplates.title),
+            desc: NewsUtils.pick(rng, nd.newsletterTemplates.desc),
+            cta: NewsUtils.pick(rng, nd.newsletterTemplates.cta)
+        };
+
+        // Voices Title
+        const voicesTitle = NewsUtils.pick(rng, nd.voicesTitlePresets);
+
+        return {
+            brand, label, byline, updatedAgo, keyword, subhead, lead,
+            timeline, markets, related, newsletter, voicesTitle,
+            fictionNotice: nd.fictionNotice
+        };
+    }
 }
 
 // --- Skin Renderer ---

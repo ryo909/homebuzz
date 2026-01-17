@@ -721,6 +721,8 @@ const PRAISE_DATA = {
       { "name": "INTERNATIONAL KASU PRESS", "short": "IKP" }
     ],
 
+    "navItems": ["World", "Business", "Tech", "Science", "Kasu", "Opinion"],
+
     "labelPresets": ["BREAKING", "LIVE", "速報", "緊急", "国際"],
 
     "bylinePresets": ["編集部", "国際デスク", "経済デスク", "調査班", "速報チーム"],
