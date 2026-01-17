@@ -3,30 +3,11 @@
  */
 
 // --- Utils ---
-// Simple seeded random (Linear Congruential Generator)
 class Random {
-    constructor(seed) {
-        this.seed = seed;
-    }
-
-    // Returns float 0-1
-    next() {
-        this.seed = (this.seed * 9301 + 49297) % 233280;
-        return this.seed / 233280;
-    }
-
-    // Returns integer min to max (inclusive)
-    nextInt(min, max) {
-        return Math.floor(this.next() * (max - min + 1)) + min;
-    }
-
-    // Pick random item from array
-    pick(arr) {
-        if (!arr || arr.length === 0) return null;
-        return arr[this.nextInt(0, arr.length - 1)];
-    }
-
-    // Pick unique items from array
+    constructor(seed) { this.seed = seed; }
+    next() { this.seed = (this.seed * 9301 + 49297) % 233280; return this.seed / 233280; }
+    nextInt(min, max) { return Math.floor(this.next() * (max - min + 1)) + min; }
+    pick(arr) { if (!arr || arr.length === 0) return null; return arr[this.nextInt(0, arr.length - 1)]; }
     pickUnique(arr, count) {
         const copy = [...arr];
         const result = [];
@@ -42,9 +23,7 @@ class Random {
 
 // --- Praise Engine ---
 class PraiseEngine {
-    constructor(data) {
-        this.data = data;
-    }
+    constructor(data) { this.data = data; }
 
     generatePack(text, seed = Date.now()) {
         const rng = new Random(seed);
@@ -60,26 +39,37 @@ class PraiseEngine {
             bookmarks: rng.nextInt(d.statsRanges.bookmarks[0], d.statsRanges.bookmarks[1]),
             views: rng.nextInt(d.statsRanges.views[0], d.statsRanges.views[1]),
             trendRank: rng.nextInt(d.statsRanges.trendRank[0], d.statsRanges.trendRank[1]),
-            trendTag: hashtags[0], // First hashtag is priority
+            trendTag: hashtags[0],
+            replies: rng.nextInt(20, 500) // Added for X Actions
         };
 
-        // 3. Select DM Profile
+        // 3. Selection Logic (Seeded)
         const dmProfile = rng.pick(d.dmProfiles);
+
+        // X Specific Meta
+        const xMeta = {
+            postedAgo: rng.pick(d.timePresets.main),
+            expert: rng.pick(d.xProfiles.experts),
+            influencer: rng.pick(d.xProfiles.influencers),
+            celebrity: rng.pick(d.xProfiles.celebrities),
+            otaku: rng.pick(d.xProfiles.otakus),
+            official: rng.pick(d.xProfiles.officials),
+            // Quote Times
+            quoteTimes: Array(4).fill(0).map(() => rng.pick(d.timePresets.sub))
+        };
 
         // 4. Quotes & Templates
         const fmt = (tpl) => tpl.replace(/{text}/g, text);
-
-        // Generate Crowds (6 unique)
         const crowdTemplates = rng.pickUnique(d.crowdTemplates, 6);
         const crowdReplies = crowdTemplates.map(t => fmt(t));
 
-        // Generate Quotes
         return {
             id: crypto.randomUUID(),
             createdAt: seed,
             text: text,
             seed: seed,
             dmProfileId: dmProfile.id,
+            xMeta: xMeta, // Attach X Meta
             headlines: fmt(rng.pick(d.headlineTemplates)),
             postBody: fmt(rng.pick(d.postBodyTemplates)),
             expertQuote: fmt(rng.pick(d.expertTemplates)),
@@ -107,9 +97,7 @@ class PraiseEngine {
 
     getDerivedTag(text) {
         const d = this.data;
-        for (const entry of d.actionDict) {
-            if (text.includes(entry.keyword)) return entry.tag;
-        }
+        for (const entry of d.actionDict) if (text.includes(entry.keyword)) return entry.tag;
         const bracketMatch = text.match(/[「『（(](.*?)[」』）)]/);
         if (bracketMatch && bracketMatch[1]) return this.cleanSuffix(bracketMatch[1]);
         const parts = text.split(/[\s,、。]+/);
@@ -119,10 +107,7 @@ class PraiseEngine {
         }
         return this.cleanSuffix(text.substring(0, 12));
     }
-
-    cleanSuffix(str) {
-        return str.replace(/(した|する|やった|やる|できた|完了|終了|ました|ます)$/, "");
-    }
+    cleanSuffix(str) { return str.replace(/(した|する|やった|やる|できた|完了|終了|ました|ます)$/, ""); }
 }
 
 // --- Skin Renderer ---
@@ -140,194 +125,109 @@ class SkinRenderer {
         this.container.innerHTML = '';
 
         switch (skinId) {
-            case 'dm':
-                this.renderDM(praisePack);
-                break;
-            case 'x':
-                this.renderX(praisePack);
-                break;
-            case 'news':
-                this.renderNews(praisePack);
-                break;
+            case 'dm': this.renderDM(praisePack); break;
+            case 'x': this.renderX(praisePack); break;
+            case 'news': this.renderNews(praisePack); break;
         }
     }
 
-    /* --- DM RENDERER REFINED --- */
+    /* --- DM RENDERER --- */
     renderDM(pack) {
         const d = document.createElement('div');
         d.className = 'skin-dm';
-
         const profile = PRAISE_DATA.dmProfiles.find(p => p.id === pack.dmProfileId) || PRAISE_DATA.dmProfiles[0];
         const badgeChar = (profile.badge === 'star') ? '★' : '';
 
-        // 1. Header (Fixed)
-        const header = document.createElement('div');
-        header.className = 'dm-header';
-        header.innerHTML = `
-            <div class="dm-back-btn">←</div>
-            <div class="dm-avatar-header" style="background-color: hsl(${profile.avatar.hue}, 70%, 60%)">
-                ${profile.avatar.text}
-            </div>
-            <div class="dm-header-info">
-                <div class="dm-header-top">
-                    <span class="dm-header-name">${profile.displayName}</span>
-                    <span class="dm-header-badge">${badgeChar}</span>
+        // Fixed Header
+        d.innerHTML += `
+            <div class="dm-header">
+                <div class="dm-back-btn">←</div>
+                <div class="dm-avatar-header" style="background-color: hsl(${profile.avatar.hue}, 70%, 60%)">${profile.avatar.text}</div>
+                <div class="dm-header-info">
+                    <div class="dm-header-top">
+                        <span class="dm-header-name">${profile.displayName}</span>
+                        <span class="dm-header-badge">${badgeChar}</span>
+                    </div>
+                    <div class="dm-header-detail">${profile.handle} • ${profile.bio}</div>
                 </div>
-                <div class="dm-header-detail">${profile.handle} • ${profile.bio}</div>
-            </div>
-            <div class="dm-header-menu">⋯</div>
-        `;
-        d.appendChild(header);
+                <div class="dm-header-menu">⋯</div>
+            </div>`;
 
-        // 2. Message List (Scrollable)
+        // Message List
         const list = document.createElement('div');
         list.className = 'dm-message-list';
         d.appendChild(list);
 
-        // Logic: Timestamp -> User Msg -> Read -> Replies... -> Official(System)
-
-        // Timestamp
         const date = new Date(pack.createdAt);
-        const hours = date.getHours();
-        const mins = date.getMinutes().toString().padStart(2, '0');
-        const timeStr = `${hours}:${mins}`;
+        const timeStr = `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+        list.innerHTML += `<div class="dm-timestamp-center">今日 ${timeStr}</div>`;
 
-        const ts = document.createElement('div');
-        ts.className = 'dm-timestamp-center';
-        ts.textContent = `今日 ${timeStr}`;
-        list.appendChild(ts);
-
-        // User Message
         this.createDMBubble(list, pack.text, 'user', null);
+        list.innerHTML += `<div class="dm-read-status">既読</div>`;
 
-        // Read Status
-        const readStats = document.createElement('div');
-        readStats.className = 'dm-read-status';
-        readStats.textContent = `既読`; // Simple "Read" just below bubble
-        list.appendChild(readStats);
+        // Replies Logic
+        const replies = [pack.influencerQuote, pack.expertQuote, pack.otakuQuote];
 
-        // Reply Sequence
-        const replies = [
-            pack.influencerQuote,
-            pack.expertQuote,
-            pack.otakuQuote
-        ];
-
-        let delayBase = 400; // start delay
-
-        // Typing Indicator Element
-        const typing = document.createElement('div');
-        typing.className = 'typing-indicator';
-        typing.innerHTML = '<div class="dot"></div><div class="dot"></div>'; // 2 dots for style
-
-        // Helper to scroll down
-        const scrollDown = () => list.scrollTop = list.scrollHeight;
-
-        const showReply = (idx) => {
-            // System Message (Official) check
+        let delay = 400;
+        const addReply = (idx) => {
             if (idx >= replies.length) {
                 if (pack.officialQuote) {
                     setTimeout(() => {
-                        const sys = document.createElement('div');
-                        sys.className = 'dm-system-message';
-                        sys.innerHTML = `<span>👑</span> ${pack.officialQuote}`;
-                        list.appendChild(sys);
-                        scrollDown();
+                        list.innerHTML += `<div class="dm-system-message"><span>👑</span> ${pack.officialQuote}</div>`;
+                        list.scrollTop = list.scrollHeight;
                     }, 600);
                 }
                 return;
             }
-
-            // Show Typing
+            // Typing
             const row = document.createElement('div');
             row.className = 'dm-message-row row-reply';
-            // Avatar placeholder for typing? 
-            // Spec says: "Opponent avatar on left".
-            // Since typing precedes the message, let's just show typing bubble.
-            // Ideally typing bubble also has avatar if it's the start of block.
-            // We can simplify: always show avatar for typing for first block.
-            const isFirstInBlock = (idx === 0);
+            // First in block gets avatar logic? Simplified: always show for consistency in this render func
+            // But we can do the strict logic:
+            const showAvatar = (idx === 0);
+            const avatarHtml = `<div class="dm-avatar-icon ${showAvatar ? '' : 'hidden'}" style="background-color:hsl(${profile.avatar.hue},70%,60%)">${profile.avatar.text}</div>`;
 
-            // Create temp typing row
-            const avatar = document.createElement('div');
-            avatar.className = `dm-avatar-icon ${isFirstInBlock ? '' : 'hidden'}`;
-            avatar.style.backgroundColor = `hsl(${profile.avatar.hue}, 70%, 60%)`;
-            avatar.textContent = profile.avatar.text;
-
-            row.appendChild(avatar);
-            row.appendChild(typing);
+            row.innerHTML = `${avatarHtml}<div class="typing-indicator"><div class="dot"></div><div class="dot"></div></div>`;
             list.appendChild(row);
-            scrollDown();
+            list.scrollTop = list.scrollHeight;
 
             setTimeout(() => {
-                list.removeChild(row); // Remove typing
-
-                // Show actual message
-                this.createDMBubble(list, replies[idx], 'reply', profile, isFirstInBlock);
-                scrollDown();
-
-                // Next
-                showReply(idx + 1);
-            }, 800); // typing duration
+                list.removeChild(row);
+                this.createDMBubble(list, replies[idx], 'reply', profile, showAvatar);
+                list.scrollTop = list.scrollHeight;
+                addReply(idx + 1);
+            }, 800);
         };
+        setTimeout(() => addReply(0), delay);
 
-        setTimeout(() => showReply(0), delayBase);
-
-
-        // 3. Composer (Fixed Bottom)
+        // Fixed Composer
         const composer = document.createElement('div');
         composer.className = 'dm-composer';
-
-        const plus = document.createElement('div');
-        plus.className = 'dm-composer-plus';
-        plus.textContent = '＋';
-
-        const input = document.createElement('input');
-        input.className = 'dm-composer-input';
-        input.placeholder = 'Message';
-        input.type = 'text';
-
-        const sendBtn = document.createElement('button');
-        sendBtn.className = 'dm-composer-send';
-        sendBtn.textContent = '➤';
-
-        const triggerSend = () => {
-            if (input.value.trim()) {
-                this.sendCallback(input.value);
-                input.value = '';
-            }
-        };
-
-        sendBtn.addEventListener('click', triggerSend);
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') triggerSend();
-        });
-
-        composer.appendChild(plus);
-        composer.appendChild(input);
-        composer.appendChild(sendBtn);
+        composer.innerHTML = `
+            <div class="dm-composer-plus">＋</div>
+            <input class="dm-composer-input" type="text" placeholder="Message" />
+            <button class="dm-composer-send">➤</button>
+        `;
+        // Events attached in create logic or here? InnerHTML breaks events.
+        // Re-attach events:
         d.appendChild(composer);
-
         this.container.appendChild(d);
+
+        const input = d.querySelector('.dm-composer-input');
+        const sendBtn = d.querySelector('.dm-composer-send');
+        const trigger = () => { if (input.value.trim()) { this.sendCallback(input.value); input.value = ''; } };
+        sendBtn.onclick = trigger;
+        input.onkeypress = (e) => { if (e.key === 'Enter') trigger(); };
     }
 
     createDMBubble(container, text, type, profile, showAvatar = false) {
         const row = document.createElement('div');
         row.className = `dm-message-row row-${type}`;
-
-        if (type === 'reply' && profile) {
-            const avatar = document.createElement('div');
-            avatar.className = `dm-avatar-icon ${showAvatar ? '' : 'hidden'}`;
-            avatar.style.backgroundColor = `hsl(${profile.avatar.hue}, 70%, 60%)`;
-            avatar.textContent = profile.avatar.text;
-            row.appendChild(avatar);
+        if (type === 'reply') {
+            const cls = showAvatar ? '' : 'hidden';
+            row.innerHTML += `<div class="dm-avatar-icon ${cls}" style="background-color:hsl(${profile.avatar.hue},70%,60%)">${profile.avatar.text}</div>`;
         }
-
-        const bubble = document.createElement('div');
-        bubble.className = `dm-bubble dm-${type}`;
-        bubble.textContent = text;
-
-        row.appendChild(bubble);
+        row.innerHTML += `<div class="dm-bubble dm-${type}">${text}</div>`;
         container.appendChild(row);
     }
 
@@ -335,120 +235,135 @@ class SkinRenderer {
     renderX(pack) {
         const d = document.createElement('div');
         d.className = 'skin-x';
+        const m = pack.xMeta || {};
 
-        // Header
+        // Define Action Icons (Text based for now)
+        const ico = { msg: '💬', rt: '🔁', like: '❤️', bkm: '🔖', shr: '↗️' };
+
+        // Main Card
         d.innerHTML = `
-            <div class="x-header">
-                <div class="x-avatar"></div>
-                <div class="x-user-info">
-                    <div class="x-name">User Name</div>
-                    <div class="x-handle">@username</div>
+            <div class="x-main-card">
+                <!-- Header -->
+                <div class="x-header">
+                    <div class="x-avatar" style="background-color: #555;"></div>
+                    <div class="x-header-info">
+                        <div class="x-header-top">
+                            <div class="x-header-name-row">
+                                <span class="x-name">User Name</span>
+                                <span class="x-handle-row">@username</span>
+                            </div>
+                            <div class="x-menu">⋯</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="x-body">
+                    <div class="x-headline">${pack.headlines}</div>
+                    <div class="x-post-text">${pack.postBody}</div>
+                    <div class="x-hashtags">${pack.hashtags.join(' ')}</div>
+                </div>
+
+                <!-- Trend -->
+                <div class="x-trend-badge"><strong>Trending #${pack.stats.trendRank}</strong> ${pack.stats.trendTag}</div>
+
+                <!-- Views -->
+                <div class="x-views-row">
+                    <strong>${pack.stats.views.toLocaleString()}</strong> Views
+                </div>
+
+                <!-- Actions -->
+                <div class="x-actions-row">
+                    <div class="x-action">${ico.msg} <span style="font-size:12px">${Math.floor(pack.stats.reposts * 0.05).toLocaleString()}</span></div>
+                    <div class="x-action retweet">${ico.rt} <span style="font-size:12px">${pack.stats.reposts.toLocaleString()}</span></div>
+                    <div class="x-action like">${ico.like} <span style="font-size:12px">${pack.stats.likes.toLocaleString()}</span></div>
+                    <div class="x-action">${ico.bkm} <span style="font-size:12px">${pack.stats.bookmarks.toLocaleString()}</span></div>
+                    <div class="x-action">${ico.shr}</div>
+                </div>
+
+                <!-- Quote RTs (Cards) -->
+                <div class="x-quote-label">Quotes</div>
+                <div class="x-quote-section">
+                    ${this.buildXQuote(m.expert, pack.expertQuote, m.quoteTimes[0])}
+                    ${this.buildXQuote(m.influencer, pack.influencerQuote, m.quoteTimes[1])}
+                    ${this.buildXQuote(m.celebrity, pack.celebrityQuote, m.quoteTimes[2])}
+                    ${this.buildXQuote(m.otaku, pack.otakuQuote, m.quoteTimes[3])}
                 </div>
             </div>
-            <div class="x-body">
-                ${pack.postBody} <br><br>
-                ${pack.headlines} <br><br>
-                <span class="x-hashtag">${pack.hashtags.join(' ')}</span>
-            </div>
-            <div class="x-trend-badge">🏆 Trending #${pack.stats.trendRank}</div>
-            <div class="x-stats-big">
-                <div class="x-stat-item"><strong id="x-reposts">0</strong> Reposts</div>
-                <div class="x-stat-item"><strong id="x-quotes">0</strong> Quotes</div>
-                <div class="x-stat-item"><strong id="x-likes">0</strong> Likes</div>
-                <div class="x-stat-item"><strong id="x-bookmarks">0</strong> Bookmarks</div>
-            </div>
-            <div class="x-stat-item" style="color:#71767b; font-size:14px; margin-bottom:12px;">
-                <span id="x-views">0</span> Views
+
+            <!-- Replies (Thread) -->
+            <div class="x-reply-section">
+                 ${this.buildXReply(pack.crowdReplies[0], 'Crowd User 1', m.postedAgo === '1h' ? '2h' : '1h', true)}
+                 ${this.buildXReply(pack.crowdReplies[1], 'Crowd User 2', '3h', true)}
+                 ${this.buildXReply(pack.crowdReplies[2], 'Crowd User 3', '3h', false)}
+                 ${this.buildXReply(pack.officialQuote, '👑 公式表彰', 'Just now', false)}
             </div>
         `;
 
-        // Quote RTs
-        const qContainer = document.createElement('div');
-        qContainer.className = 'x-quote-container';
-
-        const quotes = [
-            { user: "専門家", text: pack.expertQuote },
-            { user: "海外セレブ", text: pack.influencerQuote },
-            { user: "著名人", text: pack.celebrityQuote },
-            { user: "限界オタク", text: pack.otakuQuote }
-        ];
-
-        quotes.forEach(q => {
-            const item = document.createElement('div');
-            item.className = 'x-quote-item';
-            item.innerHTML = `
-                <div class="x-quote-user">${q.user}</div>
-                <div class="x-quote-text">${q.text}</div>
-            `;
-            qContainer.appendChild(item);
-        });
-        d.appendChild(qContainer);
-
-        // Replies (Crowd + Official)
-        const replies = document.createElement('div');
-        replies.style.marginTop = '16px';
-        replies.style.color = '#71767b';
-        replies.textContent = `Show replies...`;
-        d.appendChild(replies);
-
         this.container.appendChild(d);
-
-        // Animation: Count Up
-        this.animateCountUp('x-reposts', pack.stats.reposts);
-        this.animateCountUp('x-likes', pack.stats.likes);
-        this.animateCountUp('x-bookmarks', pack.stats.bookmarks);
-        this.animateCountUp('x-views', pack.stats.views);
-        document.getElementById('x-quotes').textContent = Math.floor(pack.stats.reposts * 0.1).toLocaleString();
+        // Animate numbers? Optional, logic removed for simplicity in overhaul
     }
 
-    animateCountUp(id, target) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const duration = 1200;
-        const startTime = performance.now();
-        const start = 0;
-
-        const tick = (now) => {
-            const elapsed = now - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const ease = 1 - Math.pow(1 - progress, 4);
-            const current = Math.floor(start + (target - start) * ease);
-            el.textContent = current.toLocaleString();
-
-            if (progress < 1) requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
+    buildXQuote(profile, text, time) {
+        if (!profile) return '';
+        return `
+            <div class="x-quote-card">
+                <div class="x-quote-header">
+                    <div class="x-quote-avatar" style="background-color:hsl(${profile.hue},70%,50%)">${profile.avatar}</div>
+                    <div class="x-quote-info">
+                        <span class="x-quote-name">${profile.name}</span>
+                        ${profile.handle} • ${time}
+                    </div>
+                </div>
+                <div class="x-quote-body">${text}</div>
+            </div>
+        `;
     }
+
+    buildXReply(text, name, time, isThread) {
+        // Simplified random avatars for crowd
+        const hue = Math.floor(Math.random() * 360);
+        const avText = name[0];
+
+        return `
+            <div class="x-reply-item">
+                <div class="x-reply-avatar-col">
+                    <div class="x-reply-avatar" style="background-color:hsl(${hue},60%,50%)">${avText}</div>
+                    ${isThread ? '<div class="x-thread-line"></div>' : ''}
+                </div>
+                <div class="x-reply-content">
+                    <div class="x-reply-header">
+                        <span class="x-reply-name">${name}</span> @user • ${time}
+                    </div>
+                    <div class="x-reply-text">${text}</div>
+                </div>
+            </div>
+        `;
+    }
+
 
     /* --- NEWS RENDERER --- */
     renderNews(pack) {
         const d = document.createElement('div');
         d.className = 'skin-news';
-
         d.innerHTML = `
             <div class="news-bg"></div>
             <div class="news-content">
                 <div class="news-live-badge">🔴 LIVE</div>
-                
                 <div class="news-expert-box">
-                    <div class="news-expert-label">専門家解説 / EXPERT VIEW</div>
-                    <div class="news-expert-text">
-                        ${pack.expertPreface} ${pack.expertQuote}
-                    </div>
+                    <div class="news-expert-label">専門家解説</div>
+                    <div class="news-expert-text">${pack.expertPreface} ${pack.expertQuote}</div>
                 </div>
-
                 <div class="news-main-headline">
                     <div class="news-headline-text">${pack.headlines}</div>
                 </div>
-
                 <div class="news-ticker">
                     <div class="news-ticker-content">
-                        BREAKING NEWS: ${pack.text} が確認されました。 ${pack.influencerQuote}  ///  SNSの声: 「${pack.crowdReplies[0]}」「${pack.crowdReplies[1]}」  ///  公式発表: ${pack.officialQuote}  ///  視聴者数: ${pack.stats.views.toLocaleString()}人
+                        BREAKING: ${pack.text} ... ${pack.influencerQuote} // ${pack.officialQuote}
                     </div>
                 </div>
             </div>
         `;
-
         this.container.appendChild(d);
     }
 }
@@ -459,7 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSkin = 'dm';
     let currentPack = null;
 
-    // Elements
     const dom = {
         controls: document.querySelector('.controls-container'),
         input: document.getElementById('eventInput'),
@@ -474,8 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
         saveToHistory(currentPack);
         render();
         updateHistoryUI();
-
-        // Sync Global Input
         dom.input.value = '';
     }
 
@@ -489,24 +401,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setSkin(skinId) {
         currentSkin = skinId;
-        // Update UI
         dom.skinBtns.forEach(b => {
             if (b.dataset.skin === skinId) b.classList.add('active');
             else b.classList.remove('active');
         });
+        if (skinId === 'dm') dom.controls.classList.add('dm-active');
+        else dom.controls.classList.remove('dm-active');
 
-        // Toggle Controls View using class
-        if (skinId === 'dm') {
-            dom.controls.classList.add('dm-active');
-        } else {
-            dom.controls.classList.remove('dm-active');
-        }
-
-        // Re-render if content exists
         if (currentPack) render();
     }
 
-    // --- History ---
     function loadHistory() {
         const raw = localStorage.getItem(dbKey);
         return raw ? JSON.parse(raw) : [];
@@ -533,25 +437,16 @@ document.addEventListener('DOMContentLoaded', () => {
             el.addEventListener('click', () => {
                 currentPack = pack;
                 render();
-                // Scroll to top
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
             dom.historyList.appendChild(el);
         });
     }
 
-    // --- Event Listeners ---
     dom.sendBtn.addEventListener('click', () => send(dom.input.value));
+    dom.input.addEventListener('keypress', (e) => { if (e.key === 'Enter') send(dom.input.value); });
+    dom.skinBtns.forEach(btn => btn.addEventListener('click', () => setSkin(btn.dataset.skin)));
 
-    dom.input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') send(dom.input.value);
-    });
-
-    dom.skinBtns.forEach(btn => {
-        btn.addEventListener('click', () => setSkin(btn.dataset.skin));
-    });
-
-    // --- Init ---
-    setSkin(currentSkin); // Init input visibility
+    setSkin(currentSkin);
     updateHistoryUI();
 });

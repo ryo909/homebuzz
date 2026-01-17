@@ -437,5 +437,35 @@ const PRAISE_DATA = {
   "dmBadgeStyle": {
     "none": null,
     "star": "★"
+  },
+  "timePresets": {
+    "main": ["1h", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "12h", "18h", "23h"],
+    "sub": ["1m", "5m", "12m", "15m", "28m", "30m", "45m", "1h", "2h", "3h", "4h"]
+  },
+  "xProfiles": {
+    "experts": [
+      { "name": "Tech Insider", "handle": "@tech_insider_log", "avatar": "T", "hue": 210 },
+      { "name": "Performance Lab", "handle": "@perf_lab_daily", "avatar": "P", "hue": 220 },
+      { "name": "LifeHack Engine", "handle": "@lifehack_engine", "avatar": "L", "hue": 190 }
+    ],
+    "influencers": [
+      { "name": "Sarah Styles", "handle": "@sarah_style_global", "avatar": "S", "hue": 330 },
+      { "name": "Daily Motivation", "handle": "@daily_motiv_plus", "avatar": "M", "hue": 35 },
+      { "name": "Jessica Vibes", "handle": "@jessica_vibes_real", "avatar": "J", "hue": 300 }
+    ],
+    "celebrities": [
+      { "name": "Elon Musk (Parody)", "handle": "@elon_parody_x", "avatar": "E", "hue": 0 },
+      { "name": "Global News Host", "handle": "@global_host_one", "avatar": "G", "hue": 200 },
+      { "name": "Star Actor", "handle": "@star_actor_official", "avatar": "A", "hue": 45 }
+    ],
+    "otakus": [
+      { "name": "限界オタクちゃん", "handle": "@genkai_otaku_chan", "avatar": "限", "hue": 280 },
+      { "name": "推し活本部", "handle": "@oshikatsu_hq", "avatar": "推", "hue": 310 },
+      { "name": "尊み保存会", "handle": "@toutomi_saver", "avatar": "尊", "hue": 260 }
+    ],
+    "officials": [
+      { "name": "Official Awards", "handle": "@awards_official_jp", "avatar": "A", "hue": 50 },
+      { "name": "Life Achievements", "handle": "@life_achieve_global", "avatar": "L", "hue": 200 }
+    ]
   }
 };

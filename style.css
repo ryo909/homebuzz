@@ -4,19 +4,16 @@
 :root {
   --bg-app: #eef2f5;
   --bg-dm: #f6f7fb;
-  /* User Spec: Message List Background */
   --bg-x: #000000;
   --bg-news: #0d1b2a;
 
   --text-dm: #1a1a1a;
   --text-x: #e7e9ea;
+  --text-x-muted: #71767b;
   --text-news: #ffffff;
 
   --accent-dm-send: #007aff;
   --accent-dm-receive: #ffffff;
-  /* Typically white/gray in native apps, but user said "Grey bubble" for opponent? Let's check spec. "User: Blue", "Opponent: Gray". Native often white/gray. Let's use #ffffff for Opponent if bg is #f6f7fb, or a light gray. Let's stick to spec. User said "Left: Gray Bubble". */
-  --accent-dm-receive-bg: #ffffff;
-  /* White bubble on light gray bg is common, or #e9e9eb on white. User spec says bg #f6f7fb. Let's make bubbles white */
 
   --accent-x-blue: #1d9bf0;
   --accent-news-red: #d00000;
@@ -54,18 +51,9 @@ body {
   transition: all 0.3s ease;
 }
 
-/* Hide global controls in DM mode or adapt them? 
-   User says "DM View switches to DM dedicated view". 
-   Option A: Hide common form. 
-*/
 .controls-container.dm-active .input-area {
   display: none;
 }
-
-/* User requested "DM Tab View" -> "DM Dedicated View". 
-   Let's keep the skin switcher visible but maybe styled differently? 
-   For now, we just hide the input area as requested in Option A. 
-*/
 
 .skin-switcher {
   display: flex;
@@ -73,7 +61,6 @@ body {
   padding: 4px;
   border-radius: 12px;
   margin-bottom: 0;
-  /* Remove bottom margin if input is hidden */
 }
 
 .controls-container:not(.dm-active) .skin-switcher {
@@ -138,26 +125,21 @@ body {
   max-width: 600px;
   flex: 1;
   margin-top: 0;
-  /* Reset for DM Native Feel */
   position: relative;
-  overflow: hidden;
-  /* min-height removed, let skins define height */
+  overflow: visible;
+  /* Changed for X flow */
 }
 
 /* --- Skin: DM (Native App) --- */
 .skin-dm {
   position: relative;
   background: var(--bg-dm);
-  /* #f6f7fb */
   height: 80vh;
-  /* Fixed height viewport */
   max-height: 800px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  /* No radius/shadow for "Full App" feel, or minimal to fit container */
   border-radius: 0;
-  box-shadow: none;
 }
 
 @media (min-width: 600px) {
@@ -169,7 +151,7 @@ body {
   }
 }
 
-/* 1. Header (Fixed Top) */
+/* DM Components */
 .dm-header {
   height: 56px;
   background: rgba(255, 255, 255, 0.95);
@@ -183,12 +165,9 @@ body {
 }
 
 .dm-back-btn {
-  font-size: 24px;
   margin-right: 12px;
+  font-size: 24px;
   color: var(--text-dm);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
 }
 
 .dm-avatar-header {
@@ -202,7 +181,6 @@ body {
   color: white;
   font-weight: 700;
   font-size: 16px;
-  flex-shrink: 0;
 }
 
 .dm-header-info {
@@ -235,30 +213,22 @@ body {
 .dm-header-detail {
   font-size: 12px;
   color: #8e8e93;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 1px;
 }
 
 .dm-header-menu {
   font-size: 24px;
   color: var(--accent-dm-send);
-  margin-left: 12px;
-  cursor: pointer;
+  margin-left: auto;
 }
 
-/* 2. Message List (Scrollable) */
 .dm-message-list {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
   padding-bottom: 72px;
-  /* For Composer */
   display: flex;
   flex-direction: column;
   gap: 2px;
-  /* Tight gap, controlling spacing via margin */
   background: var(--bg-dm);
 }
 
@@ -271,10 +241,8 @@ body {
 .dm-message-row.row-user {
   justify-content: flex-end;
   margin-bottom: 12px;
-  /* Extra space after user blocks */
 }
 
-/* Avatar Logic */
 .dm-avatar-icon {
   width: 24px;
   height: 24px;
@@ -287,42 +255,33 @@ body {
   color: white;
   font-weight: 700;
   font-size: 10px;
-  /* Visibility controlled by JS/classes */
 }
 
 .dm-avatar-icon.hidden {
   visibility: hidden;
-  /* Takes space but invisible */
 }
 
-/* Bubbles */
 .dm-bubble {
   max-width: 76%;
   padding: 10px 14px;
   font-size: 14.5px;
   line-height: 1.45;
-  position: relative;
   word-wrap: break-word;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  /* Subtle shadow */
 }
 
 .dm-bubble.dm-user {
   background: var(--accent-dm-send);
   color: white;
   border-radius: 18px 18px 6px 18px;
-  /* TopL TopR BotR BotL - User spec: Right=User */
 }
 
 .dm-bubble.dm-reply {
   background: white;
-  /* User said "Gray bubble" but generally white on gray bg looks cleaner. If spec implied gray, #e9e9eb is standard. Let's use white for now as it pops on #f6f7fb */
   color: var(--text-dm);
   border-radius: 18px 18px 18px 6px;
-  /* TopL TopR BotR BotL - User spec: Left=Opponent */
 }
 
-/* Timestamps for Conversation Start */
 .dm-timestamp-center {
   text-align: center;
   font-size: 11px;
@@ -331,7 +290,6 @@ body {
   width: 100%;
 }
 
-/* Read Status */
 .dm-read-status {
   font-size: 11px;
   color: #8e8e93;
@@ -339,10 +297,8 @@ body {
   width: 100%;
   margin-top: 2px;
   margin-right: 4px;
-  user-select: none;
 }
 
-/* System Message (Official) */
 .dm-system-message {
   align-self: center;
   background: #e1e4e8;
@@ -354,10 +310,8 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  max-width: 90%;
 }
 
-/* 3. Composer (Fixed Bottom) */
 .dm-composer {
   height: 56px;
   background: white;
@@ -379,11 +333,9 @@ body {
   height: 24px;
   color: var(--accent-dm-send);
   font-size: 24px;
-  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
 }
 
 .dm-composer-input {
@@ -397,22 +349,14 @@ body {
   outline: none;
 }
 
-.dm-composer-input:focus {
-  background: #eef3f8;
-}
-
 .dm-composer-send {
   color: var(--accent-dm-send);
   background: none;
   border: none;
   font-size: 20px;
-  cursor: pointer;
   padding: 4px;
-  display: flex;
-  align-items: center;
 }
 
-/* Typing Indicator */
 .typing-indicator {
   background: white;
   padding: 12px 16px;
@@ -420,7 +364,6 @@ body {
   display: flex;
   gap: 4px;
   width: fit-content;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .dot {
@@ -439,23 +382,327 @@ body {
   animation-delay: -0.16s;
 }
 
+/* --- Skin: X (Native Overhaul) --- */
+.skin-x {
+  background: var(--bg-x);
+  color: var(--text-x);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+  /* Card like on PC, Full on Mobile */
+}
 
-/* --- Existing X and News Skins Tweaks --- */
-/* Ensure they still work with displayArea reset */
-.skin-x,
+@media (min-width: 600px) {
+  .skin-x {
+    border-radius: 16px;
+    border: 1px solid #2f3336;
+    min-height: auto;
+    margin-top: 20px;
+    padding-bottom: 20px;
+  }
+}
+
+.x-main-card {
+  padding: 16px;
+}
+
+/* 1. Header */
+.x-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  align-items: flex-start;
+}
+
+.x-avatar {
+  width: 40px;
+  height: 40px;
+  background: #333;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background-size: cover;
+  background-position: center;
+}
+
+.x-header-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.x-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.x-header-name-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.x-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-x);
+}
+
+.x-handle-row {
+  font-size: 15px;
+  color: var(--text-x-muted);
+}
+
+.x-menu {
+  color: var(--text-x-muted);
+  font-size: 16px;
+}
+
+/* 2. Body */
+.x-body {
+  margin-bottom: 12px;
+}
+
+.x-headline {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.x-post-text {
+  font-size: 15px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  margin-bottom: 8px;
+}
+
+.x-hashtags {
+  font-size: 15px;
+  color: var(--accent-x-blue);
+}
+
+/* 3. Trend Badge */
+.x-trend-badge {
+  color: var(--text-x-muted);
+  font-size: 13px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.x-trend-badge strong {
+  color: var(--text-x);
+}
+
+/* 4. Stats & Views */
+.x-views-row {
+  border-top: 1px solid #2f3336;
+  padding: 12px 0;
+  display: flex;
+  gap: 4px;
+  color: var(--text-x-muted);
+  font-size: 15px;
+}
+
+.x-views-row strong {
+  color: var(--text-x);
+}
+
+.x-actions-row {
+  border-top: 1px solid #2f3336;
+  border-bottom: 1px solid #2f3336;
+  padding: 12px 0;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-right: 24px;
+}
+
+.x-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-x-muted);
+  font-size: 14px;
+}
+
+.x-action-icon {
+  font-size: 18px;
+  /* Placeholder for SVG */
+}
+
+.x-action:hover {
+  color: var(--accent-x-blue);
+}
+
+.x-action.like:hover {
+  color: #f91880;
+}
+
+.x-action.retweet:hover {
+  color: #00ba7c;
+}
+
+/* 5. Quote RTs (Cards) */
+.x-quote-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.x-quote-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-x);
+  margin-bottom: 4px;
+}
+
+.x-quote-card {
+  border: 1px solid #2f3336;
+  border-radius: 12px;
+  padding: 12px;
+  transition: background 0.2s;
+}
+
+.x-quote-card:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.x-quote-header {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.x-quote-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #444;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+}
+
+.x-quote-info {
+  font-size: 14px;
+  display: flex;
+  gap: 4px;
+  color: var(--text-x-muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.x-quote-name {
+  font-weight: 700;
+  color: var(--text-x);
+}
+
+.x-quote-body {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* 6. Replies (Thread) */
+.x-reply-section {
+  margin-top: 20px;
+}
+
+.x-reply-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  /* Match main padding */
+  border-bottom: 1px solid #2f3336;
+}
+
+.x-reply-avatar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.x-reply-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.x-thread-line {
+  width: 2px;
+  flex: 1;
+  background: #333;
+  margin-top: 4px;
+}
+
+.x-reply-content {
+  flex: 1;
+}
+
+.x-reply-header {
+  display: flex;
+  gap: 6px;
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: var(--text-x-muted);
+}
+
+.x-reply-name {
+  font-weight: 700;
+  color: var(--text-x);
+}
+
+.x-reply-text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-x);
+}
+
+/* 7. Official System Card */
+.x-official-card {
+  margin: 20px 16px;
+  border: 1px solid #2f3336;
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(29, 155, 240, 0.1);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.x-official-icon {
+  font-size: 20px;
+}
+
+.x-official-text {
+  font-size: 14px;
+  color: var(--text-x);
+  line-height: 1.4;
+}
+
+/* News Skin (Tweaked to ensure it doesn't break) */
 .skin-news {
   border-radius: 16px;
-  /* Restore rounding */
-  height: auto;
-  min-height: 600px;
-}
-
-.skin-news {
   height: 700px;
-  /* Match height rough area */
+  /* Fixed height for news */
 }
 
-/* History - Keep it below */
+/* History */
 .history-area {
   margin-top: 20px;
 }
