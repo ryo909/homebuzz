@@ -1913,7 +1913,7 @@ class SkinRenderer {
     }
     renderPapal(pack) {
         const d = document.createElement('div');
-        d.className = 'skin-papal';
+        d.className = 'skin-pope';
         const pd = pack.papal || {};
         const safe = (s) => s || '';
 
@@ -1924,71 +1924,61 @@ class SkinRenderer {
 
         // Circular seal SVG
         const sealSvg = `
-        <svg viewBox="0 0 100 100" class="papal-seal-svg">
-            <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="2"/>
-            <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="1"/>
+        <svg viewBox="0 0 100 100" class="pope-seal-svg">
+            <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="1.2"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="0.8"/>
             <text x="50" y="30" text-anchor="middle" font-size="6" fill="currentColor">HOLY SEE</text>
             <text x="50" y="55" text-anchor="middle" font-size="10" font-weight="bold" fill="currentColor">✠</text>
             <text x="50" y="75" text-anchor="middle" font-size="5" fill="currentColor">SECRETARIAT</text>
         </svg>`;
 
         d.innerHTML = `
-            <div class="papal-paper">
-                <!-- Header Band -->
-                <div class="papal-header-band">
-                    <div class="papal-header-left">
-                        <div class="papal-crest-icon">${safe(pd.crest?.svg) || '✠'}</div>
-                        <div class="papal-header-org">
-                            <span>VATICAN CITY</span>
-                            <span class="papal-header-sep">·</span>
-                            <span>SECRETARIAT</span>
-                        </div>
+            <div class="pope-doc">
+                <!-- Header -->
+                <div class="pope-header">
+                    <div class="pope-header-left">
+                        <div class="pope-crest">${safe(pd.crest?.svg) || '✠'}</div>
+                        <div class="pope-header-title">Vatican City · Secretariat</div>
                     </div>
-                    <div class="papal-header-meta">
-                        <div class="papal-meta-row">REF: PAP-${refDate}-${refNum}</div>
-                        <div class="papal-meta-row">CLASS: Counsel Request (Fictional)</div>
-                        <div class="papal-meta-row">UPDATED: ${safe(pd.updatedAgo)}</div>
-                        <div class="papal-meta-row">STATUS: REGISTERED</div>
+                    <div class="pope-meta">
+                        <div>REF: PAP-${refDate}-${refNum}</div>
+                        <div>CLASS: Counsel Request (Fictional)</div>
+                        <div>UPDATED: ${safe(pd.updatedAgo)}</div>
+                        <div>STATUS: REGISTERED</div>
                     </div>
                 </div>
 
-                <!-- Circular Seal (background watermark) -->
-                <div class="papal-seal-watermark">${sealSvg}</div>
+                <div class="pope-rule"></div>
 
-                <!-- Address & Body -->
-                <div class="papal-body-section">
-                    <div class="papal-address">To: You</div>
-                    <div class="papal-subject">Subject: Counsel regarding "${safe(pack.text)}"</div>
+                <!-- Seal watermark -->
+                <div class="pope-seal">${sealSvg}</div>
+
+                <!-- Body -->
+                <div class="pope-body">
+                    <div class="pope-to">To: You</div>
+                    <div class="pope-subject">Subject: Counsel regarding <span class="jp">"${safe(pack.text)}"</span></div>
                     
-                    <div class="papal-body-text">
-                        <p>Your counsel is respectfully requested on the matter stated above.</p>
-                        <p>${safe(pd.invitationBody).replace(/\n/g, '</p><p>')}</p>
-                        <p>You are hereby requested to provide counsel in accordance with established protocol.</p>
-                    </div>
+                    <p>Your counsel is respectfully requested on the matter stated above.</p>
+                    <p>${safe(pd.invitationBody).replace(/\n/g, '</p><p>')}</p>
+                    <p>You are hereby requested to provide counsel in accordance with established protocol.</p>
                 </div>
 
-                <!-- Statement Under Seal (central box) -->
-                <div class="papal-statement-section">
-                    <div class="papal-statement-box">
-                        <div class="papal-statement-title">STATEMENT UNDER SEAL</div>
-                        <div class="papal-statement-body">
-                            <span class="papal-quote-lg">"</span>
-                            ${safe(pd.counsel)}
-                            <span class="papal-quote-lg">"</span>
-                        </div>
-                        <div class="papal-adopted-stamp">ADOPTED</div>
-                    </div>
+                <!-- Statement Under Seal -->
+                <div class="pope-statement">
+                    <div class="pope-statement-title">Statement Under Seal</div>
+                    <div class="pope-quote jp">${safe(pd.counsel)}</div>
+                    <div class="pope-stamp">ADOPTED</div>
                 </div>
 
                 <!-- Signature -->
-                <div class="papal-signature-section">
-                    <div class="papal-sig-line"></div>
-                    <div class="papal-sig-role">Office of Ceremonial Coordination</div>
-                    <div class="papal-sig-name">Acting Secretary (Fictional)</div>
+                <div class="pope-signature">
+                    <div class="pope-sig-line"></div>
+                    <div class="pope-sig-role">Office of Ceremonial Coordination</div>
+                    <div class="pope-sig-name">Acting Secretary (Fictional)</div>
                 </div>
 
                 <!-- Footer -->
-                <div class="papal-footer-bar">
+                <div class="pope-footer">
                     ${(pd.fictionNotice || ['This document is entirely fictional.']).map(n => `<span>${n}</span>`).join(' · ')}
                 </div>
             </div>

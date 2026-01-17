@@ -2693,252 +2693,243 @@ body {
 }
 
 /* ============================================= */
-/* === SKIN: Papal (Premium Document Redesign)  */
+/* === SKIN: Pope (Vatican) - Scoped Polish === */
 /* ============================================= */
 
-.skin-papal {
+.skin-pope {
+  --pope-ink: rgba(18, 18, 18, .92);
+  --pope-muted: rgba(18, 18, 18, .62);
+  --pope-rule: rgba(0, 0, 0, .14);
+  --pope-accent: #b08b2c;
+  --pope-stamp: #b24a43;
+
   background: #e8e4d9;
   padding: 24px 16px;
   min-height: 100vh;
-  font-family: "Iowan Old Style", Georgia, "Times New Roman", Times, serif;
+}
+
+.skin-pope .pope-doc {
+  max-width: 620px;
+  margin: 0 auto;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .72), rgba(255, 255, 255, .72)),
+    radial-gradient(1200px 600px at 50% 0%, rgba(0, 0, 0, .08), transparent 55%),
+    radial-gradient(900px 500px at 20% 30%, rgba(0, 0, 0, .04), transparent 60%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .015) 0 1px, transparent 1px 10px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, .012) 0 1px, transparent 1px 14px);
+  background-color: #f7f3ea;
+  border: 1px solid rgba(0, 0, 0, .12);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, .18),
+    inset 0 0 0 1px rgba(255, 255, 255, .55),
+    inset 0 1px 0 rgba(0, 0, 0, .06);
+  border-radius: 6px;
+  padding: 0;
+  position: relative;
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", Times, serif;
+  color: var(--pope-ink);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Paper container */
-.papal-paper {
-  max-width: 620px;
-  margin: 0 auto;
-  background: #f7f3ea;
-  background-image:
-    repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 0, 0, 0.01) 1px, rgba(0, 0, 0, 0.01) 2px);
-  padding: 48px 48px 40px;
-  box-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.08),
-    0 3px 0 rgba(0, 0, 0, 0.04),
-    0 8px 24px rgba(0, 0, 0, 0.12),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.04);
-  border: 1px solid #d8d4c9;
-  position: relative;
+/* Japanese font for .jp */
+.skin-pope .jp {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS PMincho", serif;
+  letter-spacing: 0.02em;
 }
 
-/* Header Band */
-.papal-header-band {
+/* Header */
+.skin-pope .pope-header {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
-  border-bottom: 1px solid #c9c4b5;
-  padding-bottom: 20px;
-  margin-bottom: 32px;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px 8px;
   flex-wrap: wrap;
-  gap: 16px;
 }
 
-.papal-header-left {
+.skin-pope .pope-header-left {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.papal-crest-icon {
-  font-size: 28px;
-  color: #8b7355;
+.skin-pope .pope-crest {
+  font-size: 26px;
+  color: var(--pope-accent);
 }
 
-.papal-header-org {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
+.skin-pope .pope-header-title {
+  font-variant-caps: all-small-caps;
   text-transform: uppercase;
-  color: #6b6455;
-}
-
-.papal-header-sep {
-  margin: 0 6px;
-  color: #a09888;
-}
-
-.papal-header-meta {
-  text-align: right;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 9px;
-  color: #888;
-  line-height: 1.7;
-}
-
-.papal-meta-row {
-  white-space: nowrap;
-}
-
-/* Circular Seal Watermark */
-.papal-seal-watermark {
-  position: absolute;
-  top: 80px;
-  right: 40px;
-  width: 90px;
-  height: 90px;
-  color: rgba(139, 115, 85, 0.15);
-  transform: rotate(-6deg);
-  pointer-events: none;
-}
-
-.papal-seal-svg {
-  width: 100%;
-  height: 100%;
-}
-
-/* Body Section */
-.papal-body-section {
-  margin-bottom: 40px;
-}
-
-.papal-address {
-  font-weight: 700;
-  font-size: 14px;
-  margin-bottom: 12px;
-  color: #222;
-}
-
-.papal-subject {
-  font-size: 13px;
-  font-style: italic;
-  color: #555;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px dashed #d0ccc0;
-}
-
-.papal-body-text {
-  font-size: 14px;
-  line-height: 1.75;
-  color: #333;
-  text-align: left;
-}
-
-.papal-body-text p {
-  margin: 0 0 14px;
-}
-
-/* Statement Under Seal (central highlight) */
-.papal-statement-section {
-  margin: 40px 0;
-}
-
-.papal-statement-box {
-  border: 1px solid #8b7355;
-  padding: 28px 24px;
-  text-align: center;
-  position: relative;
-  background: rgba(255, 255, 255, 0.4);
-}
-
-.papal-statement-title {
+  letter-spacing: 0.12em;
+  font-weight: 500;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #6b6455;
-  margin-bottom: 18px;
-  text-decoration: underline;
-  text-decoration-color: #c9b896;
-  text-underline-offset: 4px;
+  color: var(--pope-muted);
 }
 
-.papal-statement-body {
-  font-size: 17px;
-  font-style: italic;
-  line-height: 1.5;
-  color: #222;
-}
-
-.papal-quote-lg {
-  font-size: 28px;
-  color: #c9c4b5;
-  vertical-align: -4px;
-  font-family: Georgia, serif;
-}
-
-/* ADOPTED Stamp */
-.papal-adopted-stamp {
-  position: absolute;
-  bottom: 12px;
-  right: 16px;
-  font-size: 12px;
-  font-weight: 900;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  color: #a03030;
-  border: 2px solid #a03030;
-  padding: 3px 8px;
-  transform: rotate(-12deg);
-  opacity: 0.5;
-  letter-spacing: 0.1em;
-  background: rgba(255, 255, 255, 0.6);
-}
-
-/* Signature Section */
-.papal-signature-section {
-  margin-top: 48px;
+.skin-pope .pope-meta {
   text-align: right;
-  padding-right: 16px;
+  line-height: 1.25;
+  font-size: 10px;
+  color: var(--pope-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  opacity: .9;
 }
 
-.papal-sig-line {
-  width: 140px;
+.skin-pope .pope-rule {
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, #8b7355 30%, #8b7355 70%, transparent 100%);
-  margin-left: auto;
+  background: var(--pope-rule);
+  margin: 10px 20px;
+}
+
+/* Seal watermark */
+.skin-pope .pope-seal {
+  position: absolute;
+  right: 34px;
+  top: 56px;
+  width: 120px;
+  height: 120px;
+  opacity: .22;
+  filter: blur(.2px);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  color: var(--pope-muted);
+}
+
+.skin-pope .pope-seal svg * {
+  stroke-width: 1.2;
+}
+
+/* Body */
+.skin-pope .pope-body {
+  padding: 6px 20px 18px;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.skin-pope .pope-body p {
+  margin: 0 0 10px;
+}
+
+.skin-pope .pope-to {
+  font-size: 16px;
+  font-weight: 600;
   margin-bottom: 8px;
 }
 
-.papal-sig-role {
-  font-size: 10px;
+.skin-pope .pope-subject {
+  font-size: 13px;
+  color: var(--pope-muted);
+  margin-bottom: 14px;
+  font-style: italic;
+}
+
+/* Statement */
+.skin-pope .pope-statement {
+  margin: 18px 20px 8px;
+  border: 1px solid rgba(0, 0, 0, .22);
+  padding: 16px 16px 14px;
+  position: relative;
+  background: rgba(255, 255, 255, .55);
+}
+
+.skin-pope .pope-statement-title {
+  font-variant-caps: all-small-caps;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #888;
-  margin-bottom: 4px;
+  letter-spacing: 0.10em;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 11px;
+  color: var(--pope-muted);
 }
 
-.papal-sig-name {
+.skin-pope .pope-quote {
+  font-size: 17px;
+  line-height: 1.9;
+  text-align: center;
+  padding: 8px 10px;
+}
+
+/* ADOPTED Stamp */
+.skin-pope .pope-stamp {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  transform: rotate(-9deg);
+  border: 2px solid var(--pope-stamp);
+  color: var(--pope-stamp);
+  padding: 4px 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+  opacity: .78;
+  mix-blend-mode: multiply;
+  text-transform: uppercase;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Signature */
+.skin-pope .pope-signature {
+  margin-top: 32px;
+  text-align: right;
+  padding: 0 20px 12px;
+}
+
+.skin-pope .pope-sig-line {
+  width: 140px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--pope-muted) 30%, var(--pope-muted) 70%, transparent 100%);
+  margin-left: auto;
+  margin-bottom: 6px;
+}
+
+.skin-pope .pope-sig-role {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--pope-muted);
+  margin-bottom: 2px;
+}
+
+.skin-pope .pope-sig-name {
   font-family: "Brush Script MT", "Segoe Script", cursive, serif;
-  font-size: 16px;
-  color: #444;
+  font-size: 15px;
+  color: var(--pope-ink);
 }
 
-/* Footer Bar */
-.papal-footer-bar {
-  margin-top: 48px;
-  padding-top: 16px;
-  border-top: 1px solid #d8d4c9;
+/* Footer */
+.skin-pope .pope-footer {
+  margin-top: 16px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--pope-rule);
   text-align: center;
   font-size: 9px;
-  color: #999;
-  letter-spacing: 0.05em;
+  color: var(--pope-muted);
+  letter-spacing: 0.04em;
 }
 
-/* Mobile Responsive */
+/* Mobile */
 @media (max-width: 600px) {
-  .papal-paper {
-    padding: 28px 20px 24px;
+  .skin-pope .pope-doc {
+    margin: 0 8px;
   }
 
-  .papal-header-band {
+  .skin-pope .pope-header {
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
 
-  .papal-header-meta {
+  .skin-pope .pope-meta {
     text-align: left;
   }
 
-  .papal-seal-watermark {
-    width: 60px;
-    height: 60px;
-    top: 60px;
+  .skin-pope .pope-seal {
+    width: 80px;
+    height: 80px;
     right: 16px;
-  }
-
-  .papal-statement-box {
-    padding: 20px 16px;
+    top: 48px;
   }
 }
 
