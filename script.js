@@ -396,7 +396,6 @@ class SkinRenderer {
     /* --- X RENDERER --- */
     renderX(pack) {
         this.container.innerHTML = '';
-        this.applyTheme('x');
 
         const d = document.createElement('div');
         d.className = 'skin-x';
