@@ -815,6 +815,10 @@ const PRAISE_DATA = {
       "showDocId": true,
       "showConfidentiality": true,
       "showSeal": true
+    },
+    "earthcam": {
+      "layout": "globeLive",
+      "useSeedFixed": true
     }
   },
   "papal": {
@@ -923,5 +927,30 @@ const PRAISE_DATA = {
       "※この文書はパロディです。実在の組織・人物・儀礼とは関係ありません。",
       "This document is fictional / parody."
     ]
+  },
+  "earthCam": {
+    "regions": [
+      "South Atlantic", "North Pacific Rim", "Cloud District-7",
+      "Quiet Sahara", "Emerald Arctic", "New Calm Balkans",
+      "Gentle Andes", "Kindness Belt", "Peaceful Bay Area"
+    ],
+    "tickerTemplates": [
+      "BREAKING: 大気がちょっと機嫌よくなりました",
+      "観測: 風が“うまくいってる顔”をしている",
+      "速報: 道端の花が、こちらを褒めている",
+      "更新: 世界のギス率が-3.1%",
+      "衛星: 海が「了解」って言った",
+      "注意: 今日は人がやさしい（原因: {text}）"
+    ],
+    "pinTemplates": [
+      "鳥が歌い始めた（+{n}%）",
+      "空気が軽い（+{n}%）",
+      "人々が譲り合っている（+{n}%）",
+      "猫が世界を許した（+{n}%）",
+      "風が笑った（+{n}%）"
+    ],
+    "recoveryRange": [18, 79],
+    "pinCountRange": [3, 7],
+    "verifiedRange": [996, 999]
   }
 };

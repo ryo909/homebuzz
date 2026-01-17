@@ -310,6 +310,10 @@ class PraiseEngine {
         if (d.papal) {
             pack.papal = this.generatePapalPack(text, seed, d, pack);
         }
+        // 9. EarthCam (Seed fixed)
+        if (d.earthCam) {
+            pack.earthCam = this.generateEarthCamPack(text, seed, d, pack);
+        }
 
         return pack;
     }
@@ -669,6 +673,75 @@ class PraiseEngine {
             fictionNotice: pd.fictionNotice
         };
     }
+    generateEarthCamPack(text, seed, d, praisePack) {
+        // Seeded RNG
+        const s = typeof seed === 'number' ? seed : Date.now();
+        let localSeed = s + 54321;
+        const rng = () => {
+            localSeed = (localSeed * 9301 + 49297) % 233280;
+            return localSeed / 233280;
+        };
+        const randInt = (min, max) => Math.floor(rng() * (max - min + 1)) + min;
+        const pick = (arr) => arr[Math.floor(rng() * arr.length)];
+
+        const ed = d.earthCam;
+
+        // Region
+        const region = pick(ed.regions);
+
+        // Stats
+        const viewersBase = randInt(10, 900) * 100000 + randInt(0, 99999);
+        const viewers = "👁 " + viewersBase.toLocaleString() + " watching";
+
+        const recVal = randInt(ed.recoveryRange[0], ed.recoveryRange[1]);
+        const recovery = `🌿 Recovery +${recVal}%`;
+
+        const verVal = randInt(ed.verifiedRange[0], ed.verifiedRange[1]) / 10;
+        const trust = `✅ Verified: ${verVal}%`;
+
+        // Ticker
+        // Mix user text into ticker? The request says "yellow ticker (scrolls 1 line) logs that 'world became better'"
+        // "input text -> world became better" should be visualized.
+        // We use templates from ed.tickerTemplates
+        // We generate ~10 items.
+        // Also inject "Cause: {text}" once.
+        let tickerItems = [];
+        for (let i = 0; i < 8; i++) {
+            let t = pick(ed.tickerTemplates);
+            t = t.replace(/{text}/g, text); // Simple replace
+            tickerItems.push(t);
+        }
+        // Join with separator
+        const tickerText = tickerItems.join(" /// ");
+
+        // Pins
+        // 3-7 pins. Inside circle (cx=400, cy=400, r=260ish to be safe within 280 clip)
+        // x,y must be within distance R from center.
+        const pinCount = randInt(ed.pinCountRange[0], ed.pinCountRange[1]);
+        const pins = [];
+        for (let i = 0; i < pinCount; i++) {
+            let valid = false;
+            let x, y;
+            let safety = 0;
+            while (!valid && safety < 100) {
+                safety++;
+                x = randInt(120, 680); // bound rect
+                y = randInt(120, 680);
+                const dist = Math.sqrt(Math.pow(x - 400, 2) + Math.pow(y - 400, 2));
+                if (dist < 260) valid = true;
+            }
+            if (valid) {
+                // Label
+                const pct = randInt(5, 40);
+                const label = pick(ed.pinTemplates).replace(/{n}/g, pct);
+                pins.push({ x, y, label });
+            }
+        }
+
+        return {
+            region, viewers, recovery, trust, tickerText, pins
+        };
+    }
 }
 
 // --- Skin Renderer ---
@@ -779,6 +852,10 @@ class SkinRenderer {
     }
 
     render(praisePack, skinId) {
+        if (this.utcInterval) {
+            clearInterval(this.utcInterval);
+            this.utcInterval = null;
+        }
         console.log('RENDER_CALLED', { skinId, hasPack: !!praisePack });
         this.currentPack = praisePack;
         this.currentSkin = skinId;
@@ -834,6 +911,13 @@ class SkinRenderer {
                     this.renderPapal(praisePack);
                 } else {
                     this.renderPlaceholder('教皇庁', '文字を入力して送信すると、勅書が生成されます');
+                }
+                break;
+            case 'earthcam':
+                if (praisePack && praisePack.earthCam) {
+                    this.renderEarthCam(praisePack);
+                } else {
+                    this.renderPlaceholder('地球儀', '文字を入力して送信すると、ライブカメラが起動します');
                 }
                 break;
         }
@@ -1889,6 +1973,126 @@ class SkinRenderer {
 
         this.container.appendChild(d);
     }
+    renderEarthCam(pack) {
+        const d = document.createElement('div');
+        d.className = 'skin-earthcam';
+        const ed = pack.earthCam || {};
+
+        // Generate Pins HTML
+        const pinsHtml = (ed.pins || []).map((p, idx) => `
+            <g class="pin" transform="translate(${p.x} ${p.y})">
+                <circle r="6" class="pin-core"/>
+                <circle r="16" class="pin-ring"/>
+                <circle r="24" class="pin-wave" style="animation-delay: -${idx * 0.4}s"/>
+            </g>
+        `).join('');
+
+        // SVG
+        const svg = `
+<svg viewBox="0 0 800 800" class="earth-svg" aria-label="EarthCam Globe">
+  <defs>
+    <clipPath id="sphereClip"><circle cx="400" cy="400" r="280"/></clipPath>
+    <radialGradient id="oceanGrad" cx="35%" cy="30%" r="75%">
+      <stop offset="0%"  stop-color="#1b6cff"/>
+      <stop offset="55%" stop-color="#0f3f9d"/>
+      <stop offset="100%" stop-color="#081b3a"/>
+    </radialGradient>
+    <radialGradient id="nightGrad" cx="72%" cy="40%" r="85%">
+      <stop offset="0%" stop-color="rgba(0,0,0,0)"/>
+      <stop offset="55%" stop-color="rgba(0,0,0,0.25)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0.7)"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="cloudNoise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" seed="7" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.28 0" result="alphaNoise"/>
+      <feGaussianBlur in="alphaNoise" stdDeviation="1"/>
+    </filter>
+    <linearGradient id="scanGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(255,255,255,0)"/>
+      <stop offset="50%" stop-color="rgba(255,255,255,0.10)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="800" height="800" class="earth-bg"/>
+  <circle cx="400" cy="400" r="295" class="atmo-ring" filter="url(#glow)"/>
+  <circle cx="400" cy="400" r="280" class="sphere-outline"/>
+  <g clip-path="url(#sphereClip)">
+    <rect x="120" y="120" width="560" height="560" fill="url(#oceanGrad)"/>
+    <g class="grid">
+      <line x1="120" y1="220" x2="680" y2="220"/>
+      <line x1="120" y1="310" x2="680" y2="310"/>
+      <line x1="120" y1="400" x2="680" y2="400"/>
+      <line x1="120" y1="490" x2="680" y2="490"/>
+      <line x1="120" y1="580" x2="680" y2="580"/>
+      <line x1="240" y1="120" x2="240" y2="680"/>
+      <line x1="320" y1="120" x2="320" y2="680"/>
+      <line x1="400" y1="120" x2="400" y2="680"/>
+      <line x1="480" y1="120" x2="480" y2="680"/>
+      <line x1="560" y1="120" x2="560" y2="680"/>
+    </g>
+    <g class="land">
+      <path d="M245,365 C275,320 332,300 360,330 C382,360 360,412 320,425 C282,437 238,412 245,365 Z"/>
+      <path d="M470,292 C520,282 568,320 555,365 C540,415 478,440 448,398 C425,365 435,303 470,292 Z"/>
+      <path d="M470,495 C520,465 565,502 553,542 C540,592 480,604 452,563 C430,535 440,510 470,495 Z"/>
+    </g>
+    <g class="cloud-layer">
+      <rect x="120" y="120" width="560" height="560" filter="url(#cloudNoise)" class="clouds"/>
+    </g>
+    <circle cx="430" cy="395" r="320" fill="url(#nightGrad)"/>
+    <g class="pins">
+      ${pinsHtml}
+    </g>
+  </g>
+  <rect x="0" y="0" width="800" height="800" fill="url(#scanGrad)" class="scanline"/>
+</svg>`;
+
+        d.innerHTML = `
+            <div class="earthcam-wrap">
+              <div class="earthcam-hud">
+                <div class="earthcam-left">
+                  <div class="earthcam-live"><span class="earthcam-dot"></span>LIVE</div>
+                  <div class="earthcam-tag">EarthCam • GLOBAL FEELING</div>
+                  <div class="earthcam-tag" id="earthcam-region">REGION: ${ed.region}</div>
+                  <div class="earthcam-tag" id="earthcam-utc">UTC --:--:--</div>
+                </div>
+                <div class="earthcam-right">
+                  <div class="earthcam-tag" id="earthcam-viewers">${ed.viewers}</div>
+                  <div class="earthcam-tag" id="earthcam-recover">${ed.recovery}</div>
+                  <div class="earthcam-tag" id="earthcam-trust">${ed.trust}</div>
+                </div>
+              </div>
+
+              <div class="earthcam-stage">
+                ${svg}
+              </div>
+
+              <div class="earthcam-ticker">
+                <div class="ticker-track" id="earthcam-ticker-text">
+                  ${ed.tickerText}
+                </div>
+              </div>
+            </div>
+        `;
+
+        this.container.appendChild(d);
+
+        const updateClock = () => {
+            const el = document.getElementById('earthcam-utc');
+            if (el) {
+                const now = new Date();
+                const h = String(now.getUTCHours()).padStart(2, '0');
+                const m = String(now.getUTCMinutes()).padStart(2, '0');
+                const s = String(now.getUTCSeconds()).padStart(2, '0');
+                el.innerText = `UTC ${h}:${m}:${s}`;
+            }
+        };
+        updateClock();
+        this.utcInterval = setInterval(updateClock, 1000);
+    }
 }
 
 // --- App Controller ---
@@ -1917,6 +2121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: "news", label: "速報" },
         { id: "newsDigital", label: "新聞" },
         { id: "papal", label: "教皇庁" },
+        { id: "earthcam", label: "地球儀" },
         { id: "youtube", label: "YouTube" },
         { id: "stock", label: "株価" }
     ];
@@ -1937,6 +2142,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ensure papal exists
     if (!tabs.some(t => t.id === "papal")) {
         tabs.push({ id: "papal", label: "教皇庁" });
+    }
+    // Ensure earthcam exists
+    if (!tabs.some(t => t.id === "earthcam")) {
+        tabs.push({ id: "earthcam", label: "地球儀" });
     }
 
     // Render Tabs
