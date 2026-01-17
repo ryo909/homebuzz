@@ -293,8 +293,8 @@ class SkinRenderer {
             if (!p) return;
 
             const lastMsg = conv.messages.length > 0 ? conv.messages[conv.messages.length - 1] : null;
-            const snippet = lastMsg ? lastMsg.text : 'まだメッセージはありません';
-            const unreadClass = conv.unreadCount > 0 ? 'unread' : 'hidden';
+            const snippet = lastMsg ? lastMsg.text : '新着メッセージはありません';
+            const unreadClass = conv.unreadCount > 0 ? '' : 'hidden';
 
             // Time formatting (Simple)
             let timeDisp = '';
@@ -308,14 +308,12 @@ class SkinRenderer {
             item.innerHTML = `
                 <div class="dm-list-avatar" style="background-color:hsl(${p.avatar.hue}, 70%, 60%)">${p.avatar.text}</div>
                 <div class="dm-list-content">
-                    <div class="dm-list-row-top">
-                        <span class="dm-list-name">${p.displayName}</span>
-                        <span class="dm-list-time">${timeDisp}</span>
-                    </div>
-                    <div class="dm-list-row-btm">
-                        <span class="dm-list-snippet">${snippet}</span>
-                        <div class="dm-list-badge ${unreadClass}">${conv.unreadCount}</div>
-                    </div>
+                    <div class="dm-list-name">${p.displayName}</div>
+                    <div class="dm-list-snippet">${snippet}</div>
+                </div>
+                <div class="dm-list-right">
+                    <span class="dm-list-time">${timeDisp}</span>
+                    <div class="dm-list-badge ${unreadClass}">${conv.unreadCount}</div>
                 </div>
             `;
             item.onclick = () => {
@@ -474,14 +472,14 @@ class SkinRenderer {
             </div>
         `;
 
-        // Actions
+        // Actions - Horizontal with numbers
         const actions = `
             <div class="x-action-bar">
-                <div class="x-action-icon">💬</div>
-                <div class="x-action-icon">🔁</div>
-                <div class="x-action-icon liked">❤️</div>
-                <div class="x-action-icon">🔖</div>
-                <div class="x-action-icon">↗️</div>
+                <div class="x-action-item"><span>💬</span><span>${Math.floor(stats.reposts * 0.1).toLocaleString()}</span></div>
+                <div class="x-action-item retweeted"><span>🔁</span><span>${stats.reposts.toLocaleString()}</span></div>
+                <div class="x-action-item liked"><span>❤️</span><span>${stats.likes.toLocaleString()}</span></div>
+                <div class="x-action-item"><span>🔖</span><span>${stats.bookmarks.toLocaleString()}</span></div>
+                <div class="x-action-item"><span>↗️</span></div>
             </div>
         `;
 
@@ -578,23 +576,46 @@ class SkinRenderer {
     renderNews(pack) {
         const d = document.createElement('div');
         d.className = 'skin-news';
+
+        // Pick station name using seed
+        const stations = PRAISE_DATA.newsStationNames || ['KASU NEWS'];
+        const stationIdx = Math.abs(pack.seed.charCodeAt(0) || 0) % stations.length;
+        const stationName = stations[stationIdx];
+
+        // Current time
+        const now = new Date();
+        const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+        // Views as concurrent viewers
+        const viewers = pack.stats ? pack.stats.views.toLocaleString() : '128,394';
+
         d.innerHTML = `
             <div class="news-bg"></div>
-                <div class="news-content">
-                    <div class="news-live-badge">🔴 LIVE</div>
-                    <div class="news-expert-box">
-                        <div class="news-expert-label">専門家解説</div>
-                        <div class="news-expert-text">${pack.expertPreface} ${pack.expertQuote}</div>
-                    </div>
-                    <div class="news-main-headline">
-                        <div class="news-headline-text">${pack.headlines}</div>
-                    </div>
-                    <div class="news-ticker">
-                        <div class="news-ticker-content">
-                            BREAKING: ${pack.text} ... ${pack.influencerQuote} // ${pack.officialQuote}
-                        </div>
-                    </div>
+            <div class="news-hud">
+                <div class="news-hud-left">
+                    <span class="news-live-dot">●</span>
+                    <span class="news-live-text">LIVE</span>
+                    <span class="news-station">${stationName}</span>
                 </div>
+                <div class="news-hud-right">
+                    <span class="news-time">${timeStr}</span>
+                    <span class="news-viewers">${viewers}人視聴中</span>
+                </div>
+            </div>
+            <div class="news-scroll-ticker">
+                <div class="news-scroll-content">
+                    続報：${pack.influencerQuote} ／ SNS反応：${pack.otakuQuote} ／ 専門家：${pack.expertPreface}
+                </div>
+            </div>
+            <div class="news-content">
+                <div class="news-expert-box">
+                    <div class="news-expert-label">専門家解説</div>
+                    <div class="news-expert-text">${pack.expertQuote}</div>
+                </div>
+                <div class="news-main-headline">
+                    <div class="news-headline-text">${pack.headlines}</div>
+                </div>
+            </div>
         `;
         this.container.appendChild(d);
     }

@@ -476,9 +476,9 @@ const PRAISE_DATA = {
       { "name": "Jessica Vibes", "handle": "@jessica_vibes_real", "avatar": "J", "hue": 300 }
     ],
     "celebrities": [
-      { "name": "Elon Musk (Parody)", "handle": "@elon_parody_x", "avatar": "E", "hue": 0 },
-      { "name": "Global News Host", "handle": "@global_host_one", "avatar": "G", "hue": 200 },
-      { "name": "Star Actor", "handle": "@star_actor_official", "avatar": "A", "hue": 45 }
+      { "name": "宇宙皇帝カネモチ", "handle": "@space_emperor_rich", "avatar": "宇", "hue": 0 },
+      { "name": "伝説の司会者", "handle": "@legend_host_one", "avatar": "伝", "hue": 200 },
+      { "name": "謎のスーパースター", "handle": "@mystery_superstar", "avatar": "謎", "hue": 45 }
     ],
     "otakus": [
       { "name": "限界オタクちゃん", "handle": "@genkai_otaku_chan", "avatar": "限", "hue": 280 },
@@ -516,5 +516,12 @@ const PRAISE_DATA = {
     "{text}わず",
     "無事{text}",
     "{text}できた"
+  ],
+  "newsStationNames": [
+    "KASU NEWS",
+    "WORLD WIRE",
+    "GLOBE 24",
+    "SKY FLASH",
+    "RAPID REPORT"
   ]
 };
