@@ -147,19 +147,25 @@ class ConversationManager {
 
     // Triggered by User Send
     receiveUpdates(pack) {
-        // 1. Pick responders (Seeded)
-        const rng = new Random(pack.seed);
+        console.log('RECEIVE_UPDATES_START', { packId: pack.id, seed: pack.seed });
+
+        // 1. Pick responders (Seeded) - Ensure seed is numeric
+        const seedNum = typeof pack.seed === 'number' ? pack.seed : parseInt(pack.seed) || Date.now();
+        const rng = new Random(seedNum);
         // Pick 3 responders usually
         const responders = rng.pickUnique(PRAISE_DATA.dmProfiles, 3);
+        console.log('RECEIVE_UPDATES_RESPONDERS', { count: responders.length, ids: responders.map(r => r.id) });
 
         // 2. Generate messages for them
         const templates = PRAISE_DATA.dmTalkTemplates;
 
         responders.forEach((profile, idx) => {
-            // Unique seed for each responder's message selection
-            const respRng = new Random(pack.seed + profile.id);
+            // Unique seed for each responder's message selection - use numeric hash
+            const respSeed = seedNum + (profile.id.charCodeAt(0) || 0) * 1000 + idx;
+            const respRng = new Random(respSeed);
             const template = respRng.pick(templates);
             const msgText = template.replace('{text}', pack.text);
+            console.log('RECEIVE_UPDATES_MSG', { profileId: profile.id, msgText: msgText.substring(0, 30) });
 
             this.addMessage(profile.id, {
                 sender: 'them',
@@ -168,6 +174,7 @@ class ConversationManager {
             });
         });
         this.save();
+        console.log('RECEIVE_UPDATES_DONE');
     }
 
     addMessage(profileId, msg) {
