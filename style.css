@@ -2916,19 +2916,28 @@ body {
 
 /* HUD */
 .earthcam-hud {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
+  position: relative;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
+  padding: 10px 12px;
   color: #eaf1ff;
-  font-size: 13px;
+  font-size: 12px;
   letter-spacing: .02em;
   z-index: 3;
-  pointer-events: none;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.earthcam-hud-scroll {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  overflow-x: auto;
+  white-space: nowrap;
+  flex: 1;
+  scrollbar-width: none;
+}
+
+.earthcam-hud-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 .earthcam-left {
@@ -2984,12 +2993,13 @@ body {
 
 /* Canvas area */
 .earthcam-stage {
-  padding: 54px 18px 56px 18px;
-  /* HUD分とticker分の余白 */
-  min-height: 400px;
+  padding: 10px 18px 56px 18px;
+  min-height: 380px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
 /* SVG look */
@@ -3149,15 +3159,11 @@ body {
 
 /* Enhancements: Gauge & Animations */
 .earthcam-gauge-wrap {
-  position: absolute;
-  top: 50px;
-  left: 0;
-  right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: 5;
-  pointer-events: none;
+  padding: 8px 0;
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .earthcam-gauge-label {

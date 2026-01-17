@@ -719,10 +719,8 @@ class PraiseEngine {
         // Join with separator
         const tickerText = tickerItems.join(" /// ");
 
-        // Pins
-        // 3-7 pins. Inside circle (cx=400, cy=400, r=260ish to be safe within 280 clip)
-        // x,y must be within distance R from center.
-        const pinCount = randInt(ed.pinCountRange[0], ed.pinCountRange[1]);
+        // Pins - always at least 6
+        const pinCount = Math.max(6, randInt(ed.pinCountRange[0], ed.pinCountRange[1]));
         const pins = [];
         for (let i = 0; i < pinCount; i++) {
             let valid = false;
@@ -1986,12 +1984,12 @@ class SkinRenderer {
         d.className = 'skin-earthcam skin-earthcam-entry';
         const ed = pack.earthCam || {};
 
-        // Generate Pins HTML
         // --- Recovery Layer (Glows under pins) ---
         const recoveryCircles = (ed.pins || []).map((p, idx) => `
             <g transform="translate(${p.x} ${p.y})">
-               <circle r="40" fill="url(#recoverGrad)" opacity="0.6" style="animation: pulseGlow 3s infinite ${idx * 0.5}s"/>
-               <circle r="20" fill="#4ff" opacity="0.3" filter="url(#recoverBlur)"/>
+               <circle r="50" fill="#0f6" opacity="0.5" filter="url(#recoverBlur)"/>
+               <circle r="30" fill="#0ff" opacity="0.4" filter="url(#recoverBlur)"/>
+               <circle r="15" fill="#4f8" opacity="0.6"/>
             </g>
         `).join('');
 
@@ -2091,11 +2089,11 @@ class SkinRenderer {
         <circle cx="430" cy="395" r="320" fill="url(#nightGrad)"/>
     </g>
 
-    <g class="recovery-layer" style="opacity: 0; animation: fadeInRec 1.2s forwards;">
-        \${recoveryCircles}
+    <g class="recovery-layer">
+        ${recoveryCircles}
     </g>
     <g class="pins">
-      \${pinsHtml}
+      ${pinsHtml}
     </g>
   </g>
   <rect x="0" y="0" width="800" height="800" fill="url(#scanGrad)" class="scanline"/>
@@ -2104,21 +2102,20 @@ class SkinRenderer {
         d.innerHTML = `
             <div class="earthcam-wrap">
               <div class="earthcam-hud">
-                <div class="earthcam-left">
+                <div class="earthcam-hud-scroll">
                   <div class="earthcam-live"><span class="earthcam-dot"></span>LIVE</div>
-                  <div class="earthcam-tag">EarthCam • GLOBAL FEELING</div>
-                  <div class="earthcam-tag" id="earthcam-region">REGION: ${ed.region}</div>
+                  <div class="earthcam-tag">EarthCam</div>
+                  <div class="earthcam-tag" id="earthcam-region">${ed.region}</div>
                   <div class="earthcam-tag" id="earthcam-utc">UTC --:--:--</div>
-                </div>
-                <div class="earthcam-right">
                   <div class="earthcam-tag" id="earthcam-viewers">${ed.viewers}</div>
                   <div class="earthcam-tag" id="earthcam-recover">${ed.recovery}</div>
                   <div class="earthcam-tag" id="earthcam-trust">${ed.trust}</div>
                 </div>
               </div>
 
+              ${gaugeHtml}
+
               <div class="earthcam-stage">
-                ${gaugeHtml}
                 ${svg}
               </div>
 
