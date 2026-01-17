@@ -23,6 +23,7 @@
         <div class="input-area">
             <input type="text" id="eventInput" placeholder="やったことを入力 (例: 皿洗い)" maxlength="40">
             <button id="sendBtn">送信</button>
+            <button class="history-btn" id="historyBtn" title="履歴">📜</button>
         </div>
     </div>
 
@@ -30,16 +31,26 @@
         <!-- Generated Content Goes Here -->
     </div>
 
-    <div id="historyArea" class="history-area">
-        <h3>履歴</h3>
-        <div id="historyList">
-            <!-- History Items -->
+    <!-- History Drawer -->
+    <div class="history-drawer" id="historyDrawer">
+        <div class="history-drawer-overlay" id="historyOverlay"></div>
+        <div class="history-drawer-panel">
+            <div class="history-drawer-header">
+                <h2>履歴</h2>
+                <button class="history-close-btn" id="historyCloseBtn">×</button>
+            </div>
+            <div class="daily-highlight-section" id="dailyHighlightSection">
+                <!-- Daily Highlight Card rendered by JS -->
+            </div>
+            <div class="history-event-list" id="historyEventList">
+                <!-- Event Items rendered by JS -->
+            </div>
         </div>
     </div>
 
     <!-- Data & Script -->
     <script src="data.js"></script>
-    <script src="script.js?v=pope2" defer></script>
+    <script src="script.js?v=unified1" defer></script>
 </body>
 
 </html>

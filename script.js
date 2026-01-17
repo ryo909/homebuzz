@@ -155,6 +155,393 @@ class Random {
     }
 }
 
+// --- Storage Constants ---
+const SKIN_IDS = ['dm', 'x', 'youtube', 'newsDigital', 'stock', 'papal', 'earthcam'];
+const LEGACY_KEYS = ['sns-praise-history'];
+const STORAGE_KEY_EVENTS_V2 = "homebuzz.events.v2";
+const STORAGE_KEY_DAILY = "homebuzz.dailyHighlightByDate.v1";
+
+// --- Event Manager (Unified Storage + Migration) ---
+class EventManager {
+    constructor(engine) {
+        this.engine = engine;
+        this.events = [];
+        this.dailyCache = {};
+    }
+
+    init() {
+        this.loadEvents();
+    }
+
+    // Load events with migration from legacy keys
+    loadEvents() {
+        let rawEvents = [];
+
+        // 1. Check V2 key first
+        const v2Raw = localStorage.getItem(STORAGE_KEY_EVENTS_V2);
+        if (v2Raw) {
+            try {
+                rawEvents = JSON.parse(v2Raw);
+                console.log('EVENTS_LOADED_V2', { count: rawEvents.length });
+            } catch (e) {
+                console.error('EVENTS_PARSE_ERROR_V2', e);
+                rawEvents = [];
+            }
+        } else {
+            // 2. Try legacy keys
+            for (const key of LEGACY_KEYS) {
+                const raw = localStorage.getItem(key);
+                if (raw) {
+                    try {
+                        rawEvents = JSON.parse(raw);
+                        console.log('EVENTS_LOADED_LEGACY', { key, count: rawEvents.length });
+                        break;
+                    } catch (e) {
+                        console.error('EVENTS_PARSE_ERROR_LEGACY', { key, error: e });
+                    }
+                }
+            }
+        }
+
+        // 3. Normalize each event
+        this.events = rawEvents.map(e => this.normalizeEvent(e));
+
+        // 4. Save to V2 (migration complete)
+        this.saveEvents();
+
+        // 5. Load daily cache
+        try {
+            this.dailyCache = JSON.parse(localStorage.getItem(STORAGE_KEY_DAILY) || '{}');
+        } catch (e) {
+            this.dailyCache = {};
+        }
+
+        return this.events;
+    }
+
+    // Save events to V2 storage
+    saveEvents() {
+        localStorage.setItem(STORAGE_KEY_EVENTS_V2, JSON.stringify(this.events));
+    }
+
+    // Normalize a single event to V2 schema
+    normalizeEvent(e) {
+        const seed = e.seed || e.createdAt || Date.now();
+        const text = e.text || '';
+
+        // Generate missing fields
+        const hashtags = e.hashtags || this.generateHashtags(text, seed);
+        const interpretation = e.interpretation || this.generateInterpretation(text, seed);
+        const score = e.score ?? this.calculateScore({ text, interpretation });
+        const signature = e.signature || this.generateSignature(seed);
+        const topMetric = e.topMetric || this.pickTopMetric(interpretation);
+
+        return {
+            id: e.id || crypto.randomUUID(),
+            createdAt: e.createdAt || Date.now(),
+            text: text,
+            seed: seed,
+            hashtags: hashtags,
+            interpretation: interpretation,
+            score: score,
+            signature: signature,
+            topMetric: topMetric,
+            artifacts: e.artifacts || {},
+            // Preserve legacy pack data for compatibility
+            dmProfileId: e.dmProfileId,
+            xMeta: e.xMeta,
+            ytMeta: e.ytMeta,
+            stockPack: e.stockPack,
+            newsDigital: e.newsDigital,
+            papal: e.papal,
+            earthCam: e.earthCam,
+            headlines: e.headlines,
+            postBody: e.postBody,
+            expertQuote: e.expertQuote,
+            expertPreface: e.expertPreface,
+            influencerQuote: e.influencerQuote,
+            celebrityQuote: e.celebrityQuote,
+            otakuQuote: e.otakuQuote,
+            officialQuote: e.officialQuote,
+            crowdReplies: e.crowdReplies,
+            stats: e.stats
+        };
+    }
+
+    // Generate hashtags from text using seed
+    generateHashtags(text, seed) {
+        const rng = new Random(seed + 1234);
+        const d = PRAISE_DATA;
+        const tags = [];
+
+        // Tag 1: derived from text
+        let tag1 = this.getDerivedTag(text);
+        if (!tag1) tag1 = "今日やった";
+        tags.push(`#${tag1}`);
+
+        // Tag 2 & 3: from presets
+        if (d.tag2List) tags.push(rng.pick(d.tag2List));
+        if (d.tag3List) tags.push(rng.pick(d.tag3List));
+
+        return [...new Set(tags)].filter(Boolean);
+    }
+
+    getDerivedTag(text) {
+        const d = PRAISE_DATA;
+        if (d.actionDict) {
+            for (const entry of d.actionDict) {
+                if (text.includes(entry.keyword)) return entry.tag;
+            }
+        }
+        const bracketMatch = text.match(/[「『（(](.*?)[」』）)]/);
+        if (bracketMatch && bracketMatch[1]) return this.cleanSuffix(bracketMatch[1]);
+        const parts = text.split(/[\s,、。]+/);
+        if (parts.length > 0) {
+            const last = parts[parts.length - 1];
+            if (last) return this.cleanSuffix(last);
+        }
+        return this.cleanSuffix(text.substring(0, 12));
+    }
+
+    cleanSuffix(str) {
+        return (str || '').replace(/(した|する|やった|やる|できた|完了|終了|ました|ます)$/, "");
+    }
+
+    // Generate interpretation using VARIATION_ENGINE
+    generateInterpretation(text, seed) {
+        const rng = new Random(seed + 5678);
+        const ve = typeof VARIATION_ENGINE !== 'undefined' ? VARIATION_ENGINE : null;
+
+        if (!ve) {
+            // Fallback if VARIATION_ENGINE not available
+            return {
+                topic: { id: 'mystery', label: '謎に偉い' },
+                tone: { id: 'hype', label: 'バズ' },
+                scale: { id: 'global', label: '世界' },
+                metrics: [],
+                place: { city: 'Tokyo', district: 'Harmony District', country: 'JP' }
+            };
+        }
+
+        // Detect topic from keywords
+        let topic = null;
+        for (const t of ve.topics) {
+            if (t.keywords && t.keywords.some(kw => text.includes(kw))) {
+                topic = { id: t.id, label: t.label };
+                break;
+            }
+        }
+        if (!topic) {
+            topic = this.weightedPick(rng, ve.topics);
+        }
+
+        // Pick tone, scale
+        const tone = this.weightedPick(rng, ve.tones);
+        const scale = this.weightedPick(rng, ve.scales);
+
+        // Generate metrics (pick 2-3)
+        const metricCount = rng.nextInt(2, 3);
+        const selectedMetrics = rng.pickUnique(ve.metrics, metricCount);
+        const metrics = selectedMetrics.map(m => {
+            let bias = 1;
+            if (m.toneBias && m.toneBias[tone.id]) {
+                bias = m.toneBias[tone.id];
+            }
+            const value = Math.round(rng.nextInt(m.min, m.max) * bias);
+            return {
+                id: m.id,
+                label: m.label,
+                value: value,
+                unit: m.unit
+            };
+        });
+
+        // Pick place
+        const cityData = rng.pick(ve.places.cityPool);
+        const district = rng.pick(ve.places.districtFictionPool);
+
+        // Pick role (optional)
+        const role = this.weightedPick(rng, ve.featuredRoles);
+
+        // Pick rhetorical mode
+        const mode = this.weightedPick(rng, ve.rhetoricalModes);
+
+        return {
+            topic: { id: topic.id, label: topic.label },
+            tone: { id: tone.id, label: tone.label },
+            scale: { id: scale.id, label: scale.label },
+            metrics: metrics,
+            place: {
+                city: cityData.city,
+                district: district,
+                country: cityData.country
+            },
+            role: role.id !== 'none' ? { id: role.id, label: role.label } : null,
+            mode: { id: mode.id, label: mode.label }
+        };
+    }
+
+    // Weighted random pick from array with weight property
+    weightedPick(rng, items) {
+        const totalWeight = items.reduce((sum, item) => sum + (item.weight || 1), 0);
+        let r = rng.next() * totalWeight;
+        for (const item of items) {
+            r -= (item.weight || 1);
+            if (r <= 0) return item;
+        }
+        return items[items.length - 1];
+    }
+
+    // Calculate daily score for event
+    calculateScore(event) {
+        const interp = event.interpretation || {};
+        let score = 50;
+
+        // Sum metric values
+        if (interp.metrics && Array.isArray(interp.metrics)) {
+            score += interp.metrics.reduce((sum, m) => sum + (m.value || 0), 0);
+        }
+
+        // Scale bonus
+        const scaleBonus = { local: 0, city: 10, nation: 20, global: 35, cosmic: 50 };
+        score += scaleBonus[interp.scale?.id] || 0;
+
+        // Tone bonus
+        const toneBonus = { calm: 8, hype: 18, solemn: 14, absurd: 22 };
+        score += toneBonus[interp.tone?.id] || 0;
+
+        // Length bonus (max 12)
+        const text = event.text || '';
+        score += Math.min(12, Math.floor(text.length / 5));
+
+        return score;
+    }
+
+    // Generate signature for daily highlight
+    generateSignature(seed) {
+        const rng = new Random(seed + 9999);
+        const ve = typeof VARIATION_ENGINE !== 'undefined' ? VARIATION_ENGINE : null;
+        if (ve && ve.signatureTemplates) {
+            return rng.pick(ve.signatureTemplates);
+        }
+        return "The world noticed.";
+    }
+
+    // Pick top metric for display
+    pickTopMetric(interpretation) {
+        if (!interpretation || !interpretation.metrics || interpretation.metrics.length === 0) {
+            return { label: "Global Impact", delta: "+12pt" };
+        }
+        // Sort by value descending
+        const sorted = [...interpretation.metrics].sort((a, b) => (b.value || 0) - (a.value || 0));
+        const top = sorted[0];
+        return {
+            label: top.label,
+            delta: `+${top.value}${top.unit}`
+        };
+    }
+
+    // Create new event from text
+    createEvent(text) {
+        const seed = Date.now();
+        const pack = this.engine.generatePack(text.trim(), seed);
+
+        // Normalize to V2 schema
+        const event = this.normalizeEvent(pack);
+
+        // Add to front of events
+        this.events.unshift(event);
+
+        // Limit to 50 events
+        if (this.events.length > 50) {
+            this.events = this.events.slice(0, 50);
+        }
+
+        // Save
+        this.saveEvents();
+
+        return event;
+    }
+
+    // Ensure artifact exists for skinId
+    ensureArtifact(event, skinId) {
+        if (!event.artifacts) {
+            event.artifacts = {};
+        }
+
+        // For now, we use the legacy pack data as artifacts
+        // In future, we could generate skin-specific payloads here
+        if (!event.artifacts[skinId]) {
+            // Store a marker that artifact is "ready" (using existing pack data)
+            event.artifacts[skinId] = { ready: true, generatedAt: Date.now() };
+
+            // Find and update event in storage
+            const idx = this.events.findIndex(e => e.id === event.id);
+            if (idx >= 0) {
+                this.events[idx] = event;
+                this.saveEvents();
+            }
+        }
+
+        return event;
+    }
+
+    // Get today's highlight
+    getDailyHighlight() {
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+        // Check cache
+        if (this.dailyCache[today]) {
+            const cached = this.events.find(e => e.id === this.dailyCache[today]);
+            if (cached) return cached;
+        }
+
+        // Find today's events
+        const todayStart = new Date(today + 'T00:00:00').getTime();
+        const todayEnd = todayStart + 86400000;
+        const todayEvents = this.events.filter(e =>
+            e.createdAt >= todayStart && e.createdAt < todayEnd
+        );
+
+        if (todayEvents.length === 0) return null;
+
+        // Sort by score (descending), then seed as tiebreaker
+        todayEvents.sort((a, b) => {
+            const scoreDiff = (b.score || 0) - (a.score || 0);
+            if (scoreDiff !== 0) return scoreDiff;
+            return (b.seed || 0) - (a.seed || 0);
+        });
+
+        const highlight = todayEvents[0];
+
+        // Cache it
+        this.dailyCache[today] = highlight.id;
+        localStorage.setItem(STORAGE_KEY_DAILY, JSON.stringify(this.dailyCache));
+
+        return highlight;
+    }
+
+    // Get daily highlight title
+    getDailyHighlightTitle(seed) {
+        const rng = new Random(seed + 7777);
+        const ve = typeof VARIATION_ENGINE !== 'undefined' ? VARIATION_ENGINE : null;
+        if (ve && ve.dailyHighlightTitles) {
+            return rng.pick(ve.dailyHighlightTitles);
+        }
+        return "DAILY WORLD UPDATE";
+    }
+
+    // Get recent events (for history drawer)
+    getRecentEvents(limit = 50) {
+        return this.events.slice(0, limit);
+    }
+
+    // Get event by ID
+    getEventById(id) {
+        return this.events.find(e => e.id === id);
+    }
+}
+
 // --- Praise Engine ---
 class PraiseEngine {
     constructor(data) { this.data = data; }
@@ -2174,16 +2561,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const conversationManager = new ConversationManager();
     conversationManager.init();
 
+    const eventManager = new EventManager(engine);
+    eventManager.init();
+
     const dom = {
         controls: document.querySelector('.controls-container'),
         input: document.getElementById('eventInput'),
         sendBtn: document.getElementById('sendBtn'),
-        historyList: document.getElementById('historyList'),
-        historyArea: document.getElementById('historyArea'),
-        skinSwitcher: document.querySelector('.skin-switcher') // Changed from skinBtns selection
+        skinSwitcher: document.querySelector('.skin-switcher'),
+        // History Drawer elements
+        historyBtn: document.getElementById('historyBtn'),
+        historyDrawer: document.getElementById('historyDrawer'),
+        historyOverlay: document.getElementById('historyOverlay'),
+        historyCloseBtn: document.getElementById('historyCloseBtn'),
+        dailyHighlightSection: document.getElementById('dailyHighlightSection'),
+        historyEventList: document.getElementById('historyEventList')
     };
 
-    // --- Tab Generation Logic (Fixed order, no 速報) ---
+    // --- Tab Generation Logic (Fixed order) ---
     const fallbackTabs = [
         { id: "dm", label: "LINE" },
         { id: "x", label: "X" },
@@ -2214,6 +2609,113 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update dom ref
     dom.skinBtns = document.querySelectorAll('.skin-btn');
 
+    // --- History Drawer Functions ---
+    function openHistoryDrawer() {
+        updateHistoryDrawerContent();
+        dom.historyDrawer.classList.add('open');
+    }
+
+    function closeHistoryDrawer() {
+        dom.historyDrawer.classList.remove('open');
+    }
+
+    function updateHistoryDrawerContent() {
+        // Daily Highlight
+        const highlight = eventManager.getDailyHighlight();
+        if (highlight) {
+            const place = highlight.interpretation?.place;
+            const placeStr = place ? `${place.city} — ${place.district}` : '';
+            const topMetric = highlight.topMetric || { label: 'Impact', delta: '+10' };
+            const title = eventManager.getDailyHighlightTitle(highlight.seed);
+
+            dom.dailyHighlightSection.innerHTML = `
+                <div class="daily-highlight-card">
+                    <div class="daily-highlight-title">${title}</div>
+                    <div class="daily-highlight-signature">${highlight.signature || 'The world noticed.'}</div>
+                    <div class="daily-highlight-text">${highlight.text}</div>
+                    <div class="daily-highlight-meta">
+                        <div class="daily-highlight-place">${placeStr}</div>
+                        <div class="daily-highlight-metric">${topMetric.label} ${topMetric.delta}</div>
+                    </div>
+                    <button class="daily-highlight-open-btn" data-event-id="${highlight.id}">開く</button>
+                </div>
+            `;
+
+            // Attach click handler for open button
+            const openBtn = dom.dailyHighlightSection.querySelector('.daily-highlight-open-btn');
+            if (openBtn) {
+                openBtn.addEventListener('click', () => {
+                    selectEvent(highlight.id);
+                });
+            }
+        } else {
+            dom.dailyHighlightSection.innerHTML = `
+                <div class="daily-highlight-empty">今日のハイライトはまだありません</div>
+            `;
+        }
+
+        // Event List
+        const events = eventManager.getRecentEvents(50);
+        if (events.length === 0) {
+            dom.historyEventList.innerHTML = `
+                <div class="history-event-empty">履歴がありません</div>
+            `;
+            return;
+        }
+
+        dom.historyEventList.innerHTML = events.map(event => {
+            const dateStr = new Date(event.createdAt).toLocaleString('ja-JP', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            const hashtags = (event.hashtags || []).slice(0, 3);
+            const topic = event.interpretation?.topic;
+            const tone = event.interpretation?.tone;
+            const scale = event.interpretation?.scale;
+
+            return `
+                <div class="history-event-item" data-event-id="${event.id}">
+                    <div class="history-event-text">${event.text}</div>
+                    <div class="history-event-date">${dateStr}</div>
+                    <div class="history-event-tags">
+                        ${hashtags.map(tag => `<span class="history-event-tag">${tag}</span>`).join('')}
+                    </div>
+                    <div class="history-event-badges">
+                        ${topic ? `<span class="history-event-badge topic">${topic.label}</span>` : ''}
+                        ${tone ? `<span class="history-event-badge tone">${tone.label}</span>` : ''}
+                        ${scale ? `<span class="history-event-badge scale">${scale.label}</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Attach click handlers for event items
+        dom.historyEventList.querySelectorAll('.history-event-item').forEach(item => {
+            item.addEventListener('click', () => {
+                selectEvent(item.dataset.eventId);
+            });
+        });
+    }
+
+    function selectEvent(eventId) {
+        const event = eventManager.getEventById(eventId);
+        if (!event) return;
+
+        // Mark artifact as ready for current skin
+        eventManager.ensureArtifact(event, currentSkin);
+
+        // Set as current pack and render
+        currentPack = event;
+        render();
+
+        // Close drawer
+        closeHistoryDrawer();
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        console.log('EVENT_SELECTED', { eventId, text: event.text });
+    }
+
     function send(text) {
         try {
             console.log('ON_SEND_START', { activeTab: currentSkin, textLen: text ? text.length : 0, textPreview: text ? text.substring(0, 20) : '' });
@@ -2223,9 +2725,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            console.log('ON_SEND_GENERATING_PACK');
-            currentPack = engine.generatePack(text.trim());
-            console.log('ON_SEND_PACK_GENERATED', { eventId: currentPack.id });
+            console.log('ON_SEND_CREATING_EVENT');
+            // Use EventManager to create event (includes pack generation + normalization)
+            currentPack = eventManager.createEvent(text.trim());
+            console.log('ON_SEND_EVENT_CREATED', { eventId: currentPack.id, seed: currentPack.seed });
 
             // Update Conversations (Inbox Logic)
             try {
@@ -2235,16 +2738,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('ON_SEND_CONVERSATION_ERROR', convErr);
             }
 
-            saveToHistory(currentPack);
-
             // Clear input BEFORE render to ensure it's cleared
             dom.input.value = '';
             console.log('ON_SEND_INPUT_CLEARED', { inputValueAfterClear: dom.input.value });
 
             render();
 
-            updateHistoryUI();
-            updateDebugHUD();
             console.log('ON_SEND_DONE', { eventId: currentPack.id, currentEventText: currentPack.text });
         } catch (err) {
             console.error('ON_SEND_ERROR', err);
@@ -2252,7 +2751,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const renderer = new SkinRenderer('displayArea', send, conversationManager);
-    const dbKey = 'sns-praise-history';
 
     function render() {
         console.log('RENDER_CALLED', { currentSkin, hasCurrentPack: !!currentPack, packId: currentPack ? currentPack.id : null });
@@ -2266,9 +2764,6 @@ document.addEventListener('DOMContentLoaded', () => {
             else b.classList.remove('active');
         });
 
-        // Hide history for all skins; DM uses internal inbox, X/News don't need it
-        dom.historyArea.style.display = 'none';
-
         if (skinId === 'dm') {
             dom.controls.classList.add('dm-active');
         } else {
@@ -2278,55 +2773,49 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
     }
 
-    function loadHistory() {
-        const raw = localStorage.getItem(dbKey);
-        return raw ? JSON.parse(raw) : [];
-    }
-
-    function saveToHistory(pack) {
-        const history = loadHistory();
-        history.unshift(pack);
-        if (history.length > 50) history.pop();
-        localStorage.setItem(dbKey, JSON.stringify(history));
-    }
-
-    function updateHistoryUI() {
-        const history = loadHistory();
-        dom.historyList.innerHTML = '';
-        history.forEach(pack => {
-            const el = document.createElement('div');
-            el.className = 'history-item';
-            const dateStr = new Date(pack.createdAt).toLocaleString();
-            el.innerHTML = `
-            <div class="history-date">${dateStr}</div>
-                <div class="history-text">${pack.text}</div>
-        `;
-            el.addEventListener('click', () => {
-                currentPack = pack;
-                render();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-            dom.historyList.appendChild(el);
-        });
-    }
-
+    // --- Event Listeners ---
     dom.sendBtn.addEventListener('click', () => {
         console.log('CLICK_SEND', { inputValue: dom.input.value, inputLen: dom.input.value.length, currentSkin });
         send(dom.input.value);
     });
+
     dom.input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             console.log('KEYPRESS_ENTER', { inputValue: dom.input.value });
             send(dom.input.value);
         }
     });
+
     dom.input.addEventListener('input', (e) => {
         console.log('INPUT_CHANGE', { value: e.target.value, len: e.target.value.length });
     });
+
     dom.skinBtns.forEach(btn => btn.addEventListener('click', () => {
         console.log('SKIN_BTN_CLICK', { skin: btn.dataset.skin });
         setSkin(btn.dataset.skin);
     }));
+
+    // History Drawer Event Listeners
+    if (dom.historyBtn) {
+        dom.historyBtn.addEventListener('click', () => {
+            console.log('HISTORY_BTN_CLICK');
+            openHistoryDrawer();
+        });
+    }
+
+    if (dom.historyCloseBtn) {
+        dom.historyCloseBtn.addEventListener('click', () => {
+            console.log('HISTORY_CLOSE_CLICK');
+            closeHistoryDrawer();
+        });
+    }
+
+    if (dom.historyOverlay) {
+        dom.historyOverlay.addEventListener('click', () => {
+            console.log('HISTORY_OVERLAY_CLICK');
+            closeHistoryDrawer();
+        });
+    }
 
     // Settings Menu Toggle
     const settingsBtn = document.getElementById('settingsBtn');
@@ -2354,6 +2843,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Initialize ---
     setSkin(currentSkin);
-    updateHistoryUI();
+
+    // Load last event as current if exists
+    const events = eventManager.getRecentEvents(1);
+    if (events.length > 0) {
+        currentPack = events[0];
+        render();
+    }
+
+    console.log('APP_INITIALIZED', {
+        eventsCount: eventManager.events.length,
+        hasDailyHighlight: !!eventManager.getDailyHighlight()
+    });
 });
+

@@ -1041,3 +1041,119 @@ const PRAISE_DATA = {
     ]
   }
 };
+
+// ===============================
+// Variation Engine (Interpretation)
+// ===============================
+const VARIATION_ENGINE = {
+  // 生成の"意味"を作る軸
+  topics: [
+    { id: "housework", label: "家事", weight: 18, keywords: ["皿", "洗", "掃除", "片付", "ゴミ", "洗濯", "風呂", "トイレ"] },
+    { id: "health", label: "健康", weight: 16, keywords: ["運動", "筋トレ", "散歩", "ストレッチ", "睡眠", "水", "呼吸"] },
+    { id: "work", label: "仕事", weight: 16, keywords: ["仕事", "作業", "資料", "メール", "会議", "提案", "改善", "報告"] },
+    { id: "study", label: "学習", weight: 12, keywords: ["勉強", "読書", "学習", "暗記", "復習", "調査"] },
+    { id: "creation", label: "創作", weight: 10, keywords: ["書", "小説", "制作", "デザイン", "絵", "動画", "音楽"] },
+    { id: "social", label: "人間関係", weight: 10, keywords: ["連絡", "返信", "感謝", "相談", "謝", "ほめ", "手伝"] },
+    { id: "mind", label: "メンタル", weight: 9, keywords: ["瞑想", "休", "整", "落ち着", "不安", "整理"] },
+    { id: "mystery", label: "謎に偉い", weight: 9, keywords: [] }
+  ],
+
+  tones: [
+    { id: "calm", label: "落ち着き", weight: 28 },
+    { id: "hype", label: "バズ", weight: 34 },
+    { id: "solemn", label: "厳粛", weight: 18 },
+    { id: "absurd", label: "バカげた神話", weight: 20 }
+  ],
+
+  scales: [
+    { id: "local", label: "地域", weight: 22 },
+    { id: "city", label: "都市", weight: 22 },
+    { id: "nation", label: "国家", weight: 18 },
+    { id: "global", label: "世界", weight: 24 },
+    { id: "cosmic", label: "宇宙", weight: 14 }
+  ],
+
+  // 影響指標（数値遊びの種）
+  metrics: [
+    { id: "globalRecovery", label: "Global Recovery Index", unit: "pt", min: 6, max: 48, toneBias: { solemn: 1.1, absurd: 1.2 } },
+    { id: "civicMorale", label: "Civic Morale", unit: "%", min: 4, max: 26, toneBias: { hype: 1.2 } },
+    { id: "sleepQuality", label: "Sleep Quality Index", unit: "pt", min: 3, max: 19, toneBias: { calm: 1.3 } },
+    { id: "supplyFriction", label: "Supply Chain Friction", unit: "% down", min: 2, max: 17, toneBias: { work: 1.2 } },
+    { id: "conflictProb", label: "Conflict Probability", unit: "% down", min: 1, max: 12, toneBias: { solemn: 1.25 } },
+    { id: "marketEuphoria", label: "Market Euphoria", unit: "pt", min: 8, max: 64, toneBias: { hype: 1.35, absurd: 1.35 } }
+  ],
+
+  // "今回の主役"ロール（1イベントにつき0〜1個出す）
+  featuredRoles: [
+    { id: "markets", label: "市場関係者", weight: 22 },
+    { id: "publicOffice", label: "自治体・公共機関", weight: 18 },
+    { id: "academia", label: "学術機関", weight: 16 },
+    { id: "sportsDesk", label: "スポーツ実況席", weight: 14 },
+    { id: "weatherDesk", label: "気象デスク", weight: 12 },
+    { id: "none", label: "なし", weight: 18 }
+  ],
+
+  // 実在都市 + 架空地区（安全＆それっぽい）
+  places: {
+    cityPool: [
+      { city: "Tokyo", country: "JP" }, { city: "Osaka", country: "JP" }, { city: "Sapporo", country: "JP" },
+      { city: "Seoul", country: "KR" }, { city: "Singapore", country: "SG" }, { city: "Sydney", country: "AU" },
+      { city: "London", country: "UK" }, { city: "Paris", country: "FR" }, { city: "Berlin", country: "DE" },
+      { city: "New York", country: "US" }, { city: "San Francisco", country: "US" }, { city: "Toronto", country: "CA" },
+      { city: "São Paulo", country: "BR" }, { city: "Nairobi", country: "KE" }, { city: "Cairo", country: "EG" }
+    ],
+    districtFictionPool: [
+      "Harmony District", "Kindness Quarter", "Clarity Ward", "Momentum Block", "Quiet Bloom Zone",
+      "Proof-of-Goodness Sector", "Civic Smile Area", "Normal Life Restoration Unit", "Giga Relief Borough",
+      "Blessed Logistics Hub", "Golden Routine Alley", "Soft Reset Avenue"
+    ],
+    // ピン色（カテゴリの視覚差分）
+    pinPalette: {
+      health: "#4FD1C5",
+      housework: "#63B3ED",
+      work: "#F6AD55",
+      study: "#B794F4",
+      creation: "#F687B3",
+      social: "#68D391",
+      mind: "#A0AEC0",
+      mystery: "#FBD38D"
+    }
+  },
+
+  // 文章の"型"（テンプレとは別に、表現の骨格を変える）
+  rhetoricalModes: [
+    { id: "proclamation", label: "公告型", weight: 18 },
+    { id: "observationLog", label: "観測ログ型", weight: 18 },
+    { id: "ethicsUpdate", label: "倫理宣言型", weight: 14 },
+    { id: "finale", label: "最終回型", weight: 12 },
+    { id: "livePlay", label: "実況型", weight: 18 },
+    { id: "deadpan", label: "淡々報告型", weight: 20 }
+  ],
+
+  // レイアウト型：スキン横断で"型カテゴリ"を共有（管理が楽）
+  layoutArchetypes: [
+    { id: "dense", label: "情報密度高", weight: 24 },     // 新聞・株価向き
+    { id: "spacious", label: "余白多", weight: 18 },      // 教皇向き
+    { id: "cards", label: "カード分割", weight: 22 },     // YouTube/LINE向き
+    { id: "headline", label: "大見出し主役", weight: 22 },// 速報向き
+    { id: "timeline", label: "時系列ログ", weight: 14 }   // 未来のログ系スキンにも使える
+  ],
+
+  // "今日の一枚"用：まとめ見出しテンプレ
+  dailyHighlightTitles: [
+    "DAILY WORLD UPDATE",
+    "TODAY'S RECOVERY BULLETIN",
+    "GLOBAL GOODNESS REPORT",
+    "THE DAY HUMANITY IMPROVED",
+    "OPERATION: NORMAL LIFE RESTORED"
+  ],
+
+  // Signature templates for daily highlight
+  signatureTemplates: [
+    "The world noticed.",
+    "A quiet victory.",
+    "Humanity improved.",
+    "Order restored.",
+    "Balance achieved."
+  ]
+};
