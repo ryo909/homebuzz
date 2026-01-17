@@ -223,13 +223,33 @@ class SkinRenderer {
                 break;
             case 'x':
                 console.log('RENDER_X', { hasPack: !!praisePack });
-                if (praisePack) this.renderX(praisePack);
+                if (praisePack) {
+                    this.renderX(praisePack);
+                } else {
+                    this.renderPlaceholder('X', '文字を入力して送信すると、投稿が生成されます');
+                }
                 break;
             case 'news':
                 console.log('RENDER_NEWS', { hasPack: !!praisePack });
-                if (praisePack) this.renderNews(praisePack);
+                if (praisePack) {
+                    this.renderNews(praisePack);
+                } else {
+                    this.renderPlaceholder('速報', '文字を入力して送信すると、速報が生成されます');
+                }
                 break;
         }
+    }
+
+    renderPlaceholder(title, message) {
+        const d = document.createElement('div');
+        d.className = 'skin-placeholder';
+        d.innerHTML = `
+            <div class="placeholder-content">
+                <div class="placeholder-title">${title}</div>
+                <div class="placeholder-message">${message}</div>
+            </div>
+        `;
+        this.container.appendChild(d);
     }
 
     /* --- DM RENDERER (Inbox Style) --- */
