@@ -352,6 +352,28 @@ const PRAISE_DATA = {
     },
     "news": {
       "blocks": ["headline", "views", "expertWithPreface", "influencerQuote", "celebrityQuote", "crowdReplies", "officialQuote"]
+    },
+    "stock": {
+      "layout": "chartPrimary",
+      "tabs": ["1D", "1W", "1M", "1Y", "ALL"],
+      "defaultTab": "1D",
+      "useSeedFixed": true,
+      "showWorldTickers": true,
+      "showMarketNews": true,
+      "showOrderBook": true
+    },
+    "newsDigital": {
+      "layout": "hybridWorldPaper",
+      "useSeedFixed": true,
+      "headerStyle": "blackBar",
+      "navItems": ["World", "Business", "Markets", "Tech", "Opinion"],
+      "showSidebar": true,
+      "showMarketsPanel": true,
+      "showWorldReaction": true,
+      "showRelated": true,
+      "showNewsletter": true,
+      "showTimeline": true,
+      "showVoices": true
     }
   },
   "dmProfiles": [
@@ -580,17 +602,7 @@ const PRAISE_DATA = {
     "commentLikes": { "min": 10, "max": 3000 },
     "replies": { "min": 1, "max": 50 }
   },
-  "skinRecipes": {
-    "stock": {
-      "layout": "chartPrimary",
-      "tabs": ["1D", "1W", "1M", "1Y", "ALL"],
-      "defaultTab": "1D",
-      "useSeedFixed": true,
-      "showWorldTickers": true,
-      "showMarketNews": true,
-      "showOrderBook": true
-    }
-  },
+
   "stock": {
     "tickerPrefix": "KS",
     "tickerPresetsByCategory": {
@@ -700,5 +712,83 @@ const PRAISE_DATA = {
       "health": ["睡眠", "寝", "水", "瞑想", "風邪", "休", "健康", "呼吸"],
       "social": ["連絡", "返信", "感謝", "手伝", "相談", "褒め", "家族", "友達"]
     }
+  }
+  ,
+  "newsDigital": {
+    "brandPresets": [
+      { "name": "KASU GLOBAL TIMES", "short": "KGT" },
+      { "name": "THE DAILY KASU", "short": "TDK" },
+      { "name": "INTERNATIONAL KASU PRESS", "short": "IKP" }
+    ],
+
+    "labelPresets": ["BREAKING", "LIVE", "速報", "緊急", "国際"],
+
+    "bylinePresets": ["編集部", "国際デスク", "経済デスク", "調査班", "速報チーム"],
+
+    "subheadTemplates": [
+      "{keyword}が引き金となり、国際市場は想定外の反応を示した。",
+      "専門家は「{keyword}は世界の空気を変えた」と指摘する。",
+      "複数の関係者によれば、{keyword}が連鎖反応を引き起こしたという。",
+      "市場参加者の間では、{keyword}を“実需”とみる声が広がっている。",
+      "{keyword}を巡り、各国で解釈が割れている。"
+    ],
+
+    "leadTemplates": [
+      "【要点】{text}が実行された直後、複数の指標に変化が見られた。背景には“心理的な安心感”の連鎖があるとみられる。",
+      "【要点】{text}が市場の期待を上回り、世界のムードが一時的に好転した。関係者は影響の広がりを注視している。",
+      "【要点】{text}が示したのは、地味な行動が大きな波及を起こし得るという事実だ。"
+    ],
+
+    "timelineTemplates": {
+      "step1": ["{text} 実行", "{keyword} 完了", "{keyword} が観測される"],
+      "step2": ["Markets react", "海外市場が反応", "指数が連れ高"],
+      "step3": ["Officials respond", "公式が声明", "専門家が整理"]
+    },
+
+    "timelineMinuteOffsets": [
+      { "a": 0, "b": 2, "c": 6 },
+      { "a": 0, "b": 3, "c": 9 },
+      { "a": 0, "b": 4, "c": 12 }
+    ],
+
+    "updatedAgoPresets": ["Updated 2m ago", "Updated 7m ago", "Updated 15m ago"],
+
+    "marketsPanelPresets": [
+      { "symbol": "KASU500", "name": "KASU500", "unit": "%" },
+      { "symbol": "WORLD_GDP", "name": "WORLD GDP (LIVE)", "unit": "%" },
+      { "symbol": "OIL_BRENT", "name": "OIL (Brent)", "unit": "%" }
+    ],
+
+    "marketsMoveRanges": {
+      "kasu500": { "min": -2.5, "max": 3.8, "decimals": 2 },
+      "worldGdp": { "min": 0.01, "max": 0.12, "decimals": 2 },
+      "oil": { "min": -6.0, "max": 6.0, "decimals": 2 }
+    },
+
+    "relatedHeadlineTemplates": [
+      "【解説】{keyword}は“世界線を整える実需”だったのか",
+      "【市場】{keyword}の余波、アジア時間にも波及",
+      "【国際】各国メディア、{keyword}を一斉に速報（※架空）",
+      "【経済】{keyword}ショック、投資家心理に効く理由",
+      "【コラム】結局、{keyword}がいちばん強い",
+      "【分析】{keyword}がもたらす“静かな安定”の正体",
+      "【オピニオン】{keyword}を笑う者が最後に泣く"
+    ],
+
+    "newsletterTemplates": {
+      "title": ["Newsletter", "Daily Brief", "Markets Brief"],
+      "desc": [
+        "重要な動きを、要点だけ毎朝お届けします（ダミー）。",
+        "世界の“いま”を簡潔に（ダミー）。"
+      ],
+      "cta": ["Subscribe", "Sign up", "Get updates"]
+    },
+
+    "voicesTitlePresets": ["Street voices", "Voices", "SNSの声", "街の声"],
+
+    "fictionNotice": [
+      "※この新聞ページはパロディです。実在の組織・人物・報道とは関係ありません。",
+      "This page is fictional / parody."
+    ]
   }
 };

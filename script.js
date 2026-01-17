@@ -3,6 +3,118 @@
  */
 
 // --- Utils ---
+const NewsUtils = {
+    clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); },
+    roundTo(n, decimals) { const p = Math.pow(10, decimals); return Math.round(n * p) / p; },
+    pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; },
+    randInt(rng, min, max) { return Math.floor(rng() * (max - min + 1)) + min; },
+    formatDateTimeJP(d) {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        return `${y}/${m}/${day} ${hh}:${mm}`;
+    },
+    formatTimeHM(d) {
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        return `${hh}:${mm}`;
+    },
+    addMinutes(date, mins) { return new Date(date.getTime() + mins * 60_000); },
+    extractKeyword(textRaw, maxLen = 12) {
+        const text = (textRaw || "").trim();
+        if (!text) return "今日やった";
+        const m1 = text.match(/（([^）]+)）/);
+        if (m1?.[1]) return this.truncate(this.cleanTail(m1[1]), maxLen);
+        const m2 = text.match(/\(([^)]+)\)/);
+        if (m2?.[1]) return this.truncate(this.cleanTail(m2[1]), maxLen);
+        const seps = ["、", "・", "／", "/", "|", "｜", "-", "—", "–", "：", ":", ">", "＞"];
+        let part = text;
+        for (const s of seps) {
+            const arr = part.split(s).map((x) => x.trim()).filter(Boolean);
+            if (arr.length >= 2) part = arr[arr.length - 1];
+        }
+        const particle = part.match(/^(.+?)(を|に|へ|で|と|が|は|の)\b/);
+        if (particle?.[1]) part = particle[1];
+        part = this.cleanTail(part);
+        if (!part) part = text;
+        return this.truncate(part, maxLen);
+    },
+    truncate(s, n) {
+        const t = (s || "").trim();
+        if (t.length <= n) return t;
+        return t.slice(0, n);
+    },
+    cleanTail(s) {
+        let t = (s || "").trim();
+        const endings = ["した", "する", "やった", "やる", "できた", "完了", "終了", "ました", "ます"];
+        for (const e of endings) {
+            if (t.endsWith(e)) {
+                t = t.slice(0, -e.length).trim();
+                break;
+            }
+        }
+        return t;
+    },
+    splitToParagraphs(postBodyRaw, paragraphCount = 4) {
+        const body = (postBodyRaw || "").trim();
+        if (!body) return [];
+        const hasNl = body.includes("\n");
+        let sentences = [];
+        if (hasNl) {
+            sentences = body.split("\n").map((x) => x.trim()).filter(Boolean);
+        } else {
+            sentences = body.split("。").map((x) => x.trim()).filter(Boolean).map((x) => x + "。");
+        }
+        if (sentences.length <= 1) return [body];
+        const k = this.clamp(paragraphCount, 3, 5);
+        const result = [];
+        const per = Math.ceil(sentences.length / k);
+        for (let i = 0; i < sentences.length; i += per) {
+            result.push(sentences.slice(i, i + per).join(hasNl ? "\n" : ""));
+        }
+        return result.filter(Boolean);
+    },
+    pickUnique(rng, arr, count) {
+        const pool = [...arr];
+        const out = [];
+        const c = Math.min(count, pool.length);
+        for (let i = 0; i < c; i++) {
+            const idx = Math.floor(rng() * pool.length);
+            out.push(pool[idx]);
+            pool.splice(idx, 1);
+        }
+        return out;
+    },
+    pickUpdatedAgo(rng, presets) {
+        if (presets && presets.length) return this.pick(rng, presets);
+        const mins = this.pick(rng, [2, 3, 5, 7, 11, 15]);
+        return `Updated ${mins}m ago`;
+    },
+    buildTimeline(createdAt, offsets, step1, step2, step3) {
+        const base = createdAt instanceof Date ? createdAt : new Date(createdAt);
+        const t1 = this.formatTimeHM(this.addMinutes(base, offsets.a));
+        const t2 = this.formatTimeHM(this.addMinutes(base, offsets.b));
+        const t3 = this.formatTimeHM(this.addMinutes(base, offsets.c));
+        return [
+            { time: t1, text: step1 },
+            { time: t2, text: step2 },
+            { time: t3, text: step3 }
+        ];
+    },
+    toShortQuote(s, maxLen = 54) {
+        const t = (s || "").replace(/\s+/g, " ").trim();
+        if (!t) return "";
+        if (t.length <= maxLen) return t;
+        return t.slice(0, maxLen - 1) + "…";
+    },
+    formatSignedPercent(n, decimals = 2) {
+        const v = this.roundTo(n, decimals);
+        const sign = v >= 0 ? "+" : "";
+        return `${sign}${v.toFixed(decimals)}%`;
+    }
+};
 class Random {
     constructor(seed) { this.seed = seed; }
     next() { this.seed = (this.seed * 9301 + 49297) % 233280; return this.seed / 233280; }
@@ -146,7 +258,7 @@ class PraiseEngine {
             stockPack = this.generateStockPack(text, rng, d);
         }
 
-        return {
+        const pack = {
             id: crypto.randomUUID(),
             createdAt: seed,
             text: text,
@@ -167,6 +279,13 @@ class PraiseEngine {
             stats: stats,
             hashtags: hashtags
         };
+
+        // 7. News Digital (Seed fixed)
+        if (d.newsDigital) {
+            pack.newsDigital = this.generateNewsDigitalPack(text, seed, d, pack);
+        }
+
+        return pack;
     }
 
     generateStockPack(text, rng, d) {
@@ -521,6 +640,14 @@ class SkinRenderer {
                     this.renderStock(praisePack);
                 } else {
                     this.renderPlaceholder('株価', '文字を入力して送信すると、株価チャートが生成されます');
+                }
+                break;
+            case 'newsDigital':
+                console.log('RENDER_NEWS_DIGITAL', { hasPack: !!praisePack });
+                if (praisePack && praisePack.newsDigital) {
+                    this.renderNewsDigital(praisePack);
+                } else {
+                    this.renderPlaceholder('新聞', '文字を入力して送信すると、記事が生成されます');
                 }
                 break;
         }
@@ -1294,6 +1421,194 @@ class SkinRenderer {
                 chip.classList.add('active');
             });
         });
+    }
+    renderNewsDigital(pack) {
+        const nd = pack.newsDigital;
+        const d = document.createElement('div');
+        d.className = 'skin-newsDigital';
+
+        // --- Header (Black Bar) ---
+        const header = document.createElement('div');
+        header.className = 'nd-header';
+        header.innerHTML = `
+            <div class="nd-header-inner">
+                <div class="nd-brand">${nd.brand.name}</div>
+                <div class="nd-nav">
+                    ${PRAISE_DATA.newsDigital.navItems.map(item => `<span class="nd-nav-item">${item}</span>`).join('')}
+                </div>
+                <div class="nd-header-right">
+                    <span class="nd-label-badge">${nd.label}</span>
+                    <span class="nd-updated">${nd.updatedAgo}</span>
+                    <span class="nd-search-icon">🔍</span>
+                </div>
+            </div>
+        `;
+        d.appendChild(header);
+
+        // --- Container ---
+        const container = document.createElement('div');
+        container.className = 'nd-container';
+
+        // --- Main Column ---
+        const main = document.createElement('div');
+        main.className = 'nd-main';
+
+        // 1. Label
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'nd-label-upper';
+        labelDiv.textContent = nd.label;
+        main.appendChild(labelDiv);
+
+        // 2. Headline
+        const headline = document.createElement('h1');
+        headline.className = 'nd-headline';
+        headline.textContent = pack.headlines;
+        main.appendChild(headline);
+
+        // 3. Subhead
+        const subhead = document.createElement('h2');
+        subhead.className = 'nd-subhead';
+        subhead.textContent = nd.subhead;
+        main.appendChild(subhead);
+
+        // 4. Meta (Byline + Date)
+        const meta = document.createElement('div');
+        meta.className = 'nd-article-meta';
+        const dateStr = NewsUtils.formatDateTimeJP(new Date(pack.createdAt));
+        meta.innerHTML = `<span class="nd-byline">${nd.byline}</span> <span class="nd-date">${dateStr}</span> <span class="nd-updated-sm">${nd.updatedAgo}</span>`;
+        main.appendChild(meta);
+
+        // 5. Lead
+        const lead = document.createElement('div');
+        lead.className = 'nd-lead';
+        lead.textContent = nd.lead;
+        main.appendChild(lead);
+
+        // 6. Body
+        const bodyDiv = document.createElement('div');
+        bodyDiv.className = 'nd-body';
+        const paragraphs = NewsUtils.splitToParagraphs(pack.postBody, 4);
+
+        // Insert quote in the middle
+        const quoteIdx = Math.floor(paragraphs.length / 2);
+        const pullQuoteText = pack.expertQuote || pack.officialQuote;
+
+        paragraphs.forEach((pText, i) => {
+            const p = document.createElement('p');
+            p.textContent = pText;
+            bodyDiv.appendChild(p);
+
+            if (i === quoteIdx && pullQuoteText) {
+                const q = document.createElement('div');
+                q.className = 'nd-pull-quote';
+                q.innerHTML = `<span class="nd-quote-mark">“</span>${NewsUtils.toShortQuote(pullQuoteText)}<span class="nd-quote-mark">”</span>`;
+                bodyDiv.appendChild(q);
+            }
+        });
+        main.appendChild(bodyDiv);
+
+        // 7. Expert Analysis box
+        const expertBox = document.createElement('div');
+        expertBox.className = 'nd-expert-box';
+        expertBox.innerHTML = `
+            <div class="nd-expert-title">Expert Analysis</div>
+            <div class="nd-expert-content">
+                <span class="nd-expert-preface">${pack.expertPreface}</span>
+                <span class="nd-expert-body">${pack.expertQuote}</span>
+            </div>
+        `;
+        main.appendChild(expertBox);
+
+        // 8. Timeline
+        const timeline = document.createElement('div');
+        timeline.className = 'nd-timeline';
+        timeline.innerHTML = '<div class="nd-sec-title">TIMELINE</div>';
+        nd.timeline.forEach(step => {
+            timeline.innerHTML += `
+                <div class="nd-tl-row">
+                    <span class="nd-tl-time">${step.time}</span>
+                    <span class="nd-tl-text">${step.text}</span>
+                </div>
+            `;
+        });
+        main.appendChild(timeline);
+
+        // 9. Voices
+        const voices = document.createElement('div');
+        voices.className = 'nd-voices';
+        voices.innerHTML = `<div class="nd-sec-title">${nd.voicesTitle}</div>`;
+        const voicesGrid = document.createElement('div');
+        voicesGrid.className = 'nd-voices-grid';
+        pack.crowdReplies.slice(0, 6).forEach(rep => {
+            voicesGrid.innerHTML += `<div class="nd-voice-card">${NewsUtils.toShortQuote(rep, 40)}</div>`;
+        });
+        voices.appendChild(voicesGrid);
+        main.appendChild(voices);
+
+        // 10. Notice
+        const notice = document.createElement('div');
+        notice.className = 'nd-notice';
+        nd.fictionNotice.forEach(line => {
+            notice.innerHTML += `<div>${line}</div>`;
+        });
+        main.appendChild(notice);
+
+        container.appendChild(main);
+
+        // --- Sidebar ---
+        const sidebar = document.createElement('div');
+        sidebar.className = 'nd-sidebar';
+
+        // Markets
+        const markets = document.createElement('div');
+        markets.className = 'nd-sidebar-section nd-markets';
+        markets.innerHTML = '<div class="nd-sidebar-title">MARKETS</div>';
+        nd.markets.forEach(m => {
+            const cls = m.value >= 0 ? 'pos' : 'neg';
+            markets.innerHTML += `
+                <div class="nd-market-row">
+                    <div class="nd-market-name">${m.name}</div>
+                    <div class="nd-market-val ${cls}">${m.formatted}</div>
+                </div>
+            `;
+        });
+        sidebar.appendChild(markets);
+
+        // World Reaction (Influencer/Celebrity)
+        const react = document.createElement('div');
+        react.className = 'nd-sidebar-section';
+        react.innerHTML = '<div class="nd-sidebar-title">WORLD REACTION</div>';
+        [pack.influencerQuote, pack.celebrityQuote].forEach(q => {
+            if (q) {
+                react.innerHTML += `<div class="nd-react-quote">"${NewsUtils.toShortQuote(q, 60)}"</div>`;
+            }
+        });
+        sidebar.appendChild(react);
+
+        // Related
+        const related = document.createElement('div');
+        related.className = 'nd-sidebar-section';
+        related.innerHTML = '<div class="nd-sidebar-title">RELATED STORIES</div>';
+        nd.related.forEach(r => {
+            related.innerHTML += `<div class="nd-related-link">${r}</div>`;
+        });
+        sidebar.appendChild(related);
+
+        // Newsletter
+        const newsL = document.createElement('div');
+        newsL.className = 'nd-sidebar-section nd-newsletter';
+        newsL.innerHTML = `
+            <div class="nd-nl-title">${nd.newsletter.title}</div>
+            <div class="nd-nl-desc">${nd.newsletter.desc}</div>
+            <div class="nd-nl-input">Your email</div>
+            <div class="nd-nl-btn">${nd.newsletter.cta}</div>
+        `;
+        sidebar.appendChild(newsL);
+
+        container.appendChild(sidebar);
+        d.appendChild(container);
+
+        this.container.appendChild(d);
     }
 }
 
