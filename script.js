@@ -115,6 +115,28 @@ const NewsUtils = {
         return `${sign}${v.toFixed(decimals)}%`;
     }
 };
+
+const PapalUtils = {
+    pad4(n) { return String(n).padStart(4, "0"); },
+    buildDocId(format, createdAt, nnnn) {
+        const d = new Date(createdAt);
+        const YYYY = d.getFullYear();
+        const MM = String(d.getMonth() + 1).padStart(2, "0");
+        const DD = String(d.getDate()).padStart(2, "0");
+        return format
+            .replace("{YYYY}", String(YYYY))
+            .replace("{MM}", MM)
+            .replace("{DD}", DD)
+            .replace("{NNNN}", this.pad4(nnnn));
+    },
+    toShortLine(s, maxLen = 70) {
+        const t = (s || "").replace(/\s+/g, " ").trim();
+        if (!t) return "";
+        if (t.length <= maxLen) return t;
+        return t.slice(0, maxLen - 1) + "…";
+    }
+};
+
 class Random {
     constructor(seed) { this.seed = seed; }
     next() { this.seed = (this.seed * 9301 + 49297) % 233280; return this.seed / 233280; }
@@ -283,6 +305,10 @@ class PraiseEngine {
         // 7. News Digital (Seed fixed)
         if (d.newsDigital) {
             pack.newsDigital = this.generateNewsDigitalPack(text, seed, d, pack);
+        }
+        // 8. Papal (Seed fixed)
+        if (d.papal) {
+            pack.papal = this.generatePapalPack(text, seed, d, pack);
         }
 
         return pack;
@@ -556,6 +582,93 @@ class PraiseEngine {
             fictionNotice: nd.fictionNotice
         };
     }
+    generatePapalPack(text, seed, d, praisePack) {
+        // Seeded RNG
+        const s = typeof seed === 'number' ? seed : Date.now();
+        let localSeed = s + 7777; // Different offset
+        const rng = () => {
+            localSeed = (localSeed * 9301 + 49297) % 233280;
+            return localSeed / 233280;
+        };
+        // Simple helper using local rng
+        const pick = (arr) => arr[Math.floor(rng() * arr.length)];
+        const pickUnique = (arr, count) => {
+            const pool = [...arr];
+            const out = [];
+            for (let i = 0; i < count; i++) {
+                if (pool.length === 0) break;
+                const idx = Math.floor(rng() * pool.length);
+                out.push(pool[idx]);
+                pool.splice(idx, 1);
+            }
+            return out;
+        };
+
+        const pd = d.papal;
+        const brand = pick(pd.brandPresets);
+        const crest = pick(pd.crestSvgPresets);
+        const confidentialityBadge = pick(pd.confidentialityBadges);
+        const dept = pick(pd.deptPresets);
+        const signatory = pick(pd.signatoryPresets);
+        const recipientName = "You";
+
+        const keyword = NewsUtils.extractKeyword(text);
+        const nnnn = Math.floor(rng() * 9000) + 1000;
+        const docId = PapalUtils.buildDocId(pd.docIdFormat, praisePack.createdAt, nnnn);
+        const updatedAgo = pick(pd.timeHints.updatedAgoPresets);
+
+        // Invitation
+        const invitationBody = pick(pd.invitationTemplates)
+            .replace(/{text}/g, text)
+            .replace(/{dept}/g, dept); // Note: Simple replacement, assuming plain text
+
+        // Agenda
+        const agendaTitle = pick(pd.agendaTitlePresets);
+        const agendaItemsRaw = pick(pd.agendaItemsTemplates);
+        const agendaItems = agendaItemsRaw.map(it => it.replace(/{keyword}/g, keyword));
+
+        // Counsel
+        const counselTitle = pick(pd.counselTitlePresets);
+        const expertShort = PapalUtils.toShortLine(praisePack.expertQuote, 70);
+        const templateCounsel = pick(pd.counselTemplates).replace(/{keyword}/g, keyword);
+        // Mix 50/50
+        const useExpert = rng() > 0.5;
+        const counsel = useExpert ? expertShort : templateCounsel;
+
+        // Communique
+        const communiqueTitle = pick(pd.communiqueTitlePresets);
+        const communiqueBody = pick(pd.communiqueTemplates).replace(/{counsel}/g, counsel);
+
+        // Seal
+        const sealText = pick(pd.sealTextPresets);
+
+        // World Reaction
+        const worldReactionTitle = pick(pd.worldReactionTitlePresets);
+        const worldReactionPreface = pick(pd.worldReactionPrefaceTemplates);
+
+        // Shorten quotes
+        const infQuote = PapalUtils.toShortLine(praisePack.influencerQuote, 60);
+        const celQuote = PapalUtils.toShortLine(praisePack.celebrityQuote, 60);
+        const reactions = [
+            { type: 'influencer', text: infQuote },
+            { type: 'celebrity', text: celQuote }
+        ];
+
+        // Crowd - pick 6 short ones
+        // praisePack.crowdReplies are already strings
+        const crowd = pickUnique(praisePack.crowdReplies, 6).map(r => PapalUtils.toShortLine(r, 40));
+
+        return {
+            brand, crest, confidentialityBadge, dept, signatory, recipientName,
+            docId, updatedAgo, keyword,
+            invitationBody, agendaTitle, agendaItems,
+            counselTitle, counsel,
+            communiqueTitle, communiqueBody,
+            sealText,
+            worldReactionTitle, worldReactionPreface, reactions, crowd,
+            fictionNotice: pd.fictionNotice
+        };
+    }
 }
 
 // --- Skin Renderer ---
@@ -714,6 +827,13 @@ class SkinRenderer {
                     this.renderNewsDigital(praisePack);
                 } else {
                     this.renderPlaceholder('新聞', '文字を入力して送信すると、記事が生成されます');
+                }
+                break;
+            case 'papal':
+                if (praisePack && praisePack.papal) {
+                    this.renderPapal(praisePack);
+                } else {
+                    this.renderPlaceholder('教皇庁', '文字を入力して送信すると、勅書が生成されます');
                 }
                 break;
         }
@@ -1676,6 +1796,99 @@ class SkinRenderer {
 
         this.container.appendChild(d);
     }
+    renderPapal(pack) {
+        const d = document.createElement('div');
+        d.className = 'skin-papal';
+        const pd = pack.papal || {};
+
+        // Helper to avoid nulls
+        const safe = (s) => s || '';
+
+        d.innerHTML = `
+            <div class="papal-sheet">
+                <!-- Header -->
+                <div class="papal-header">
+                    <div class="papal-brand">
+                        <div class="papal-crest">${safe(pd.crest.svg)}</div>
+                        <div class="papal-brand-text">
+                            <div class="papal-brand-line">${safe(pd.brand.headerLine)}</div>
+                            <div class="papal-brand-mono">${safe(pd.brand.monogram)}</div>
+                        </div>
+                    </div>
+                    <div class="papal-meta">
+                        <div class="papal-doc-id">${safe(pd.docId)}</div>
+                        <div class="papal-badge">${safe(pd.confidentialityBadge)}</div>
+                        <div class="papal-updated">${safe(pd.updatedAgo)}</div>
+                        <div class="papal-seal-stamp">${safe(pd.sealText)}</div>
+                    </div>
+                </div>
+
+                <!-- Invitation -->
+                <div class="papal-section papal-invitation">
+                    <div class="papal-to">To: ${safe(pd.recipientName)}</div>
+                    <div class="papal-body-text">${safe(pd.invitationBody).replace(/\n/g, '<br>')}</div>
+                    
+                    <div class="papal-sign-area">
+                        <div class="papal-sign-role">${safe(pd.dept)}</div>
+                        <div class="papal-sign-name">${safe(pd.signatory)}</div>
+                    </div>
+                </div>
+
+                <!-- Agenda -->
+                <div class="papal-section papal-agenda">
+                    <div class="papal-sec-title">${safe(pd.agendaTitle)}</div>
+                    <ol class="papal-agenda-list">
+                        ${(pd.agendaItems || []).map(item => `<li>${item}</li>`).join('')}
+                    </ol>
+                </div>
+
+                <!-- Counsel -->
+                <div class="papal-section papal-counsel">
+                    <div class="papal-sec-title">${safe(pd.counselTitle)}</div>
+                    <div class="papal-counsel-box">
+                        <span class="papal-quote-mark">“</span>
+                        ${safe(pd.counsel)}
+                        <span class="papal-quote-mark">”</span>
+                    </div>
+                </div>
+
+                <!-- Communique -->
+                <div class="papal-section papal-communique">
+                    <div class="papal-communique-box">
+                        <div class="papal-communique-title">${safe(pd.communiqueTitle)}</div>
+                        <div class="papal-communique-body">${safe(pd.communiqueBody).replace(/\n/g, '<br>')}</div>
+                        <div class="papal-adopted-stamp">ADOPTED</div>
+                    </div>
+                </div>
+
+                <!-- World Reaction -->
+                <div class="papal-section papal-reaction">
+                    <div class="papal-sec-title">${safe(pd.worldReactionTitle)}</div>
+                    <div class="papal-react-preface">${safe(pd.worldReactionPreface)}</div>
+                    
+                    <div class="papal-react-grid">
+                        ${(pd.reactions || []).map(r => `
+                            <div class="papal-react-card">
+                                <div class="papal-react-type">${r.type.toUpperCase()}</div>
+                                <div class="papal-react-text">"${r.text}"</div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="papal-crowd-list">
+                        ${(pd.crowd || []).map(c => `<div class="papal-crowd-item">• ${c}</div>`).join('')}
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="papal-footer">
+                    ${(pd.fictionNotice || []).map(n => `<div>${n}</div>`).join('')}
+                </div>
+            </div>
+        `;
+
+        this.container.appendChild(d);
+    }
 }
 
 // --- App Controller ---
@@ -1703,6 +1916,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: "x", label: "X" },
         { id: "news", label: "速報" },
         { id: "newsDigital", label: "新聞" },
+        { id: "papal", label: "教皇庁" },
         { id: "youtube", label: "YouTube" },
         { id: "stock", label: "株価" }
     ];
@@ -1719,6 +1933,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ensure newsDigital exists
     if (!tabs.some(t => t.id === "newsDigital")) {
         tabs.push({ id: "newsDigital", label: "新聞" });
+    }
+    // Ensure papal exists
+    if (!tabs.some(t => t.id === "papal")) {
+        tabs.push({ id: "papal", label: "教皇庁" });
     }
 
     // Render Tabs
