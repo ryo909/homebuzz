@@ -614,39 +614,58 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function send(text) {
-        console.log('SEND_START', { text, textLen: text ? text.length : 0, currentSkin });
+        console.log('ON_SEND_START', { activeTab: currentSkin, textLen: text ? text.length : 0, textPreview: text ? text.substring(0, 20) : '' });
 
         if (!text || !text.trim()) {
-            console.log('SEND_GUARD_RETURN', { reason: 'text empty or whitespace' });
+            console.log('ON_SEND_GUARD_RETURN', { reason: 'text empty or whitespace' });
             return;
         }
 
-        console.log('SEND_GENERATING_PACK');
+        console.log('ON_SEND_GENERATING_PACK');
         currentPack = engine.generatePack(text.trim());
-        console.log('SEND_PACK_GENERATED', { packId: currentPack.id, packText: currentPack.text });
+        console.log('ON_SEND_PACK_GENERATED', { eventId: currentPack.id });
 
         // Update Conversations (Inbox Logic)
         conversationManager.receiveUpdates(currentPack);
-        console.log('SEND_CONVERSATIONS_UPDATED');
+        console.log('ON_SEND_CONVERSATIONS_UPDATED');
 
         saveToHistory(currentPack);
-        console.log('SEND_HISTORY_SAVED');
+
+        // Clear input BEFORE render to ensure it's cleared
+        dom.input.value = '';
+        console.log('ON_SEND_INPUT_CLEARED', { inputValueAfterClear: dom.input.value });
 
         render();
-        console.log('SEND_RENDER_CALLED');
 
         updateHistoryUI();
-        dom.input.value = '';
-        console.log('SEND_DONE');
+        updateDebugHUD();
+        console.log('ON_SEND_DONE', { eventId: currentPack.id, currentEventText: currentPack.text });
     }
 
     const renderer = new SkinRenderer('displayArea', send, conversationManager);
     const dbKey = 'sns-praise-history';
 
     function render() {
-        // If DM, we don't necessarily need currentPack, just re-render list
-        // But for other skins we need currentPack
+        console.log('RENDER_CALLED', { currentSkin, hasCurrentPack: !!currentPack, packId: currentPack ? currentPack.id : null });
         renderer.render(currentPack, currentSkin);
+        updateDebugHUD();
+    }
+
+    // Debug HUD
+    function updateDebugHUD() {
+        let hud = document.getElementById('debugHUD');
+        if (!hud) {
+            hud = document.createElement('div');
+            hud.id = 'debugHUD';
+            hud.style.cssText = 'position:fixed;bottom:10px;right:10px;background:rgba(0,0,0,0.8);color:#0f0;padding:8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:4px;';
+            document.body.appendChild(hud);
+        }
+        hud.innerHTML = `
+            activeTab: ${currentSkin}<br>
+            inputLen: ${dom.input.value.length}<br>
+            packId: ${currentPack ? currentPack.id.substring(0, 8) : 'null'}<br>
+            packText: ${currentPack ? currentPack.text.substring(0, 15) : 'null'}
+        `;
     }
 
     function setSkin(skinId) {
