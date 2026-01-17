@@ -1915,89 +1915,81 @@ class SkinRenderer {
         const d = document.createElement('div');
         d.className = 'skin-papal';
         const pd = pack.papal || {};
-
-        // Helper to avoid nulls
         const safe = (s) => s || '';
 
+        // Build date for REF
+        const now = new Date();
+        const refDate = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+        const refNum = String(Math.abs(pack.id ? pack.id.charCodeAt(0) * 100 : 1234)).padStart(4, '0');
+
+        // Circular seal SVG
+        const sealSvg = `
+        <svg viewBox="0 0 100 100" class="papal-seal-svg">
+            <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="2"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="1"/>
+            <text x="50" y="30" text-anchor="middle" font-size="6" fill="currentColor">HOLY SEE</text>
+            <text x="50" y="55" text-anchor="middle" font-size="10" font-weight="bold" fill="currentColor">✠</text>
+            <text x="50" y="75" text-anchor="middle" font-size="5" fill="currentColor">SECRETARIAT</text>
+        </svg>`;
+
         d.innerHTML = `
-            <div class="papal-sheet">
-                <!-- Header -->
-                <div class="papal-header">
-                    <div class="papal-brand">
-                        <div class="papal-crest">${safe(pd.crest.svg)}</div>
-                        <div class="papal-brand-text">
-                            <div class="papal-brand-line">${safe(pd.brand.headerLine)}</div>
-                            <div class="papal-brand-mono">${safe(pd.brand.monogram)}</div>
+            <div class="papal-paper">
+                <!-- Header Band -->
+                <div class="papal-header-band">
+                    <div class="papal-header-left">
+                        <div class="papal-crest-icon">${safe(pd.crest?.svg) || '✠'}</div>
+                        <div class="papal-header-org">
+                            <span>VATICAN CITY</span>
+                            <span class="papal-header-sep">·</span>
+                            <span>SECRETARIAT</span>
                         </div>
                     </div>
-                    <div class="papal-meta">
-                        <div class="papal-doc-id">${safe(pd.docId)}</div>
-                        <div class="papal-badge">${safe(pd.confidentialityBadge)}</div>
-                        <div class="papal-updated">${safe(pd.updatedAgo)}</div>
-                        <div class="papal-seal-stamp">${safe(pd.sealText)}</div>
+                    <div class="papal-header-meta">
+                        <div class="papal-meta-row">REF: PAP-${refDate}-${refNum}</div>
+                        <div class="papal-meta-row">CLASS: Counsel Request (Fictional)</div>
+                        <div class="papal-meta-row">UPDATED: ${safe(pd.updatedAgo)}</div>
+                        <div class="papal-meta-row">STATUS: REGISTERED</div>
                     </div>
                 </div>
 
-                <!-- Invitation -->
-                <div class="papal-section papal-invitation">
-                    <div class="papal-to">To: ${safe(pd.recipientName)}</div>
-                    <div class="papal-body-text">${safe(pd.invitationBody).replace(/\n/g, '<br>')}</div>
+                <!-- Circular Seal (background watermark) -->
+                <div class="papal-seal-watermark">${sealSvg}</div>
+
+                <!-- Address & Body -->
+                <div class="papal-body-section">
+                    <div class="papal-address">To: You</div>
+                    <div class="papal-subject">Subject: Counsel regarding "${safe(pack.text)}"</div>
                     
-                    <div class="papal-sign-area">
-                        <div class="papal-sign-role">${safe(pd.dept)}</div>
-                        <div class="papal-sign-name">${safe(pd.signatory)}</div>
+                    <div class="papal-body-text">
+                        <p>Your counsel is respectfully requested on the matter stated above.</p>
+                        <p>${safe(pd.invitationBody).replace(/\n/g, '</p><p>')}</p>
+                        <p>You are hereby requested to provide counsel in accordance with established protocol.</p>
                     </div>
                 </div>
 
-                <!-- Agenda -->
-                <div class="papal-section papal-agenda">
-                    <div class="papal-sec-title">${safe(pd.agendaTitle)}</div>
-                    <ol class="papal-agenda-list">
-                        ${(pd.agendaItems || []).map(item => `<li>${item}</li>`).join('')}
-                    </ol>
-                </div>
-
-                <!-- Counsel -->
-                <div class="papal-section papal-counsel">
-                    <div class="papal-sec-title">${safe(pd.counselTitle)}</div>
-                    <div class="papal-counsel-box">
-                        <span class="papal-quote-mark">“</span>
-                        ${safe(pd.counsel)}
-                        <span class="papal-quote-mark">”</span>
-                    </div>
-                </div>
-
-                <!-- Communique -->
-                <div class="papal-section papal-communique">
-                    <div class="papal-communique-box">
-                        <div class="papal-communique-title">${safe(pd.communiqueTitle)}</div>
-                        <div class="papal-communique-body">${safe(pd.communiqueBody).replace(/\n/g, '<br>')}</div>
+                <!-- Statement Under Seal (central box) -->
+                <div class="papal-statement-section">
+                    <div class="papal-statement-box">
+                        <div class="papal-statement-title">STATEMENT UNDER SEAL</div>
+                        <div class="papal-statement-body">
+                            <span class="papal-quote-lg">"</span>
+                            ${safe(pd.counsel)}
+                            <span class="papal-quote-lg">"</span>
+                        </div>
                         <div class="papal-adopted-stamp">ADOPTED</div>
                     </div>
                 </div>
 
-                <!-- World Reaction -->
-                <div class="papal-section papal-reaction">
-                    <div class="papal-sec-title">${safe(pd.worldReactionTitle)}</div>
-                    <div class="papal-react-preface">${safe(pd.worldReactionPreface)}</div>
-                    
-                    <div class="papal-react-grid">
-                        ${(pd.reactions || []).map(r => `
-                            <div class="papal-react-card">
-                                <div class="papal-react-type">${r.type.toUpperCase()}</div>
-                                <div class="papal-react-text">"${r.text}"</div>
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <div class="papal-crowd-list">
-                        ${(pd.crowd || []).map(c => `<div class="papal-crowd-item">• ${c}</div>`).join('')}
-                    </div>
+                <!-- Signature -->
+                <div class="papal-signature-section">
+                    <div class="papal-sig-line"></div>
+                    <div class="papal-sig-role">Office of Ceremonial Coordination</div>
+                    <div class="papal-sig-name">Acting Secretary (Fictional)</div>
                 </div>
 
                 <!-- Footer -->
-                <div class="papal-footer">
-                    ${(pd.fictionNotice || []).map(n => `<div>${n}</div>`).join('')}
+                <div class="papal-footer-bar">
+                    ${(pd.fictionNotice || ['This document is entirely fictional.']).map(n => `<span>${n}</span>`).join(' · ')}
                 </div>
             </div>
         `;
