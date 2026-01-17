@@ -951,6 +951,12 @@ const PRAISE_DATA = {
     ],
     "recoveryRange": [18, 79],
     "pinCountRange": [3, 7],
-    "verifiedRange": [996, 999]
+    "verifiedRange": [996, 999],
+    "pinLabelWords": [
+      "Birds", "Kindness", "Air", "Smiles", "Harmony",
+      "Green", "Hope", "Flow", "Calm", "Life", "Peace", "Love"
+    ],
+    "recoveryIndexRange": [48, 76],
+    "recoveryDeltaRange": [6, 18]
   }
 };

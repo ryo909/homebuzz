@@ -699,6 +699,11 @@ class PraiseEngine {
         const verVal = randInt(ed.verifiedRange[0], ed.verifiedRange[1]) / 10;
         const trust = `✅ Verified: ${verVal}%`;
 
+        // Recovery Index Gauge
+        const riBefore = randInt(ed.recoveryIndexRange ? ed.recoveryIndexRange[0] : 48, ed.recoveryIndexRange ? ed.recoveryIndexRange[1] : 76);
+        const riDelta = randInt(ed.recoveryDeltaRange ? ed.recoveryDeltaRange[0] : 6, ed.recoveryDeltaRange ? ed.recoveryDeltaRange[1] : 18);
+        const riAfter = Math.min(99, riBefore + riDelta);
+
         // Ticker
         // Mix user text into ticker? The request says "yellow ticker (scrolls 1 line) logs that 'world became better'"
         // "input text -> world became better" should be visualized.
@@ -734,12 +739,15 @@ class PraiseEngine {
                 // Label
                 const pct = randInt(5, 40);
                 const label = pick(ed.pinTemplates).replace(/{n}/g, pct);
-                pins.push({ x, y, label });
+                const words = ed.pinLabelWords || ["Hope", "Life"];
+                const shortLabel = `${pick(words)} +${pct}%`;
+                pins.push({ x, y, label, shortLabel, pct });
             }
         }
 
         return {
-            region, viewers, recovery, trust, tickerText, pins
+            region, viewers, recovery, trust, tickerText, pins,
+            recoveryIndex: { before: riBefore, delta: riDelta, after: riAfter }
         };
     }
 }
@@ -1975,17 +1983,45 @@ class SkinRenderer {
     }
     renderEarthCam(pack) {
         const d = document.createElement('div');
-        d.className = 'skin-earthcam';
+        d.className = 'skin-earthcam skin-earthcam-entry';
         const ed = pack.earthCam || {};
 
         // Generate Pins HTML
-        const pinsHtml = (ed.pins || []).map((p, idx) => `
-            <g class="pin" transform="translate(${p.x} ${p.y})">
-                <circle r="6" class="pin-core"/>
-                <circle r="16" class="pin-ring"/>
-                <circle r="24" class="pin-wave" style="animation-delay: -${idx * 0.4}s"/>
+        // --- Recovery Layer (Glows under pins) ---
+        const recoveryCircles = (ed.pins || []).map((p, idx) => `
+            <g transform="translate(${p.x} ${p.y})">
+               <circle r="40" fill="url(#recoverGrad)" opacity="0.6" style="animation: pulseGlow 3s infinite ${idx * 0.5}s"/>
+               <circle r="20" fill="#4ff" opacity="0.3" filter="url(#recoverBlur)"/>
             </g>
         `).join('');
+
+        // --- Pins & Labels ---
+        const pinsHtml = (ed.pins || []).map((p, idx) => {
+            const w = (p.shortLabel || "").length * 5 + 16;
+            return `
+            <g class="pin-group" transform="translate(${p.x} ${p.y})">
+                <circle r="5" class="pin-core"/>
+                <circle r="14" class="pin-ring"/>
+                <circle r="22" class="pin-wave" style="animation-delay: -${idx * 0.4}s"/>
+                <g class="pin-label" transform="translate(14 -14)" opacity="0.9">
+                    <rect x="0" y="-12" width="${w}" height="16" rx="4" fill="rgba(0,0,0,0.6)" stroke="rgba(255,255,255,0.3)" stroke-width="0.5"/>
+                    <text x="4" y="0" fill="#fff" font-size="9" font-family="sans-serif" font-weight="bold">${p.shortLabel || ""}</text>
+                </g>
+            </g>
+        `}).join('');
+
+        // --- Gauge ---
+        const ri = ed.recoveryIndex || { before: 50, delta: 10, after: 60 };
+        const gaugeHtml = `
+            <div class="earthcam-gauge-wrap">
+                <div class="earthcam-gauge-label">GLOBAL RECOVERY INDEX</div>
+                <div class="earthcam-gauge-track">
+                    <div class="earthcam-gauge-bar" style="width: ${ri.before}%"></div>
+                    <div class="earthcam-gauge-delta" style="left: ${ri.before}%; width: ${ri.delta}%"></div>
+                </div>
+                <div class="earthcam-gauge-val">${ri.before} → ${ri.after} (+${ri.delta})</div>
+            </div>
+        `;
 
         // SVG
         const svg = `
@@ -2002,9 +2038,16 @@ class SkinRenderer {
       <stop offset="55%" stop-color="rgba(0,0,0,0.25)"/>
       <stop offset="100%" stop-color="rgba(0,0,0,0.7)"/>
     </radialGradient>
+    <radialGradient id="recoverGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0ff" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#0ff" stop-opacity="0"/>
+    </radialGradient>
     <filter id="glow">
       <feGaussianBlur stdDeviation="7" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="recoverBlur">
+      <feGaussianBlur stdDeviation="4"/>
     </filter>
     <filter id="cloudNoise">
       <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" seed="7" result="noise"/>
@@ -2021,30 +2064,38 @@ class SkinRenderer {
   <circle cx="400" cy="400" r="295" class="atmo-ring" filter="url(#glow)"/>
   <circle cx="400" cy="400" r="280" class="sphere-outline"/>
   <g clip-path="url(#sphereClip)">
-    <rect x="120" y="120" width="560" height="560" fill="url(#oceanGrad)"/>
-    <g class="grid">
-      <line x1="120" y1="220" x2="680" y2="220"/>
-      <line x1="120" y1="310" x2="680" y2="310"/>
-      <line x1="120" y1="400" x2="680" y2="400"/>
-      <line x1="120" y1="490" x2="680" y2="490"/>
-      <line x1="120" y1="580" x2="680" y2="580"/>
-      <line x1="240" y1="120" x2="240" y2="680"/>
-      <line x1="320" y1="120" x2="320" y2="680"/>
-      <line x1="400" y1="120" x2="400" y2="680"/>
-      <line x1="480" y1="120" x2="480" y2="680"/>
-      <line x1="560" y1="120" x2="560" y2="680"/>
+    
+    <!-- Rotating Globe Group -->
+    <g class="globe-group">
+        <rect x="120" y="120" width="560" height="560" fill="url(#oceanGrad)"/>
+        <g class="grid">
+            <line x1="120" y1="220" x2="680" y2="220"/>
+            <line x1="120" y1="310" x2="680" y2="310"/>
+            <line x1="120" y1="400" x2="680" y2="400"/>
+            <line x1="120" y1="490" x2="680" y2="490"/>
+            <line x1="120" y1="580" x2="680" y2="580"/>
+            <line x1="240" y1="120" x2="240" y2="680"/>
+            <line x1="320" y1="120" x2="320" y2="680"/>
+            <line x1="400" y1="120" x2="400" y2="680"/>
+            <line x1="480" y1="120" x2="480" y2="680"/>
+            <line x1="560" y1="120" x2="560" y2="680"/>
+        </g>
+        <g class="land">
+            <path d="M245,365 C275,320 332,300 360,330 C382,360 360,412 320,425 C282,437 238,412 245,365 Z"/>
+            <path d="M470,292 C520,282 568,320 555,365 C540,415 478,440 448,398 C425,365 435,303 470,292 Z"/>
+            <path d="M470,495 C520,465 565,502 553,542 C540,592 480,604 452,563 C430,535 440,510 470,495 Z"/>
+        </g>
+        <g class="cloud-layer">
+            <rect x="120" y="120" width="560" height="560" filter="url(#cloudNoise)" class="clouds"/>
+        </g>
+        <circle cx="430" cy="395" r="320" fill="url(#nightGrad)"/>
     </g>
-    <g class="land">
-      <path d="M245,365 C275,320 332,300 360,330 C382,360 360,412 320,425 C282,437 238,412 245,365 Z"/>
-      <path d="M470,292 C520,282 568,320 555,365 C540,415 478,440 448,398 C425,365 435,303 470,292 Z"/>
-      <path d="M470,495 C520,465 565,502 553,542 C540,592 480,604 452,563 C430,535 440,510 470,495 Z"/>
+
+    <g class="recovery-layer" style="opacity: 0; animation: fadeInRec 1.2s forwards;">
+        \${recoveryCircles}
     </g>
-    <g class="cloud-layer">
-      <rect x="120" y="120" width="560" height="560" filter="url(#cloudNoise)" class="clouds"/>
-    </g>
-    <circle cx="430" cy="395" r="320" fill="url(#nightGrad)"/>
     <g class="pins">
-      ${pinsHtml}
+      \${pinsHtml}
     </g>
   </g>
   <rect x="0" y="0" width="800" height="800" fill="url(#scanGrad)" class="scanline"/>
@@ -2067,6 +2118,7 @@ class SkinRenderer {
               </div>
 
               <div class="earthcam-stage">
+                ${gaugeHtml}
                 ${svg}
               </div>
 

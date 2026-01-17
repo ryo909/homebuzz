@@ -3146,3 +3146,132 @@ body {
     padding: 2px 6px;
   }
 }
+
+/* Enhancements: Gauge & Animations */
+.earthcam-gauge-wrap {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.earthcam-gauge-label {
+  font-size: 10px;
+  color: #78c3ff;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+.earthcam-gauge-track {
+  width: 240px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.earthcam-gauge-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: #3b82f6;
+}
+
+.earthcam-gauge-delta {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: #4ade80;
+  /* Recovery Green */
+  box-shadow: 0 0 8px #4ade80;
+  animation: gaugeFill 1.2s ease-out forwards;
+  transform-origin: left;
+}
+
+@keyframes gaugeFill {
+  0% {
+    transform: scaleX(0);
+  }
+
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.earthcam-gauge-val {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #eaf1ff;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Animations */
+.globe-group {
+  animation: rotateSlow 40s linear infinite;
+  transform-origin: 400px 400px;
+}
+
+@keyframes rotateSlow {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(3deg);
+  }
+
+  /* Very subtle rotation (it's a 2D map, full rotation breaks illusion) */
+}
+
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes fadeInRec {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Entry Animation (Before -> After) */
+.skin-earthcam {
+  transition: filter 0.6s ease-out;
+}
+
+.skin-earthcam-entry {
+  animation: entryFlash 0.8s ease-out forwards;
+}
+
+@keyframes entryFlash {
+  0% {
+    filter: grayscale(0.4) brightness(0.8);
+  }
+
+  100% {
+    filter: grayscale(0) brightness(1.1);
+  }
+}
