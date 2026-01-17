@@ -2364,31 +2364,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (clearDataBtn) {
         clearDataBtn.addEventListener('click', () => {
             if (confirm('ローカルに保存された履歴・通知を削除します。よろしいですか？')) {
-                // Clear all app-related localStorage
-                const keysToRemove = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key && (key.includes('sns-praise') || key.includes('line') || key.includes('history') || key.includes('inbox') || key.includes('thread') || key.includes('conversation'))) {
-                        keysToRemove.push(key);
-                    }
-                }
-                keysToRemove.forEach(k => localStorage.removeItem(k));
-
-                // Also clear specific known keys
-                localStorage.removeItem('sns-praise-history');
-                localStorage.removeItem('sns-praise-conversations');
-
-                // Reset state
-                currentPack = null;
-                dom.input.value = '';
-                conversationManager.init(); // Reinit
-
-                // Refresh UI
-                render();
-                updateHistoryUI();
-
-                alert('データを削除しました。');
-                settingsDropdown.classList.remove('open');
+                // Full clear and reload for clean state
+                localStorage.clear();
+                alert('データを削除しました。ページをリロードします。');
+                location.reload();
             }
         });
     }
