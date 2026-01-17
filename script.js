@@ -63,6 +63,83 @@ class PraiseEngine {
         const crowdTemplates = rng.pickUnique(d.crowdTemplates, 6);
         const crowdReplies = crowdTemplates.map(t => fmt(t));
 
+        // 5. YouTube Meta (if data available)
+        let ytMeta = null;
+        if (d.ytTitleTemplates && d.ytChannelPresets) {
+            const ytChannel = rng.pick(d.ytChannelPresets);
+            const ytRanges = d.ytNumberRanges;
+
+            // Generate comments for each role
+            const ytComments = [];
+
+            // Pinned (official)
+            const officialUser = rng.pick(d.ytCommentUserPresets.official);
+            ytComments.push({
+                id: 'pinned',
+                user: officialUser,
+                text: fmt(rng.pick(d.officialTemplates)),
+                likes: rng.nextInt(ytRanges.commentLikes.min, ytRanges.commentLikes.max) * 10,
+                time: rng.pick(d.ytMetaPresets.postedAt),
+                pinned: true,
+                edited: false,
+                replies: []
+            });
+
+            // Top comments (expert, influencer, celebrity, otaku)
+            const roles = ['expert', 'influencer', 'celebrity', 'otaku'];
+            const roleTemplates = {
+                expert: d.expertTemplates,
+                influencer: d.influencerTemplates,
+                celebrity: d.celebrityTemplates,
+                otaku: d.otakuTemplates
+            };
+
+            roles.forEach(role => {
+                const user = rng.pick(d.ytCommentUserPresets[role]);
+                ytComments.push({
+                    id: `top_${role}`,
+                    user: user,
+                    text: fmt(rng.pick(roleTemplates[role])),
+                    likes: rng.nextInt(ytRanges.commentLikes.min, ytRanges.commentLikes.max),
+                    time: rng.pick(d.ytMetaPresets.postedAt),
+                    pinned: false,
+                    edited: rng.next() > 0.7,
+                    replies: []
+                });
+            });
+
+            // Reply thread (crowd with 6 replies)
+            const crowdUsers = rng.pickUnique(d.ytCommentUserPresets.crowd, 6);
+            const replyThreadParent = {
+                id: 'thread_parent',
+                user: crowdUsers[0],
+                text: crowdReplies[0],
+                likes: rng.nextInt(ytRanges.commentLikes.min, ytRanges.commentLikes.max),
+                time: rng.pick(d.ytMetaPresets.postedAt),
+                pinned: false,
+                edited: false,
+                replies: crowdReplies.slice(1).map((reply, i) => ({
+                    id: `reply_${i}`,
+                    user: crowdUsers[i + 1] || crowdUsers[0],
+                    text: reply,
+                    likes: rng.nextInt(10, 500),
+                    time: rng.pick(d.ytMetaPresets.postedAt)
+                }))
+            };
+            ytComments.push(replyThreadParent);
+
+            ytMeta = {
+                title: fmt(rng.pick(d.ytTitleTemplates)),
+                channel: ytChannel,
+                videoLength: rng.pick(d.ytMetaPresets.videoLength),
+                postedAt: rng.pick(d.ytMetaPresets.postedAt),
+                views: rng.nextInt(ytRanges.views.min, ytRanges.views.max),
+                likes: rng.nextInt(ytRanges.likes.min, ytRanges.likes.max),
+                commentsCount: rng.nextInt(ytRanges.comments.min, ytRanges.comments.max),
+                comments: ytComments
+            };
+        }
+
         return {
             id: crypto.randomUUID(),
             createdAt: seed,
@@ -70,6 +147,7 @@ class PraiseEngine {
             seed: seed,
             dmProfileId: dmProfile.id,
             xMeta: xMeta, // Attach X Meta
+            ytMeta: ytMeta, // Attach YouTube Meta
             headlines: fmt(rng.pick(d.headlineTemplates)),
             postBody: fmt(rng.pick(d.postBodyTemplates)),
             expertQuote: fmt(rng.pick(d.expertTemplates)),
@@ -242,6 +320,14 @@ class SkinRenderer {
                     this.renderNews(praisePack);
                 } else {
                     this.renderPlaceholder('速報', '文字を入力して送信すると、速報が生成されます');
+                }
+                break;
+            case 'youtube':
+                console.log('RENDER_YOUTUBE', { hasPack: !!praisePack });
+                if (praisePack && praisePack.ytMeta) {
+                    this.renderYouTube(praisePack);
+                } else {
+                    this.renderPlaceholder('YouTube', '文字を入力して送信すると、動画コメントが生成されます');
                 }
                 break;
         }
@@ -619,6 +705,182 @@ class SkinRenderer {
             </div>
         `;
         this.container.appendChild(d);
+    }
+
+    /* --- YOUTUBE RENDERER --- */
+    renderYouTube(pack) {
+        const yt = pack.ytMeta;
+        const d = document.createElement('div');
+        d.className = 'skin-youtube';
+
+        // State for expandable replies
+        const expandedState = {};
+
+        // Build comments HTML
+        const buildCommentHtml = (comment, isReply = false) => {
+            const user = comment.user;
+            const verifiedBadge = user.verified ? '<span class="yt-verified">✓</span>' : '';
+            const pinnedBadge = comment.pinned ? '<div class="yt-pinned-badge">📌 固定済み</div>' : '';
+            const editedText = comment.edited ? '（編集済み）' : '';
+            const likesCount = comment.likes.toLocaleString();
+
+            // Truncate long text
+            const maxLen = 100;
+            const isTruncated = comment.text.length > maxLen;
+            const displayText = isTruncated ? comment.text.substring(0, maxLen) + '...' : comment.text;
+
+            return `
+                <div class="yt-comment ${isReply ? 'yt-reply' : ''}" data-id="${comment.id}">
+                    ${pinnedBadge}
+                    <div class="yt-comment-row">
+                        <div class="yt-comment-avatar" style="background-color:hsl(${user.hue}, 60%, 50%)">${user.avatar}</div>
+                        <div class="yt-comment-content">
+                            <div class="yt-comment-header">
+                                <span class="yt-comment-name">${user.name}</span>${verifiedBadge}
+                                <span class="yt-comment-time">${comment.time}${editedText}</span>
+                            </div>
+                            <div class="yt-comment-text ${isTruncated ? 'yt-truncated' : ''}">${displayText}</div>
+                            ${isTruncated ? `<button class="yt-read-more" data-full="${encodeURIComponent(comment.text)}">続きを読む</button>` : ''}
+                            <div class="yt-comment-actions">
+                                <button class="yt-like-btn" data-likes="${comment.likes}">👍 <span class="yt-like-count">${likesCount}</span></button>
+                                <button class="yt-dislike-btn">👎</button>
+                                <button class="yt-reply-btn">返信</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // Build reply thread
+        const buildReplyThread = (parentComment) => {
+            if (!parentComment.replies || parentComment.replies.length === 0) return '';
+            const count = parentComment.replies.length;
+            const repliesHtml = parentComment.replies.map(r => buildCommentHtml(r, true)).join('');
+            return `
+                <div class="yt-reply-thread" data-parent="${parentComment.id}">
+                    <button class="yt-replies-toggle" data-count="${count}">
+                        <span class="yt-toggle-icon">▶</span> 返信${count}件を表示
+                    </button>
+                    <div class="yt-replies-container" style="display: none;">
+                        ${repliesHtml}
+                    </div>
+                </div>
+            `;
+        };
+
+        // Build all comments
+        let commentsHtml = '';
+        yt.comments.forEach(comment => {
+            commentsHtml += buildCommentHtml(comment);
+            commentsHtml += buildReplyThread(comment);
+        });
+
+        d.innerHTML = `
+            <div class="yt-player-area">
+                <div class="yt-video-placeholder">
+                    <div class="yt-play-icon">▶</div>
+                </div>
+                <div class="yt-video-progress"></div>
+            </div>
+            <div class="yt-video-info">
+                <div class="yt-video-title">${yt.title}</div>
+                <div class="yt-video-meta">
+                    <span>${yt.views.toLocaleString()}回視聴</span>
+                    <span>•</span>
+                    <span>${yt.postedAt}</span>
+                </div>
+                <div class="yt-video-actions">
+                    <button class="yt-action-btn liked">👍 ${yt.likes.toLocaleString()}</button>
+                    <button class="yt-action-btn">👎</button>
+                    <button class="yt-action-btn">↗️ 共有</button>
+                    <button class="yt-action-btn">📥 保存</button>
+                </div>
+            </div>
+            <div class="yt-channel-row">
+                <div class="yt-channel-avatar" style="background-color:hsl(${yt.channel.hue}, 60%, 50%)">${yt.channel.avatar}</div>
+                <div class="yt-channel-info">
+                    <div class="yt-channel-name">${yt.channel.name}${yt.channel.verified ? ' <span class="yt-verified">✓</span>' : ''}</div>
+                    <div class="yt-channel-handle">${yt.channel.handle}</div>
+                </div>
+                <button class="yt-subscribe-btn">登録済み</button>
+            </div>
+            <div class="yt-comments-section">
+                <div class="yt-comments-header">
+                    <span class="yt-comments-count">コメント ${yt.commentsCount.toLocaleString()}件</span>
+                    <div class="yt-sort-chips">
+                        <button class="yt-sort-chip active">人気順</button>
+                        <button class="yt-sort-chip">新しい順</button>
+                    </div>
+                </div>
+                <div class="yt-guidelines-notice">
+                    <span>💬</span> コメントは敬意を持って行いましょう
+                </div>
+                <div class="yt-comments-list">
+                    ${commentsHtml}
+                </div>
+                <div class="yt-comment-input-bar">
+                    <div class="yt-input-avatar">あ</div>
+                    <input type="text" placeholder="コメントを追加..." disabled>
+                </div>
+            </div>
+        `;
+
+        this.container.appendChild(d);
+
+        // Add event listeners
+        this.attachYouTubeEvents(d);
+    }
+
+    attachYouTubeEvents(container) {
+        // Reply toggle
+        container.querySelectorAll('.yt-replies-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const thread = btn.closest('.yt-reply-thread');
+                const repliesContainer = thread.querySelector('.yt-replies-container');
+                const icon = btn.querySelector('.yt-toggle-icon');
+                const count = btn.dataset.count;
+
+                if (repliesContainer.style.display === 'none') {
+                    repliesContainer.style.display = 'block';
+                    icon.textContent = '▼';
+                    btn.innerHTML = `<span class="yt-toggle-icon">▼</span> 返信${count}件を非表示`;
+                } else {
+                    repliesContainer.style.display = 'none';
+                    icon.textContent = '▶';
+                    btn.innerHTML = `<span class="yt-toggle-icon">▶</span> 返信${count}件を表示`;
+                }
+            });
+        });
+
+        // Like button
+        container.querySelectorAll('.yt-like-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.classList.contains('liked')) return;
+                btn.classList.add('liked');
+                const countSpan = btn.querySelector('.yt-like-count');
+                const currentLikes = parseInt(btn.dataset.likes);
+                countSpan.textContent = (currentLikes + 1).toLocaleString();
+            });
+        });
+
+        // Read more
+        container.querySelectorAll('.yt-read-more').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const textEl = btn.previousElementSibling;
+                textEl.textContent = decodeURIComponent(btn.dataset.full);
+                textEl.classList.remove('yt-truncated');
+                btn.remove();
+            });
+        });
+
+        // Sort chips
+        container.querySelectorAll('.yt-sort-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                container.querySelectorAll('.yt-sort-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+            });
+        });
     }
 }
 

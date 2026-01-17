@@ -523,5 +523,61 @@ const PRAISE_DATA = {
     "GLOBE 24",
     "SKY FLASH",
     "RAPID REPORT"
-  ]
+  ],
+  "ytTitleTemplates": [
+    "【神回】{text}やってみた結果がヤバすぎるｗｗｗ",
+    "プロが教える{text}の正しいやり方【完全版】",
+    "{text}したら人生変わった話【実話】",
+    "【衝撃】{text}の真実を暴露します",
+    "今日の{text}記録【Vlog】",
+    "{text}ルーティン【1日密着】",
+    "【検証】{text}を100日続けた結果...",
+    "{text}のコツを5分で解説【初心者向け】"
+  ],
+  "ytChannelPresets": [
+    { "name": "カス太郎チャンネル", "handle": "@kasutaro_ch", "avatar": "カ", "hue": 0, "verified": true },
+    { "name": "しずくの日常", "handle": "@shizuku_daily", "avatar": "し", "hue": 200, "verified": false },
+    { "name": "ガチ検証ラボ", "handle": "@gachi_lab", "avatar": "ガ", "hue": 120, "verified": true },
+    { "name": "まったりライフ", "handle": "@mattari_life", "avatar": "ま", "hue": 280, "verified": false }
+  ],
+  "ytCommentUserPresets": {
+    "official": [
+      { "name": "公式アカウント", "handle": "@official_account", "avatar": "公", "hue": 45, "verified": true }
+    ],
+    "expert": [
+      { "name": "プロ解説者", "handle": "@pro_kaisetsu", "avatar": "プ", "hue": 180, "verified": true },
+      { "name": "業界の人", "handle": "@gyoukai_hito", "avatar": "業", "hue": 160, "verified": false }
+    ],
+    "influencer": [
+      { "name": "人気YouTuber", "handle": "@ninki_yt", "avatar": "人", "hue": 320, "verified": true },
+      { "name": "バズり屋さん", "handle": "@bazuri_san", "avatar": "バ", "hue": 30, "verified": false }
+    ],
+    "celebrity": [
+      { "name": "有名人A", "handle": "@yuumeijin_a", "avatar": "有", "hue": 50, "verified": true }
+    ],
+    "otaku": [
+      { "name": "限界オタク", "handle": "@genkai_otaku", "avatar": "限", "hue": 270, "verified": false },
+      { "name": "古参ファン", "handle": "@kosan_fan", "avatar": "古", "hue": 240, "verified": false }
+    ],
+    "crowd": [
+      { "name": "通りすがりの視聴者", "handle": "@torisugari", "avatar": "通", "hue": 100 },
+      { "name": "感動した人", "handle": "@kandou_hito", "avatar": "感", "hue": 350 },
+      { "name": "初見です", "handle": "@shoken_desu", "avatar": "初", "hue": 60 },
+      { "name": "毎日見てます", "handle": "@mainichi_miteru", "avatar": "毎", "hue": 210 },
+      { "name": "神動画発見", "handle": "@kami_hakken", "avatar": "神", "hue": 290 },
+      { "name": "癒されました", "handle": "@iyasaremashita", "avatar": "癒", "hue": 150 }
+    ]
+  },
+  "ytMetaPresets": {
+    "videoLength": ["3:42", "5:18", "7:24", "10:05", "12:33", "15:47", "8:21"],
+    "postedAt": ["1時間前", "3時間前", "6時間前", "12時間前", "1日前", "2日前", "3日前", "1週間前"],
+    "sortModes": ["人気順", "新しい順"]
+  },
+  "ytNumberRanges": {
+    "views": { "min": 50000, "max": 5000000 },
+    "likes": { "min": 1000, "max": 200000 },
+    "comments": { "min": 100, "max": 5000 },
+    "commentLikes": { "min": 10, "max": 3000 },
+    "replies": { "min": 1, "max": 50 }
+  }
 };

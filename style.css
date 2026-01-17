@@ -1437,3 +1437,396 @@ body {
     transform: translate3d(-100%, 0, 0);
   }
 }
+
+/* ============================================= */
+/* === SKIN: YOUTUBE (Comment Sheet) ========== */
+/* ============================================= */
+.skin-youtube {
+  background: #0f0f0f;
+  color: #fff;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+/* Player Area */
+.skin-youtube .yt-player-area {
+  background: #000;
+  aspect-ratio: 16/9;
+  max-height: 220px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.skin-youtube .yt-video-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f0f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.skin-youtube .yt-play-icon {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 0, 0, 0.9);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+}
+
+.skin-youtube .yt-video-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #333;
+}
+
+.skin-youtube .yt-video-progress::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 35%;
+  background: #ff0000;
+}
+
+/* Video Info */
+.skin-youtube .yt-video-info {
+  padding: 12px 16px;
+  border-bottom: 1px solid #272727;
+}
+
+.skin-youtube .yt-video-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.skin-youtube .yt-video-meta {
+  font-size: 13px;
+  color: #aaa;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.skin-youtube .yt-video-actions {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.skin-youtube .yt-action-btn {
+  background: #272727;
+  border: none;
+  border-radius: 18px;
+  padding: 8px 16px;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.skin-youtube .yt-action-btn.liked {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Channel Row */
+.skin-youtube .yt-channel-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 12px;
+  border-bottom: 1px solid #272727;
+}
+
+.skin-youtube .yt-channel-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: white;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.skin-youtube .yt-channel-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.skin-youtube .yt-channel-name {
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.skin-youtube .yt-channel-handle {
+  font-size: 12px;
+  color: #aaa;
+}
+
+.skin-youtube .yt-verified {
+  background: #aaa;
+  color: #0f0f0f;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 2px;
+}
+
+.skin-youtube .yt-subscribe-btn {
+  background: #272727;
+  border: none;
+  border-radius: 18px;
+  padding: 8px 16px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Comments Section */
+.skin-youtube .yt-comments-section {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.skin-youtube .yt-comments-header {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #272727;
+}
+
+.skin-youtube .yt-comments-count {
+  font-weight: 600;
+}
+
+.skin-youtube .yt-sort-chips {
+  display: flex;
+  gap: 8px;
+}
+
+.skin-youtube .yt-sort-chip {
+  background: transparent;
+  border: 1px solid #444;
+  border-radius: 16px;
+  padding: 4px 12px;
+  color: #aaa;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.skin-youtube .yt-sort-chip.active {
+  background: #fff;
+  color: #0f0f0f;
+  border-color: #fff;
+}
+
+.skin-youtube .yt-guidelines-notice {
+  padding: 10px 16px;
+  background: #1a1a1a;
+  font-size: 12px;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skin-youtube .yt-comments-list {
+  padding: 8px 0;
+}
+
+/* Comment Item */
+.skin-youtube .yt-comment {
+  padding: 12px 16px;
+}
+
+.skin-youtube .yt-comment.yt-reply {
+  padding-left: 56px;
+}
+
+.skin-youtube .yt-pinned-badge {
+  font-size: 11px;
+  color: #aaa;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.skin-youtube .yt-comment-row {
+  display: flex;
+  gap: 12px;
+}
+
+.skin-youtube .yt-comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: white;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.skin-youtube .yt-comment-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.skin-youtube .yt-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.skin-youtube .yt-comment-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.skin-youtube .yt-comment-time {
+  font-size: 12px;
+  color: #aaa;
+}
+
+.skin-youtube .yt-comment-text {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.skin-youtube .yt-comment-text.yt-truncated {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.skin-youtube .yt-read-more {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 8px;
+}
+
+.skin-youtube .yt-comment-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.skin-youtube .yt-like-btn,
+.skin-youtube .yt-dislike-btn,
+.skin-youtube .yt-reply-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.skin-youtube .yt-like-btn.liked {
+  color: #3ea6ff;
+}
+
+/* Reply Thread */
+.skin-youtube .yt-reply-thread {
+  padding-left: 44px;
+}
+
+.skin-youtube .yt-replies-toggle {
+  background: none;
+  border: none;
+  color: #3ea6ff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skin-youtube .yt-toggle-icon {
+  font-size: 10px;
+}
+
+.skin-youtube .yt-replies-container {
+  margin-top: 4px;
+}
+
+/* Comment Input Bar */
+.skin-youtube .yt-comment-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid #272727;
+  background: #0f0f0f;
+}
+
+.skin-youtube .yt-input-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.skin-youtube .yt-comment-input-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #444;
+  color: #fff;
+  font-size: 14px;
+  padding: 8px 0;
+  outline: none;
+}
+
+.skin-youtube .yt-comment-input-bar input::placeholder {
+  color: #666;
+}
