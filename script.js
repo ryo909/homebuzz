@@ -111,12 +111,103 @@ class PraiseEngine {
 }
 
 // --- Skin Renderer ---
+// --- Conversation Manager ---
+class ConversationManager {
+    constructor() {
+        this.storageKey = 'praise_conversations_v1';
+        this.conversations = {}; // key: profileId, value: { profileId, messages:[], unreadCount, lastAt }
+    }
+
+    init() {
+        this.load();
+        // Ensure all profiles have entries
+        PRAISE_DATA.dmProfiles.forEach(p => {
+            if (!this.conversations[p.id]) {
+                this.conversations[p.id] = {
+                    profileId: p.id,
+                    messages: [],
+                    unreadCount: 0,
+                    lastAt: 0
+                };
+            }
+        });
+        this.save();
+    }
+
+    load() {
+        const raw = localStorage.getItem(this.storageKey);
+        if (raw) {
+            this.conversations = JSON.parse(raw);
+        }
+    }
+
+    save() {
+        localStorage.setItem(this.storageKey, JSON.stringify(this.conversations));
+    }
+
+    // Triggered by User Send
+    receiveUpdates(pack) {
+        // 1. Pick responders (Seeded)
+        const rng = new Random(pack.seed);
+        // Pick 3 responders usually
+        const responders = rng.pickUnique(PRAISE_DATA.dmProfiles, 3);
+
+        // 2. Generate messages for them
+        const templates = PRAISE_DATA.dmTalkTemplates;
+
+        responders.forEach((profile, idx) => {
+            // Unique seed for each responder's message selection
+            const respRng = new Random(pack.seed + profile.id);
+            const template = respRng.pick(templates);
+            const msgText = template.replace('{text}', pack.text);
+
+            this.addMessage(profile.id, {
+                sender: 'them',
+                text: msgText,
+                at: Date.now() // Use current time for "Just now" feel, or pack.createdAt
+            });
+        });
+        this.save();
+    }
+
+    addMessage(profileId, msg) {
+        if (!this.conversations[profileId]) return;
+        const conv = this.conversations[profileId];
+        conv.messages.push(msg);
+        conv.unreadCount++;
+        conv.lastAt = msg.at;
+    }
+
+    markRead(profileId) {
+        if (this.conversations[profileId]) {
+            this.conversations[profileId].unreadCount = 0;
+            this.save();
+        }
+    }
+
+    getSortedList() {
+        return Object.values(this.conversations).sort((a, b) => b.lastAt - a.lastAt);
+    }
+
+    getConversation(profileId) {
+        return this.conversations[profileId];
+    }
+}
+
+// --- Skin Renderer ---
 class SkinRenderer {
-    constructor(displayId, sendCallback) {
+    constructor(displayId, sendCallback, conversationManager) {
         this.container = document.getElementById(displayId);
         this.currentSkin = null;
         this.currentPack = null;
         this.sendCallback = sendCallback;
+        this.conversationManager = conversationManager;
+
+        // DM View State
+        this.dmState = {
+            view: 'list', // 'list' | 'detail'
+            activeProfileId: null
+        };
     }
 
     render(praisePack, skinId) {
@@ -125,110 +216,144 @@ class SkinRenderer {
         this.container.innerHTML = '';
 
         switch (skinId) {
-            case 'dm': this.renderDM(praisePack); break;
+            case 'dm': this.renderDM(); break; // DM now renders based on Manager state, not just pack
             case 'x': this.renderX(praisePack); break;
             case 'news': this.renderNews(praisePack); break;
         }
     }
 
-    /* --- DM RENDERER --- */
-    renderDM(pack) {
-        const d = document.createElement('div');
-        d.className = 'skin-dm';
-        const profile = PRAISE_DATA.dmProfiles.find(p => p.id === pack.dmProfileId) || PRAISE_DATA.dmProfiles[0];
-        const badgeChar = (profile.badge === 'star') ? '★' : '';
-
-        // Fixed Header
-        d.innerHTML += `
-            <div class="dm-header">
-                <div class="dm-back-btn">←</div>
-                <div class="dm-avatar-header" style="background-color: hsl(${profile.avatar.hue}, 70%, 60%)">${profile.avatar.text}</div>
-                <div class="dm-header-info">
-                    <div class="dm-header-top">
-                        <span class="dm-header-name">${profile.displayName}</span>
-                        <span class="dm-header-badge">${badgeChar}</span>
-                    </div>
-                    <div class="dm-header-detail">${profile.handle} • ${profile.bio}</div>
-                </div>
-                <div class="dm-header-menu">⋯</div>
-            </div>`;
-
-        // Message List
-        const list = document.createElement('div');
-        list.className = 'dm-message-list';
-        d.appendChild(list);
-
-        const date = new Date(pack.createdAt);
-        const timeStr = `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
-        list.innerHTML += `<div class="dm-timestamp-center">今日 ${timeStr}</div>`;
-
-        this.createDMBubble(list, pack.text, 'user', null);
-        list.innerHTML += `<div class="dm-read-status">既読</div>`;
-
-        // Replies Logic
-        const replies = [pack.influencerQuote, pack.expertQuote, pack.otakuQuote];
-
-        let delay = 400;
-        const addReply = (idx) => {
-            if (idx >= replies.length) {
-                if (pack.officialQuote) {
-                    setTimeout(() => {
-                        list.innerHTML += `<div class="dm-system-message"><span>👑</span> ${pack.officialQuote}</div>`;
-                        list.scrollTop = list.scrollHeight;
-                    }, 600);
-                }
-                return;
-            }
-            // Typing
-            const row = document.createElement('div');
-            row.className = 'dm-message-row row-reply';
-            // First in block gets avatar logic? Simplified: always show for consistency in this render func
-            // But we can do the strict logic:
-            const showAvatar = (idx === 0);
-            const avatarHtml = `<div class="dm-avatar-icon ${showAvatar ? '' : 'hidden'}" style="background-color:hsl(${profile.avatar.hue},70%,60%)">${profile.avatar.text}</div>`;
-
-            row.innerHTML = `${avatarHtml}<div class="typing-indicator"><div class="dot"></div><div class="dot"></div></div>`;
-            list.appendChild(row);
-            list.scrollTop = list.scrollHeight;
-
-            setTimeout(() => {
-                list.removeChild(row);
-                this.createDMBubble(list, replies[idx], 'reply', profile, showAvatar);
-                list.scrollTop = list.scrollHeight;
-                addReply(idx + 1);
-            }, 800);
-        };
-        setTimeout(() => addReply(0), delay);
-
-        // Fixed Composer
-        const composer = document.createElement('div');
-        composer.className = 'dm-composer';
-        composer.innerHTML = `
-            <div class="dm-composer-plus">＋</div>
-            <input class="dm-composer-input" type="text" placeholder="Message" />
-            <button class="dm-composer-send">➤</button>
-        `;
-        // Events attached in create logic or here? InnerHTML breaks events.
-        // Re-attach events:
-        d.appendChild(composer);
-        this.container.appendChild(d);
-
-        const input = d.querySelector('.dm-composer-input');
-        const sendBtn = d.querySelector('.dm-composer-send');
-        const trigger = () => { if (input.value.trim()) { this.sendCallback(input.value); input.value = ''; } };
-        sendBtn.onclick = trigger;
-        input.onkeypress = (e) => { if (e.key === 'Enter') trigger(); };
+    /* --- DM RENDERER (Inbox Style) --- */
+    renderDM() {
+        if (this.dmState.view === 'list') {
+            this.renderDMList();
+        } else {
+            this.renderDMDetail();
+        }
     }
 
-    createDMBubble(container, text, type, profile, showAvatar = false) {
-        const row = document.createElement('div');
-        row.className = `dm-message-row row-${type}`;
-        if (type === 'reply') {
-            const cls = showAvatar ? '' : 'hidden';
-            row.innerHTML += `<div class="dm-avatar-icon ${cls}" style="background-color:hsl(${profile.avatar.hue},70%,60%)">${profile.avatar.text}</div>`;
-        }
-        row.innerHTML += `<div class="dm-bubble dm-${type}">${text}</div>`;
-        container.appendChild(row);
+    renderDMList() {
+        const d = document.createElement('div');
+        d.className = 'skin-dm-list'; // New styling class
+
+        // Header
+        const header = document.createElement('div');
+        header.className = 'dm-list-header';
+        header.innerHTML = `
+            <div class="dm-list-action">編集</div>
+            <div class="dm-list-title">トーク</div>
+            <div class="dm-list-action">✎</div>
+        `;
+        d.appendChild(header);
+
+        // List
+        const listContainer = document.createElement('div');
+        listContainer.className = 'dm-list-body';
+
+        const conversations = this.conversationManager.getSortedList();
+
+        conversations.forEach(conv => {
+            const p = PRAISE_DATA.dmProfiles.find(x => x.id === conv.profileId);
+            if (!p) return;
+
+            const lastMsg = conv.messages.length > 0 ? conv.messages[conv.messages.length - 1] : null;
+            const snippet = lastMsg ? lastMsg.text : 'まだメッセージはありません';
+            const unreadClass = conv.unreadCount > 0 ? 'unread' : 'hidden';
+
+            // Time formatting (Simple)
+            let timeDisp = '';
+            if (lastMsg) {
+                const dt = new Date(lastMsg.at);
+                timeDisp = `${dt.getHours()}:${dt.getMinutes().toString().padStart(2, '0')}`;
+            }
+
+            const item = document.createElement('div');
+            item.className = 'dm-list-item';
+            item.innerHTML = `
+                <div class="dm-list-avatar" style="background-color:hsl(${p.avatar.hue}, 70%, 60%)">${p.avatar.text}</div>
+                <div class="dm-list-content">
+                    <div class="dm-list-row-top">
+                        <span class="dm-list-name">${p.displayName}</span>
+                        <span class="dm-list-time">${timeDisp}</span>
+                    </div>
+                    <div class="dm-list-row-btm">
+                        <span class="dm-list-snippet">${snippet}</span>
+                        <div class="dm-list-badge ${unreadClass}">${conv.unreadCount}</div>
+                    </div>
+                </div>
+            `;
+            item.onclick = () => {
+                this.dmState.view = 'detail';
+                this.dmState.activeProfileId = p.id;
+                this.conversationManager.markRead(p.id);
+                this.renderDM(); // Re-render
+            };
+            listContainer.appendChild(item);
+        });
+
+        d.appendChild(listContainer);
+        this.container.appendChild(d);
+    }
+
+    renderDMDetail() {
+        const pId = this.dmState.activeProfileId;
+        const conv = this.conversationManager.getConversation(pId);
+        const p = PRAISE_DATA.dmProfiles.find(x => x.id === pId);
+
+        const d = document.createElement('div');
+        d.className = 'skin-dm-detail';
+
+        // Header
+        const header = document.createElement('div');
+        header.className = 'dm-detail-header';
+        header.innerHTML = `
+            <div class="dm-back-btn">←</div>
+            <div class="dm-detail-name">${p.displayName}</div>
+            <div class="dm-detail-menu">≡</div>
+        `;
+        d.querySelector('.dm-back-btn').onclick = () => {
+            this.dmState.view = 'list';
+            this.dmState.activeProfileId = null;
+            this.renderDM();
+        };
+
+        d.appendChild(header);
+
+        // Body
+        const body = document.createElement('div');
+        body.className = 'dm-detail-body';
+
+        // Render Messages
+        conv.messages.forEach(msg => {
+            const row = document.createElement('div');
+            row.className = `dm-msg-row ${msg.sender}`; // 'me' or 'them'
+
+            if (msg.sender === 'them') {
+                row.innerHTML = `
+                    <div class="dm-msg-avatar" style="background-color:hsl(${p.avatar.hue}, 70%, 60%)">${p.avatar.text}</div>
+                    <div class="dm-msg-bubble">${msg.text}</div>
+                    <div class="dm-msg-time"></div>
+                `;
+            } else {
+                row.innerHTML = `<div class="dm-msg-bubble">${msg.text}</div>`;
+            }
+            body.appendChild(row);
+        });
+
+        d.appendChild(body);
+
+        // Dummy Footer
+        const footer = document.createElement('div');
+        footer.className = 'dm-detail-footer';
+        footer.innerHTML = `
+            <div class="dm-footer-plus">＋</div>
+            <div class="dm-footer-input">メッセージを入力</div>
+            <div class="dm-footer-mic">🎤</div>
+        `;
+        d.appendChild(footer);
+
+        this.container.appendChild(d);
+        // Scroll to bottom
+        setTimeout(() => body.scrollTop = body.scrollHeight, 0);
     }
 
     /* --- X RENDERER --- */
@@ -445,6 +570,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSkin = 'dm';
     let currentPack = null;
 
+    // Init Managers
+    const conversationManager = new ConversationManager();
+    conversationManager.init();
+
     const dom = {
         controls: document.querySelector('.controls-container'),
         input: document.getElementById('eventInput'),
@@ -456,17 +585,22 @@ document.addEventListener('DOMContentLoaded', () => {
     function send(text) {
         if (!text) return;
         currentPack = engine.generatePack(text);
+
+        // Update Conversations (Inbox Logic)
+        conversationManager.receiveUpdates(currentPack);
+
         saveToHistory(currentPack);
         render();
         updateHistoryUI();
         dom.input.value = '';
     }
 
-    const renderer = new SkinRenderer('displayArea', send);
+    const renderer = new SkinRenderer('displayArea', send, conversationManager);
     const dbKey = 'sns-praise-history';
 
     function render() {
-        if (!currentPack) return;
+        // If DM, we don't necessarily need currentPack, just re-render list
+        // But for other skins we need currentPack
         renderer.render(currentPack, currentSkin);
     }
 
@@ -476,8 +610,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (b.dataset.skin === skinId) b.classList.add('active');
             else b.classList.remove('active');
         });
-        if (skinId === 'dm') dom.controls.classList.add('dm-active');
-        else dom.controls.classList.remove('dm-active');
+        if (skinId === 'dm') {
+            dom.controls.classList.add('dm-active');
+            dom.historyList.style.display = 'none'; // Hide history in DM mode
+        } else {
+            dom.controls.classList.remove('dm-active');
+            dom.historyList.style.display = 'block';
+        }
 
         if (currentPack) render();
     }
