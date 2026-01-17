@@ -211,14 +211,24 @@ class SkinRenderer {
     }
 
     render(praisePack, skinId) {
+        console.log('RENDER_CALLED', { skinId, hasPack: !!praisePack });
         this.currentPack = praisePack;
         this.currentSkin = skinId;
         this.container.innerHTML = '';
 
         switch (skinId) {
-            case 'dm': this.renderDM(); break; // DM now renders based on Manager state, not just pack
-            case 'x': this.renderX(praisePack); break;
-            case 'news': this.renderNews(praisePack); break;
+            case 'dm':
+                console.log('RENDER_DM');
+                this.renderDM();
+                break;
+            case 'x':
+                console.log('RENDER_X', { hasPack: !!praisePack });
+                if (praisePack) this.renderX(praisePack);
+                break;
+            case 'news':
+                console.log('RENDER_NEWS', { hasPack: !!praisePack });
+                if (praisePack) this.renderNews(praisePack);
+                break;
         }
     }
 
@@ -584,16 +594,30 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function send(text) {
-        if (!text) return;
-        currentPack = engine.generatePack(text);
+        console.log('SEND_START', { text, textLen: text ? text.length : 0, currentSkin });
+
+        if (!text || !text.trim()) {
+            console.log('SEND_GUARD_RETURN', { reason: 'text empty or whitespace' });
+            return;
+        }
+
+        console.log('SEND_GENERATING_PACK');
+        currentPack = engine.generatePack(text.trim());
+        console.log('SEND_PACK_GENERATED', { packId: currentPack.id, packText: currentPack.text });
 
         // Update Conversations (Inbox Logic)
         conversationManager.receiveUpdates(currentPack);
+        console.log('SEND_CONVERSATIONS_UPDATED');
 
         saveToHistory(currentPack);
+        console.log('SEND_HISTORY_SAVED');
+
         render();
+        console.log('SEND_RENDER_CALLED');
+
         updateHistoryUI();
         dom.input.value = '';
+        console.log('SEND_DONE');
     }
 
     const renderer = new SkinRenderer('displayArea', send, conversationManager);
@@ -644,7 +668,7 @@ document.addEventListener('DOMContentLoaded', () => {
             el.className = 'history-item';
             const dateStr = new Date(pack.createdAt).toLocaleString();
             el.innerHTML = `
-            < div class="history-date" > ${dateStr}</div >
+            <div class="history-date">${dateStr}</div>
                 <div class="history-text">${pack.text}</div>
         `;
             el.addEventListener('click', () => {
@@ -656,9 +680,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    dom.sendBtn.addEventListener('click', () => send(dom.input.value));
-    dom.input.addEventListener('keypress', (e) => { if (e.key === 'Enter') send(dom.input.value); });
-    dom.skinBtns.forEach(btn => btn.addEventListener('click', () => setSkin(btn.dataset.skin)));
+    dom.sendBtn.addEventListener('click', () => {
+        console.log('CLICK_SEND', { inputValue: dom.input.value, inputLen: dom.input.value.length, currentSkin });
+        send(dom.input.value);
+    });
+    dom.input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            console.log('KEYPRESS_ENTER', { inputValue: dom.input.value });
+            send(dom.input.value);
+        }
+    });
+    dom.input.addEventListener('input', (e) => {
+        console.log('INPUT_CHANGE', { value: e.target.value, len: e.target.value.length });
+    });
+    dom.skinBtns.forEach(btn => btn.addEventListener('click', () => {
+        console.log('SKIN_BTN_CLICK', { skin: btn.dataset.skin });
+        setSkin(btn.dataset.skin);
+    }));
 
     setSkin(currentSkin);
     updateHistoryUI();
