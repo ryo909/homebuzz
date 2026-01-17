@@ -792,5 +792,136 @@ const PRAISE_DATA = {
       "※この新聞ページはパロディです。実在の組織・人物・報道とは関係ありません。",
       "This page is fictional / parody."
     ]
+  },
+  "skinRecipes": {
+    "newsDigital": {
+      "layout": "hybridPaper",
+      "useSeedFixed": true
+    },
+    "papal": {
+      "layout": "formalLetterToAudience",
+      "useSeedFixed": true,
+      "recipientName": "You",
+      "sections": [
+        "header",
+        "invitation",
+        "agenda",
+        "counsel",
+        "communique",
+        "worldReaction",
+        "footer"
+      ],
+      "showCrest": true,
+      "showDocId": true,
+      "showConfidentiality": true,
+      "showSeal": true
+    }
+  },
+  "papal": {
+    "brandPresets": [
+      { "headerLine": "APOSTOLIC PALACE · VATICAN CITY", "monogram": "VC" },
+      { "headerLine": "APOSTOLIC OFFICE · VATICAN CITY", "monogram": "AP" },
+      { "headerLine": "VATICAN CITY · SECRETARIAT", "monogram": "VS" }
+    ],
+
+    "confidentialityBadges": [
+      "PRIVATE AUDIENCE",
+      "CONFIDENTIAL NOTE",
+      "URGENT COUNSEL REQUEST",
+      "RESERVED CIRCULATION"
+    ],
+
+    "deptPresets": [
+      "Office of Ceremonial Coordination",
+      "Secretariat of Discernment",
+      "Dicastery for Global Calm",
+      "Pontifical Council for Everyday Excellence",
+      "Vatican Committee for Quiet Miracles"
+    ],
+
+    "signatoryPresets": [
+      "Acting Secretary (Fictional)",
+      "Chief of Protocol (Fictional)",
+      "Special Envoy (Fictional)",
+      "Coordinator of Audience Affairs (Fictional)"
+    ],
+
+    "invitationTemplates": [
+      "To: You\n\nWe respectfully acknowledge the recent act of \"{text}\".\nIts implications have been observed beyond ordinary expectations.\n\nYou are hereby invited to a private audience to offer your counsel.\n\nIssued under seal by {dept}.",
+      "To: You\n\nThis note concerns the matter of \"{text}\".\nMultiple observers report an unusual clarity following this act.\n\nWe request your counsel in a private audience.\n\nBy order of {dept}.",
+      "To: You\n\nWe write regarding \"{text}\".\nWhile modest in form, the signal has been unmistakable.\n\nPlease attend a private audience and provide your recommendation.\n\n— {dept}",
+      "To: You\n\nThe act of \"{text}\" has been recorded.\nA measured response requires wisdom, not noise.\n\nYou are invited for counsel.\n\nIssued by {dept}."
+    ],
+
+    "agendaTitlePresets": ["AGENDA", "ORDER OF DISCERNMENT", "SESSION OUTLINE"],
+
+    "agendaItemsTemplates": [
+      ["Opening remarks", "Observation of “{keyword}”", "Ripple assessment", "Your counsel (one line)", "Official note"],
+      ["Invocation of calm", "Report: “{keyword}”", "Global implications", "Your recommendation", "Communiqué drafting"],
+      ["Attendance confirmation", "Case file: “{keyword}”", "Options review", "Your counsel", "Adoption"]
+    ],
+
+    "counselTitlePresets": ["YOUR COUNSEL", "YOUR RECOMMENDATION", "COUNSEL RECEIVED"],
+
+    "counselTemplates": [
+      "Begin with {keyword}. Keep it gentle, keep it inevitable.",
+      "Do {keyword} first. The rest will align.",
+      "Choose {keyword}. Calm is a force multiplier.",
+      "Let {keyword} be the standard. Not the exception.",
+      "Make {keyword} boringly consistent. That is the miracle."
+    ],
+
+    "communiqueTitlePresets": [
+      "OFFICIAL COMMUNIQUÉ",
+      "APOSTOLIC NOTE (FICTIONAL)",
+      "STATEMENT UNDER SEAL"
+    ],
+
+    "communiqueTemplates": [
+      "After due consideration, the following counsel is adopted:\n\n“{counsel}”\n\nThis guidance shall stand as the official note for this session.",
+      "By common assent, we adopt the counsel below:\n\n“{counsel}”\n\nLet this be entered into the record.",
+      "The session concludes with the adopted counsel:\n\n“{counsel}”\n\nIssued under seal."
+    ],
+
+    "worldReactionTitlePresets": ["WORLD REACTION", "GLOBAL RESPONSE", "OBSERVATIONS"],
+
+    "worldReactionPrefaceTemplates": [
+      "Selected reactions recorded for context:",
+      "A brief register of reactions:",
+      "Noted public responses (abridged):"
+    ],
+
+    "docIdFormat": "PAP-{YYYY}{MM}{DD}-{NNNN}",
+
+    "timeHints": {
+      "updatedAgoPresets": ["Updated 2m ago", "Updated 7m ago", "Updated 15m ago"]
+    },
+
+    "crestSvgPresets": [
+      {
+        "id": "crest_1",
+        "svg": "<svg viewBox='0 0 64 64' aria-hidden='true'><circle cx='32' cy='32' r='28' fill='none' stroke='currentColor' stroke-width='2'/><path d='M32 14 L40 28 L56 32 L40 36 L32 50 L24 36 L8 32 L24 28 Z' fill='none' stroke='currentColor' stroke-width='2'/></svg>"
+      },
+      {
+        "id": "crest_2",
+        "svg": "<svg viewBox='0 0 64 64' aria-hidden='true'><path d='M12 20 Q32 6 52 20 V38 Q32 56 12 38 Z' fill='none' stroke='currentColor' stroke-width='2'/><path d='M22 28 H42 M22 36 H42' stroke='currentColor' stroke-width='2'/></svg>"
+      },
+      {
+        "id": "crest_3",
+        "svg": "<svg viewBox='0 0 64 64' aria-hidden='true'><circle cx='32' cy='24' r='10' fill='none' stroke='currentColor' stroke-width='2'/><path d='M16 52 Q32 40 48 52' fill='none' stroke='currentColor' stroke-width='2'/><path d='M32 34 V52' stroke='currentColor' stroke-width='2'/></svg>"
+      }
+    ],
+
+    "sealTextPresets": [
+      "SEAL VERIFIED",
+      "ARCHIVE COPY",
+      "REGISTERED NOTE",
+      "UNDER SEAL"
+    ],
+
+    "fictionNotice": [
+      "※この文書はパロディです。実在の組織・人物・儀礼とは関係ありません。",
+      "This document is fictional / parody."
+    ]
   }
 };
