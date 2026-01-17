@@ -543,7 +543,7 @@ class SkinRenderer {
         const d = document.createElement('div');
         d.className = 'skin-news';
         d.innerHTML = `
-            < div class="news-bg" ></div >
+            <div class="news-bg"></div>
                 <div class="news-content">
                     <div class="news-live-badge">🔴 LIVE</div>
                     <div class="news-expert-box">
@@ -579,6 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
         input: document.getElementById('eventInput'),
         sendBtn: document.getElementById('sendBtn'),
         historyList: document.getElementById('historyList'),
+        historyArea: document.getElementById('historyArea'),
         skinBtns: document.querySelectorAll('.skin-btn')
     };
 
@@ -610,15 +611,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (b.dataset.skin === skinId) b.classList.add('active');
             else b.classList.remove('active');
         });
+
+        // Hide history for all skins; DM uses internal inbox, X/News don't need it
+        dom.historyArea.style.display = 'none';
+
         if (skinId === 'dm') {
             dom.controls.classList.add('dm-active');
-            dom.historyList.style.display = 'none'; // Hide history in DM mode
         } else {
             dom.controls.classList.remove('dm-active');
-            dom.historyList.style.display = 'block';
         }
 
-        if (currentPack) render();
+        render();
     }
 
     function loadHistory() {
