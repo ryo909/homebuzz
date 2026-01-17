@@ -2018,18 +2018,22 @@ class SkinRenderer {
             </g>
         `).join('');
 
-        // --- Pins & Labels (with position-based offset) ---
+        // --- Pins & Labels (primary pin shows full, others show city only) ---
         const pinsHtml = (ed.pins || []).map((p, idx) => {
-            const w = Math.min(160, (p.shortLabel || "").length * 5 + 16);
-            const offsetY = p.labelOffsetY || (p.y > 400 ? -20 : 10);
+            // Primary pin (idx=0) shows full label, others show city only
+            const isPrimary = idx === 0;
+            const displayText = isPrimary ? p.shortLabel : p.city;
+            const w = Math.min(180, (displayText || "").length * 7 + 20);
+            const offsetY = p.labelOffsetY || (p.y > 400 ? -24 : 14);
             return `
             <g class="pin-group" transform="translate(${p.x} ${p.y})">
-                <circle r="5" class="pin-core"/>
-                <circle r="14" class="pin-ring"/>
-                <circle r="22" class="pin-wave" style="animation-delay: -${idx * 0.4}s"/>
-                <g class="pin-label" transform="translate(14 ${offsetY})" opacity="0.95">
-                    <rect x="0" y="-12" width="${w}" height="16" rx="4" fill="rgba(0,0,0,0.6)" stroke="rgba(255,255,255,0.3)" stroke-width="0.5"/>
-                    <text x="4" y="0" fill="#fff" font-size="9" font-family="sans-serif" font-weight="bold">${p.shortLabel || ""}</text>
+                <circle r="6" class="pin-core"/>
+                <circle r="16" class="pin-ring"/>
+                <circle r="26" class="pin-wave" style="animation-delay: -${idx * 0.4}s"/>
+                <g class="pin-label" transform="translate(16 ${offsetY})">
+                    <rect x="0" y="-14" width="${w}" height="20" rx="10" fill="rgba(0,0,0,0.55)" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+                    <text x="8" y="2" fill="#fff" font-size="13" font-family="sans-serif" font-weight="600" 
+                          style="paint-order: stroke fill" stroke="rgba(0,0,0,0.6)" stroke-width="3">${displayText || ""}</text>
                 </g>
             </g>
         `}).join('');
@@ -2089,8 +2093,8 @@ class SkinRenderer {
   <circle cx="400" cy="400" r="280" class="sphere-outline"/>
   <g clip-path="url(#sphereClip)">
     
-    <!-- Rotating Globe Group -->
-    <g class="globe-group">
+    <!-- Rotating Globe Group with zoom -->
+    <g class="globe-group" transform="translate(400 400) scale(1.12) translate(-400 -400)">
         <rect x="120" y="120" width="560" height="560" fill="url(#oceanGrad)"/>
         <g class="grid">
             <line x1="120" y1="220" x2="680" y2="220"/>
@@ -2106,15 +2110,15 @@ class SkinRenderer {
         </g>
         <g class="land">
             <!-- North America (large, top-left) -->
-            <ellipse cx="260" cy="300" rx="70" ry="50" fill="rgba(90,255,180,0.18)" stroke="rgba(90,255,180,0.25)" stroke-width="1" transform="rotate(-10 260 300)"/>
+            <ellipse cx="260" cy="300" rx="70" ry="50" fill="rgba(80,200,170,0.28)" stroke="rgba(140,255,220,0.35)" stroke-width="1.5" stroke-linejoin="round" transform="rotate(-10 260 300)"/>
             <!-- Eurasia (wide, top-right) -->
-            <ellipse cx="520" cy="290" rx="100" ry="40" fill="rgba(90,255,180,0.18)" stroke="rgba(90,255,180,0.25)" stroke-width="1" transform="rotate(5 520 290)"/>
+            <ellipse cx="520" cy="290" rx="100" ry="40" fill="rgba(80,200,170,0.28)" stroke="rgba(140,255,220,0.35)" stroke-width="1.5" stroke-linejoin="round" transform="rotate(5 520 290)"/>
             <!-- Africa (vertical, center-bottom) -->
-            <ellipse cx="440" cy="440" rx="35" ry="60" fill="rgba(90,255,180,0.18)" stroke="rgba(90,255,180,0.25)" stroke-width="1" transform="rotate(10 440 440)"/>
+            <ellipse cx="440" cy="440" rx="35" ry="60" fill="rgba(80,200,170,0.28)" stroke="rgba(140,255,220,0.35)" stroke-width="1.5" stroke-linejoin="round" transform="rotate(10 440 440)"/>
             <!-- South America (small, bottom-left) -->
-            <ellipse cx="280" cy="520" rx="30" ry="50" fill="rgba(90,255,180,0.18)" stroke="rgba(90,255,180,0.25)" stroke-width="1" transform="rotate(-15 280 520)"/>
+            <ellipse cx="280" cy="520" rx="30" ry="50" fill="rgba(80,200,170,0.28)" stroke="rgba(140,255,220,0.35)" stroke-width="1.5" stroke-linejoin="round" transform="rotate(-15 280 520)"/>
             <!-- Australia (medium, bottom-right) -->
-            <ellipse cx="560" cy="530" rx="40" ry="30" fill="rgba(90,255,180,0.18)" stroke="rgba(90,255,180,0.25)" stroke-width="1" transform="rotate(8 560 530)"/>
+            <ellipse cx="560" cy="530" rx="40" ry="30" fill="rgba(80,200,170,0.28)" stroke="rgba(140,255,220,0.35)" stroke-width="1.5" stroke-linejoin="round" transform="rotate(8 560 530)"/>
         </g>
         <g class="cloud-layer">
             <rect x="120" y="120" width="560" height="560" filter="url(#cloudNoise)" class="clouds"/>
