@@ -669,6 +669,116 @@ body {
   color: var(--text-x);
 }
 
+/* --- Refined X Skin: User Section --- */
+.skin-x .x-user-section {
+  padding: 16px;
+  border-bottom: 1px solid #2f3336;
+}
+
+.skin-x .x-user-post-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skin-x .x-post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.skin-x .x-post-header .x-user-info {
+  flex: 1;
+  margin-left: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.skin-x .calm-body {
+  font-size: 20px;
+  /* Standard tweet size */
+  line-height: 1.5;
+  color: var(--text-x);
+  font-weight: 400;
+  white-space: pre-wrap;
+}
+
+.skin-x .x-post-meta {
+  font-size: 15px;
+  color: var(--text-x-muted);
+  margin-top: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #2f3336;
+}
+
+.skin-x .x-more-menu {
+  color: var(--text-x-muted);
+}
+
+/* --- Refined X Skin: External Section --- */
+.skin-x .x-external-section {
+  padding: 0 16px;
+}
+
+.skin-x .x-trend-context-bar {
+  padding: 12px 0;
+  font-size: 13px;
+  color: var(--text-x-muted);
+  font-weight: 700;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.skin-x .x-trend-rank {
+  color: var(--text-x-muted);
+  text-transform: uppercase;
+}
+
+.skin-x .x-trend-topic {
+  color: var(--text-x);
+  font-weight: 900;
+}
+
+.skin-x .x-buzz-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid #2f3336;
+  border-bottom: 1px solid #2f3336;
+}
+
+.skin-x .x-metric-views {
+  color: var(--text-x-muted);
+  font-size: 15px;
+}
+
+.skin-x .x-metric-row {
+  display: flex;
+  gap: 20px;
+  font-size: 15px;
+  color: var(--text-x-muted);
+}
+
+.skin-x .x-metric .x-val {
+  color: var(--text-x);
+  font-weight: 700;
+}
+
+.skin-x .x-official-note {
+  background: rgba(29, 155, 240, 0.1);
+  border-left: 4px solid var(--accent-x-blue);
+  padding: 12px;
+  border-radius: 4px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--text-x);
+}
+
 /* ============================================= */
 /* === SKIN: NEWS (Broadcast Screen) ========== */
 /* ============================================= */

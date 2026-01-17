@@ -467,5 +467,32 @@ const PRAISE_DATA = {
       { "name": "Official Awards", "handle": "@awards_official_jp", "avatar": "A", "hue": 50 },
       { "name": "Life Achievements", "handle": "@life_achieve_global", "avatar": "L", "hue": 200 }
     ]
-  }
+  },
+  "xFixedUser": {
+    "name": "User Name",
+    "handle": "@username",
+    "avatar": "U"
+  },
+  "xUserPostTemplates": [
+    "{text}完了",
+    "とりあえず{text}",
+    "{text}してみた",
+    "今日のタスク：{text}",
+    "{text}終わり",
+    "ふぅ、{text}",
+    "いま{text}した",
+    "{text}。",
+    "なんとなく{text}",
+    "メモ：{text}",
+    "{text}なう",
+    "そろそろ{text}",
+    "目標：{text}",
+    "{text}これにて終了",
+    "一旦{text}",
+    "今日も{text}",
+    "地味に{text}",
+    "{text}わず",
+    "無事{text}",
+    "{text}できた"
+  ]
 };

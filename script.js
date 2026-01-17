@@ -233,81 +233,155 @@ class SkinRenderer {
 
     /* --- X RENDERER --- */
     renderX(pack) {
+        this.container.innerHTML = '';
+        this.applyTheme('x');
+
         const d = document.createElement('div');
         d.className = 'skin-x';
-        const m = pack.xMeta || {};
 
-        // Define Action Icons (Text based for now)
-        const ico = { msg: '💬', rt: '🔁', like: '❤️', bkm: '🔖', shr: '↗️' };
+        // --- 1. User Post Section (Calm, Fixed User) ---
+        const userSection = document.createElement('div');
+        userSection.className = 'x-user-section';
 
-        // Main Card
-        d.innerHTML = `
-            <div class="x-main-card">
-                <!-- Header -->
-                <div class="x-header">
-                    <div class="x-avatar" style="background-color: #555;"></div>
-                    <div class="x-header-info">
-                        <div class="x-header-top">
-                            <div class="x-header-name-row">
-                                <span class="x-name">User Name</span>
-                                <span class="x-handle-row">@username</span>
-                            </div>
-                            <div class="x-menu">⋯</div>
-                        </div>
+        const fixedUser = PRAISE_DATA.xFixedUser;
+        const seed = pack.seed;
+
+        // Pick a calm template using seed
+        const templates = PRAISE_DATA.xUserPostTemplates;
+        // Seeded random for template
+        // Simple seeded random function
+        const seededRandom = function (s) {
+            let t = 0;
+            for (let i = 0; i < s.length; i++) t += s.charCodeAt(i);
+            const x = Math.sin(t) * 10000;
+            return x - Math.floor(x);
+        };
+        const rVal = seededRandom(seed + 'xBodyTemplate');
+        const template = templates[Math.floor(rVal * templates.length)];
+        const userBodyText = template.replace('{text}', pack.text);
+
+        // Generate consistent time
+        const rTime = seededRandom(seed + 'xTimeMain');
+        const timePresets = PRAISE_DATA.timePresets.main;
+        const timeStr = timePresets[Math.floor(rTime * timePresets.length)];
+
+        userSection.innerHTML = `
+            <div class="x-user-post-container">
+                <div class="x-post-header">
+                    <div class="x-avatar user-avatar">${fixedUser.avatar}</div>
+                    <div class="x-user-info">
+                        <span class="x-display-name">${fixedUser.name}</span>
+                        <span class="x-handle">${fixedUser.handle}</span>
                     </div>
+                    <div class="x-more-menu">···</div>
                 </div>
-
-                <!-- Body -->
-                <div class="x-body">
-                    <div class="x-headline">${pack.headlines}</div>
-                    <div class="x-post-text">${pack.postBody}</div>
-                    <div class="x-hashtags">${pack.hashtags.join(' ')}</div>
+                <!-- Calm Body -->
+                <div class="x-post-body calm-body">
+                    ${userBodyText}
                 </div>
-
-                <!-- Trend -->
-                <div class="x-trend-badge"><strong>Trending #${pack.stats.trendRank}</strong> ${pack.stats.trendTag}</div>
-
-                <!-- Views -->
-                <div class="x-views-row">
-                    <strong>${pack.stats.views.toLocaleString()}</strong> Views
-                </div>
-
-                <!-- Actions -->
-                <div class="x-actions-row">
-                    <div class="x-action">${ico.msg} <span style="font-size:12px">${Math.floor(pack.stats.reposts * 0.05).toLocaleString()}</span></div>
-                    <div class="x-action retweet">${ico.rt} <span style="font-size:12px">${pack.stats.reposts.toLocaleString()}</span></div>
-                    <div class="x-action like">${ico.like} <span style="font-size:12px">${pack.stats.likes.toLocaleString()}</span></div>
-                    <div class="x-action">${ico.bkm} <span style="font-size:12px">${pack.stats.bookmarks.toLocaleString()}</span></div>
-                    <div class="x-action">${ico.shr}</div>
-                </div>
-
-                <!-- Quote RTs (Cards) -->
-                <div class="x-quote-label">Quotes</div>
-                <div class="x-quote-section">
-                    ${this.buildXQuote(m.expert, pack.expertQuote, m.quoteTimes[0])}
-                    ${this.buildXQuote(m.influencer, pack.influencerQuote, m.quoteTimes[1])}
-                    ${this.buildXQuote(m.celebrity, pack.celebrityQuote, m.quoteTimes[2])}
-                    ${this.buildXQuote(m.otaku, pack.otakuQuote, m.quoteTimes[3])}
+                <div class="x-post-meta">
+                    <span class="x-time">${timeStr}</span> · <span class="x-date">2026/01/17</span>
                 </div>
             </div>
+        `;
+        d.appendChild(userSection);
 
-            <!-- Replies (Thread) -->
-            <div class="x-reply-section">
-                 ${this.buildXReply(pack.crowdReplies[0], 'Crowd User 1', m.postedAgo === '1h' ? '2h' : '1h', true)}
-                 ${this.buildXReply(pack.crowdReplies[1], 'Crowd User 2', '3h', true)}
-                 ${this.buildXReply(pack.crowdReplies[2], 'Crowd User 3', '3h', false)}
-                 ${this.buildXReply(pack.officialQuote, '👑 公式表彰', 'Just now', false)}
+        // --- 2. External Buzz Section (The Hype) ---
+        const externalSection = document.createElement('div');
+        externalSection.className = 'x-external-section';
+
+        // Use the original "headline" as the "Target of Buzz" or Trending Topic
+        const trendingHTML = `
+            <div class="x-trend-context-bar">
+                <span class="x-trend-rank">Trending</span>
+                <span class="x-trend-topic">${pack.headlines}</span>
             </div>
         `;
 
+        // Stats
+        const stats = pack.stats; // Use existing stats
+        const views = stats.views.toLocaleString();
+
+        const statsArea = `
+            <div class="x-buzz-metrics">
+                <div class="x-metric-views"><span class="x-val">${views}</span> <span class="x-lbl">Views</span></div>
+                <div class="x-metric-row">
+                    <div class="x-metric"><span class="x-val">${stats.reposts.toLocaleString()}</span> <span class="x-lbl">Reposts</span></div>
+                    <div class="x-metric"><span class="x-val">${stats.likes.toLocaleString()}</span> <span class="x-lbl">Likes</span></div>
+                    <div class="x-metric"><span class="x-val">${stats.bookmarks.toLocaleString()}</span> <span class="x-lbl">Bookmarks</span></div>
+                </div>
+            </div>
+        `;
+
+        // Actions
+        const actions = `
+            <div class="x-action-bar">
+                <div class="x-action-icon">💬</div>
+                <div class="x-action-icon">🔁</div>
+                <div class="x-action-icon liked">❤️</div>
+                <div class="x-action-icon">🔖</div>
+                <div class="x-action-icon">↗️</div>
+            </div>
+        `;
+
+        externalSection.innerHTML = trendingHTML + statsArea + actions;
+
+        // Thread Container
+        const thread = document.createElement('div');
+        thread.className = 'x-thread-container';
+
+        // 1. Experts (Serious)
+        const expert = PRAISE_DATA.xProfiles.experts[0]; // Simplification: assume consistent order or use seed in future
+        if (expert) {
+            thread.innerHTML += this.buildXQuote(expert, pack.expertQuote, '2h');
+        }
+
+        // 2. Influencers (Emoji)
+        const inf = PRAISE_DATA.xProfiles.influencers[0];
+        if (inf) {
+            thread.innerHTML += this.buildXQuote(inf, pack.influencerQuote, '1h');
+        }
+
+        // 3. Celebrities
+        const celeb = PRAISE_DATA.xProfiles.celebrities[0];
+        if (celeb) {
+            thread.innerHTML += this.buildXQuote(celeb, pack.celebrityQuote, '30m');
+        }
+
+        // 4. Otakus
+        const otaku = PRAISE_DATA.xProfiles.otakus[0];
+        if (otaku) {
+            thread.innerHTML += this.buildXQuote(otaku, pack.otakuQuote, '10m');
+        }
+
+        // 5. Replies
+        pack.crowdReplies.forEach((txt, i) => {
+            thread.innerHTML += this.buildXReply(txt, `User${i + 100}`, '5m', true);
+        });
+
+        // 6. Official
+        if (pack.officialQuote) {
+            const off = PRAISE_DATA.xProfiles.officials[0];
+            const officialHtml = `
+                <div class="x-official-note">
+                    <div class="x-official-icon">🎉</div>
+                    <div class="x-official-content">
+                        <b>${off ? off.name : 'Official'}</b> commended this post.
+                    </div>
+                </div>
+             `;
+            thread.innerHTML += officialHtml;
+        }
+
+        externalSection.appendChild(thread);
+        d.appendChild(externalSection);
+
         this.container.appendChild(d);
-        // Animate numbers? Optional, logic removed for simplicity in overhaul
     }
 
     buildXQuote(profile, text, time) {
         if (!profile) return '';
-        return `
-            <div class="x-quote-card">
+        return `<div class="x-quote-card">
                 <div class="x-quote-header">
                     <div class="x-quote-avatar" style="background-color:hsl(${profile.hue},70%,50%)">${profile.avatar}</div>
                     <div class="x-quote-info">
@@ -316,8 +390,7 @@ class SkinRenderer {
                     </div>
                 </div>
                 <div class="x-quote-body">${text}</div>
-            </div>
-        `;
+            </div>`;
     }
 
     buildXReply(text, name, time, isThread) {
@@ -325,8 +398,7 @@ class SkinRenderer {
         const hue = Math.floor(Math.random() * 360);
         const avText = name[0];
 
-        return `
-            <div class="x-reply-item">
+        return `<div class="x-reply-item">
                 <div class="x-reply-avatar-col">
                     <div class="x-reply-avatar" style="background-color:hsl(${hue},60%,50%)">${avText}</div>
                     ${isThread ? '<div class="x-thread-line"></div>' : ''}
@@ -337,8 +409,7 @@ class SkinRenderer {
                     </div>
                     <div class="x-reply-text">${text}</div>
                 </div>
-            </div>
-        `;
+            </div>`;
     }
 
 
@@ -347,22 +418,22 @@ class SkinRenderer {
         const d = document.createElement('div');
         d.className = 'skin-news';
         d.innerHTML = `
-            <div class="news-bg"></div>
-            <div class="news-content">
-                <div class="news-live-badge">🔴 LIVE</div>
-                <div class="news-expert-box">
-                    <div class="news-expert-label">専門家解説</div>
-                    <div class="news-expert-text">${pack.expertPreface} ${pack.expertQuote}</div>
-                </div>
-                <div class="news-main-headline">
-                    <div class="news-headline-text">${pack.headlines}</div>
-                </div>
-                <div class="news-ticker">
-                    <div class="news-ticker-content">
-                        BREAKING: ${pack.text} ... ${pack.influencerQuote} // ${pack.officialQuote}
+            < div class="news-bg" ></div >
+                <div class="news-content">
+                    <div class="news-live-badge">🔴 LIVE</div>
+                    <div class="news-expert-box">
+                        <div class="news-expert-label">専門家解説</div>
+                        <div class="news-expert-text">${pack.expertPreface} ${pack.expertQuote}</div>
+                    </div>
+                    <div class="news-main-headline">
+                        <div class="news-headline-text">${pack.headlines}</div>
+                    </div>
+                    <div class="news-ticker">
+                        <div class="news-ticker-content">
+                            BREAKING: ${pack.text} ... ${pack.influencerQuote} // ${pack.officialQuote}
+                        </div>
                     </div>
                 </div>
-            </div>
         `;
         this.container.appendChild(d);
     }
@@ -431,9 +502,9 @@ document.addEventListener('DOMContentLoaded', () => {
             el.className = 'history-item';
             const dateStr = new Date(pack.createdAt).toLocaleString();
             el.innerHTML = `
-                <div class="history-date">${dateStr}</div>
+            < div class="history-date" > ${dateStr}</div >
                 <div class="history-text">${pack.text}</div>
-            `;
+        `;
             el.addEventListener('click', () => {
                 currentPack = pack;
                 render();
