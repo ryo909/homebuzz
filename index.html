@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNS Praise Skins - 褒め倒しメーカー</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="controls-container">
+        <div class="skin-switcher">
+            <button class="skin-btn active" data-skin="dm">DM</button>
+            <button class="skin-btn" data-skin="x">X</button>
+            <button class="skin-btn" data-skin="news">速報</button>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="eventInput" placeholder="やったことを入力 (例: 皿洗い)" maxlength="40">
+            <button id="sendBtn">送信</button>
+        </div>
+    </div>
+
+    <div id="displayArea">
+        <!-- Generated Content Goes Here -->
+    </div>
+
+    <div class="history-area">
+        <h3>履歴</h3>
+        <div id="historyList">
+            <!-- History Items -->
+        </div>
+    </div>
+
+    <!-- Data & Script -->
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
