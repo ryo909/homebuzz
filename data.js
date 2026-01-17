@@ -353,5 +353,89 @@ const PRAISE_DATA = {
     "news": {
       "blocks": ["headline", "views", "expertWithPreface", "influencerQuote", "celebrityQuote", "crowdReplies", "officialQuote"]
     }
+  },
+  "dmProfiles": [
+    {
+      "id": "dm_luna",
+      "displayName": "ルナ（世界線更新担当）",
+      "handle": "@today_progress_lab",
+      "badge": "star",
+      "bio": "進捗は世界を更新します（当社比）",
+      "toneTag": "cool",
+      "avatar": { "type": "initial", "text": "L", "hue": 210 }
+    },
+    {
+      "id": "dm_minato",
+      "displayName": "ミナト（褒め過積載）",
+      "handle": "@memo_kiroku_221",
+      "badge": "none",
+      "bio": "褒めは積めるだけ積みます。",
+      "toneTag": "energetic",
+      "avatar": { "type": "initial", "text": "M", "hue": 35 }
+    },
+    {
+      "id": "dm_rei",
+      "displayName": "レイ（拍手技師）",
+      "handle": "@routine_station_07",
+      "badge": "star",
+      "bio": "拍手の最適化、任せてください。",
+      "toneTag": "technical",
+      "avatar": { "type": "initial", "text": "R", "hue": 290 }
+    },
+    {
+      "id": "dm_yui",
+      "displayName": "ユイ（概念：えらい）",
+      "handle": "@nice_done_log",
+      "badge": "none",
+      "bio": "えらさは概念。でも今日は確定。",
+      "toneTag": "gentle",
+      "avatar": { "type": "initial", "text": "Y", "hue": 120 }
+    },
+    {
+      "id": "dm_haru",
+      "displayName": "ハル（進捗の亡霊）",
+      "handle": "@kaizen_reportroom",
+      "badge": "none",
+      "bio": "出たな進捗。逃がさない。",
+      "toneTag": "playful",
+      "avatar": { "type": "initial", "text": "H", "hue": 10 }
+    },
+    {
+      "id": "dm_nagi",
+      "displayName": "ナギ（観測班β-7）",
+      "handle": "@zenryoku_archive_58",
+      "badge": "star",
+      "bio": "観測しました。勝ちです。",
+      "toneTag": "deadpan",
+      "avatar": { "type": "initial", "text": "N", "hue": 185 }
+    },
+    {
+      "id": "dm_aoi",
+      "displayName": "アオイ（ログ監査官）",
+      "handle": "@smallstep_notes",
+      "badge": "none",
+      "bio": "ログは嘘をつかない（たぶん）",
+      "toneTag": "strict",
+      "avatar": { "type": "initial", "text": "A", "hue": 260 }
+    },
+    {
+      "id": "dm_sora",
+      "displayName": "ソラ（バズ整備士）",
+      "handle": "@calm_wins_daily",
+      "badge": "star",
+      "bio": "熱狂のネジ、締めときますね。",
+      "toneTag": "charismatic",
+      "avatar": { "type": "initial", "text": "S", "hue": 55 }
+    }
+  ],
+  "dmProfilePickRule": {
+    "mode": "seeded",
+    "salt": "|dmProfile",
+    "storeOnEvent": true,
+    "eventField": "dmProfileId"
+  },
+  "dmBadgeStyle": {
+    "none": null,
+    "star": "★"
   }
 };

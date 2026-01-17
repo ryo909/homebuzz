@@ -63,8 +63,10 @@ class PraiseEngine {
             trendTag: hashtags[0], // First hashtag is priority
         };
 
-        // 3. Quotes & Templates
-        // Helper to replace {text}
+        // 3. Select DM Profile
+        const dmProfile = rng.pick(d.dmProfiles);
+
+        // 4. Quotes & Templates
         const fmt = (tpl) => tpl.replace(/{text}/g, text);
 
         // Generate Crowds (6 unique)
@@ -74,9 +76,10 @@ class PraiseEngine {
         // Generate Quotes
         return {
             id: crypto.randomUUID(),
-            createdAt: seed, // We use seed as createdAt for simplicity if not provided
+            createdAt: seed,
             text: text,
             seed: seed,
+            dmProfileId: dmProfile.id,
             headlines: fmt(rng.pick(d.headlineTemplates)),
             postBody: fmt(rng.pick(d.postBodyTemplates)),
             expertQuote: fmt(rng.pick(d.expertTemplates)),
@@ -94,66 +97,47 @@ class PraiseEngine {
     generateHashtags(text, rng) {
         const d = this.data;
         const tags = [];
-
-        // Tag 1: Input derived
         let tag1 = this.getDerivedTag(text);
-        if (!tag1) tag1 = "今日やった"; // Fallback
+        if (!tag1) tag1 = "今日やった";
         tags.push(`#${tag1}`);
-
-        // Tag 2: World view (Fixed list)
         tags.push(rng.pick(d.tag2List));
-
-        // Tag 3: Hype (Fixed list)
         tags.push(rng.pick(d.tag3List));
-
-        // Deduplicate just in case
         return [...new Set(tags)];
     }
 
     getDerivedTag(text) {
         const d = this.data;
-        // Priority: Dictionary
         for (const entry of d.actionDict) {
-            if (text.includes(entry.keyword)) {
-                return entry.tag;
-            }
+            if (text.includes(entry.keyword)) return entry.tag;
         }
-
-        // Logic A: Inside brackets
         const bracketMatch = text.match(/[「『（(](.*?)[」』）)]/);
-        if (bracketMatch && bracketMatch[1]) {
-            return this.cleanSuffix(bracketMatch[1]);
-        }
-
-        // Logic B: Last chunk after delimiter (space, comma, etc)
+        if (bracketMatch && bracketMatch[1]) return this.cleanSuffix(bracketMatch[1]);
         const parts = text.split(/[\s,、。]+/);
         if (parts.length > 0) {
             const last = parts[parts.length - 1];
             if (last) return this.cleanSuffix(last);
         }
-
-        // Logic D: First 12 chars
         return this.cleanSuffix(text.substring(0, 12));
     }
 
     cleanSuffix(str) {
-        // Remove common endings once
         return str.replace(/(した|する|やった|やる|できた|完了|終了|ました|ます)$/, "");
     }
 }
 
 // --- Skin Renderer ---
 class SkinRenderer {
-    constructor(displayId) {
+    constructor(displayId, sendCallback) {
         this.container = document.getElementById(displayId);
         this.currentSkin = null;
         this.currentPack = null;
+        this.sendCallback = sendCallback;
     }
 
     render(praisePack, skinId) {
         this.currentPack = praisePack;
         this.currentSkin = skinId;
-        this.container.innerHTML = ''; // Clear
+        this.container.innerHTML = '';
 
         switch (skinId) {
             case 'dm':
@@ -168,77 +152,183 @@ class SkinRenderer {
         }
     }
 
-    /* --- DM RENDERER --- */
+    /* --- DM RENDERER REFINED --- */
     renderDM(pack) {
         const d = document.createElement('div');
         d.className = 'skin-dm';
 
-        // Order from recipe: influencer, expert, otaku
-        const messages = [
-            { type: 'user', text: pack.text, delay: 0 },
-            { type: 'reply', text: pack.influencerQuote, delay: 1000 },
-            { type: 'reply', text: pack.expertQuote, delay: 1200 },
-            { type: 'reply', text: pack.otakuQuote, delay: 1400 }
+        const profile = PRAISE_DATA.dmProfiles.find(p => p.id === pack.dmProfileId) || PRAISE_DATA.dmProfiles[0];
+        const badgeChar = (profile.badge === 'star') ? '★' : '';
+
+        // 1. Header (Fixed)
+        const header = document.createElement('div');
+        header.className = 'dm-header';
+        header.innerHTML = `
+            <div class="dm-back-btn">←</div>
+            <div class="dm-avatar-header" style="background-color: hsl(${profile.avatar.hue}, 70%, 60%)">
+                ${profile.avatar.text}
+            </div>
+            <div class="dm-header-info">
+                <div class="dm-header-top">
+                    <span class="dm-header-name">${profile.displayName}</span>
+                    <span class="dm-header-badge">${badgeChar}</span>
+                </div>
+                <div class="dm-header-detail">${profile.handle} • ${profile.bio}</div>
+            </div>
+            <div class="dm-header-menu">⋯</div>
+        `;
+        d.appendChild(header);
+
+        // 2. Message List (Scrollable)
+        const list = document.createElement('div');
+        list.className = 'dm-message-list';
+        d.appendChild(list);
+
+        // Logic: Timestamp -> User Msg -> Read -> Replies... -> Official(System)
+
+        // Timestamp
+        const date = new Date(pack.createdAt);
+        const hours = date.getHours();
+        const mins = date.getMinutes().toString().padStart(2, '0');
+        const timeStr = `${hours}:${mins}`;
+
+        const ts = document.createElement('div');
+        ts.className = 'dm-timestamp-center';
+        ts.textContent = `今日 ${timeStr}`;
+        list.appendChild(ts);
+
+        // User Message
+        this.createDMBubble(list, pack.text, 'user', null);
+
+        // Read Status
+        const readStats = document.createElement('div');
+        readStats.className = 'dm-read-status';
+        readStats.textContent = `既読`; // Simple "Read" just below bubble
+        list.appendChild(readStats);
+
+        // Reply Sequence
+        const replies = [
+            pack.influencerQuote,
+            pack.expertQuote,
+            pack.otakuQuote
         ];
 
-        // 1. User Message (Immediate)
-        this.createDMMessage(d, messages[0].text, 'user');
+        let delayBase = 400; // start delay
 
-        // 2. Replies (with typing effect)
-        let totalDelay = 400; // Recipe: Send after 0.4s read
-
-        // Typing indicator
+        // Typing Indicator Element
         const typing = document.createElement('div');
-        typing.className = 'typing-indicator hidden';
-        typing.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
-        d.appendChild(typing);
+        typing.className = 'typing-indicator';
+        typing.innerHTML = '<div class="dot"></div><div class="dot"></div>'; // 2 dots for style
 
-        const showNext = (idx) => {
-            if (idx >= messages.length) {
-                // Official Banner at the end? (Optional in prompt)
-                setTimeout(() => {
-                    const official = document.createElement('div');
-                    official.className = 'dm-official';
-                    official.innerHTML = `
-                        <div class="dm-official-icon">👑</div>
-                        <div>${pack.officialQuote}</div>
-                    `;
-                    d.appendChild(official);
-                }, 600);
+        // Helper to scroll down
+        const scrollDown = () => list.scrollTop = list.scrollHeight;
+
+        const showReply = (idx) => {
+            // System Message (Official) check
+            if (idx >= replies.length) {
+                if (pack.officialQuote) {
+                    setTimeout(() => {
+                        const sys = document.createElement('div');
+                        sys.className = 'dm-system-message';
+                        sys.innerHTML = `<span>👑</span> ${pack.officialQuote}`;
+                        list.appendChild(sys);
+                        scrollDown();
+                    }, 600);
+                }
                 return;
             }
 
-            const msg = messages[idx];
-            if (msg.type === 'reply') {
-                // Show typing
-                typing.classList.remove('hidden');
-                d.appendChild(typing); // Move to bottom
+            // Show Typing
+            const row = document.createElement('div');
+            row.className = 'dm-message-row row-reply';
+            // Avatar placeholder for typing? 
+            // Spec says: "Opponent avatar on left".
+            // Since typing precedes the message, let's just show typing bubble.
+            // Ideally typing bubble also has avatar if it's the start of block.
+            // We can simplify: always show avatar for typing for first block.
+            const isFirstInBlock = (idx === 0);
 
-                setTimeout(() => {
-                    typing.classList.add('hidden');
-                    this.createDMMessage(d, msg.text, 'reply');
-                    showNext(idx + 1);
-                }, 600); // 0.6s typing
+            // Create temp typing row
+            const avatar = document.createElement('div');
+            avatar.className = `dm-avatar-icon ${isFirstInBlock ? '' : 'hidden'}`;
+            avatar.style.backgroundColor = `hsl(${profile.avatar.hue}, 70%, 60%)`;
+            avatar.textContent = profile.avatar.text;
+
+            row.appendChild(avatar);
+            row.appendChild(typing);
+            list.appendChild(row);
+            scrollDown();
+
+            setTimeout(() => {
+                list.removeChild(row); // Remove typing
+
+                // Show actual message
+                this.createDMBubble(list, replies[idx], 'reply', profile, isFirstInBlock);
+                scrollDown();
+
+                // Next
+                showReply(idx + 1);
+            }, 800); // typing duration
+        };
+
+        setTimeout(() => showReply(0), delayBase);
+
+
+        // 3. Composer (Fixed Bottom)
+        const composer = document.createElement('div');
+        composer.className = 'dm-composer';
+
+        const plus = document.createElement('div');
+        plus.className = 'dm-composer-plus';
+        plus.textContent = '＋';
+
+        const input = document.createElement('input');
+        input.className = 'dm-composer-input';
+        input.placeholder = 'Message';
+        input.type = 'text';
+
+        const sendBtn = document.createElement('button');
+        sendBtn.className = 'dm-composer-send';
+        sendBtn.textContent = '➤';
+
+        const triggerSend = () => {
+            if (input.value.trim()) {
+                this.sendCallback(input.value);
+                input.value = '';
             }
         };
 
-        setTimeout(() => showNext(1), totalDelay);
+        sendBtn.addEventListener('click', triggerSend);
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') triggerSend();
+        });
+
+        composer.appendChild(plus);
+        composer.appendChild(input);
+        composer.appendChild(sendBtn);
+        d.appendChild(composer);
+
         this.container.appendChild(d);
     }
 
-    createDMMessage(container, text, type) {
+    createDMBubble(container, text, type, profile, showAvatar = false) {
+        const row = document.createElement('div');
+        row.className = `dm-message-row row-${type}`;
+
+        if (type === 'reply' && profile) {
+            const avatar = document.createElement('div');
+            avatar.className = `dm-avatar-icon ${showAvatar ? '' : 'hidden'}`;
+            avatar.style.backgroundColor = `hsl(${profile.avatar.hue}, 70%, 60%)`;
+            avatar.textContent = profile.avatar.text;
+            row.appendChild(avatar);
+        }
+
         const bubble = document.createElement('div');
         bubble.className = `dm-bubble dm-${type}`;
         bubble.textContent = text;
 
-        if (type === 'user') {
-            const meta = document.createElement('div');
-            meta.className = 'dm-meta';
-            meta.textContent = '既読';
-            bubble.appendChild(meta);
-        }
-
-        container.appendChild(bubble);
+        row.appendChild(bubble);
+        container.appendChild(row);
     }
 
     /* --- X RENDERER --- */
@@ -308,7 +398,6 @@ class SkinRenderer {
         this.animateCountUp('x-likes', pack.stats.likes);
         this.animateCountUp('x-bookmarks', pack.stats.bookmarks);
         this.animateCountUp('x-views', pack.stats.views);
-        // Quotes stats logic can just be random derived
         document.getElementById('x-quotes').textContent = Math.floor(pack.stats.reposts * 0.1).toLocaleString();
     }
 
@@ -322,7 +411,6 @@ class SkinRenderer {
         const tick = (now) => {
             const elapsed = now - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            // Ease out quart
             const ease = 1 - Math.pow(1 - progress, 4);
             const current = Math.floor(start + (target - start) * ease);
             el.textContent = current.toLocaleString();
@@ -368,29 +456,31 @@ class SkinRenderer {
 // --- App Controller ---
 document.addEventListener('DOMContentLoaded', () => {
     const engine = new PraiseEngine(PRAISE_DATA);
-    const renderer = new SkinRenderer('displayArea');
-    const dbKey = 'sns-praise-history';
-
-    // State
-    let currentSkin = 'dm'; // Default
+    let currentSkin = 'dm';
     let currentPack = null;
 
     // Elements
     const dom = {
+        controls: document.querySelector('.controls-container'),
         input: document.getElementById('eventInput'),
         sendBtn: document.getElementById('sendBtn'),
         historyList: document.getElementById('historyList'),
         skinBtns: document.querySelectorAll('.skin-btn')
     };
 
-    // --- Actions ---
     function send(text) {
         if (!text) return;
         currentPack = engine.generatePack(text);
         saveToHistory(currentPack);
         render();
         updateHistoryUI();
+
+        // Sync Global Input
+        dom.input.value = '';
     }
+
+    const renderer = new SkinRenderer('displayArea', send);
+    const dbKey = 'sns-praise-history';
 
     function render() {
         if (!currentPack) return;
@@ -404,6 +494,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (b.dataset.skin === skinId) b.classList.add('active');
             else b.classList.remove('active');
         });
+
+        // Toggle Controls View using class
+        if (skinId === 'dm') {
+            dom.controls.classList.add('dm-active');
+        } else {
+            dom.controls.classList.remove('dm-active');
+        }
+
         // Re-render if content exists
         if (currentPack) render();
     }
@@ -416,8 +514,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveToHistory(pack) {
         const history = loadHistory();
-        history.unshift(pack); // Add to top
-        if (history.length > 50) history.pop(); // Keep 50
+        history.unshift(pack);
+        if (history.length > 50) history.pop();
         localStorage.setItem(dbKey, JSON.stringify(history));
     }
 
@@ -454,5 +552,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Init ---
+    setSkin(currentSkin); // Init input visibility
     updateHistoryUI();
 });
