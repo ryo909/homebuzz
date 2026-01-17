@@ -2201,45 +2201,32 @@ document.addEventListener('DOMContentLoaded', () => {
         skinSwitcher: document.querySelector('.skin-switcher') // Changed from skinBtns selection
     };
 
-    // --- Tab Generation Logic (Patch) ---
+    // --- Tab Generation Logic (Fixed order, no 速報) ---
     const fallbackTabs = [
         { id: "dm", label: "LINE" },
         { id: "x", label: "X" },
-        { id: "news", label: "速報" },
-        { id: "newsDigital", label: "新聞" },
-        { id: "papal", label: "教皇庁" },
-        { id: "earthcam", label: "地球儀" },
         { id: "youtube", label: "YouTube" },
-        { id: "stock", label: "株価" }
+        { id: "newsDigital", label: "新聞" },
+        { id: "stock", label: "株価" },
+        { id: "papal", label: "教皇" },
+        { id: "earthcam", label: "地球儀" }
     ];
 
-    // Use data.navItems if array, else fallback
-    let tabs = Array.isArray(PRAISE_DATA.navItems) ? PRAISE_DATA.navItems : fallbackTabs;
+    // Use fixed order always
+    let tabs = fallbackTabs;
 
-    // Normalize
-    tabs = tabs.map(t => ({
-        id: t.id ?? t.skinId,
-        label: t.label ?? t.name ?? t.title
-    }));
-
-    // Ensure newsDigital exists
-    if (!tabs.some(t => t.id === "newsDigital")) {
-        tabs.push({ id: "newsDigital", label: "新聞" });
-    }
-    // Ensure papal exists
-    if (!tabs.some(t => t.id === "papal")) {
-        tabs.push({ id: "papal", label: "教皇庁" });
-    }
-    // Ensure earthcam exists
-    if (!tabs.some(t => t.id === "earthcam")) {
-        tabs.push({ id: "earthcam", label: "地球儀" });
-    }
-
-    // Render Tabs
+    // Render Tabs + Settings Menu
     if (dom.skinSwitcher) {
         dom.skinSwitcher.innerHTML = tabs.map(t =>
             `<button class="skin-btn ${t.id === currentSkin ? 'active' : ''}" data-skin="${t.id}">${t.label}</button>`
-        ).join('');
+        ).join('') + `
+            <div class="settings-menu-wrap">
+                <button class="settings-btn" id="settingsBtn" title="設定">⚙</button>
+                <div class="settings-dropdown" id="settingsDropdown">
+                    <button class="settings-item" id="clearDataBtn">データを削除（履歴・通知）</button>
+                </div>
+            </div>
+        `;
     }
 
     // Update dom ref
@@ -2288,24 +2275,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function render() {
         console.log('RENDER_CALLED', { currentSkin, hasCurrentPack: !!currentPack, packId: currentPack ? currentPack.id : null });
         renderer.render(currentPack, currentSkin);
-        updateDebugHUD();
-    }
-
-    // Debug HUD
-    function updateDebugHUD() {
-        let hud = document.getElementById('debugHUD');
-        if (!hud) {
-            hud = document.createElement('div');
-            hud.id = 'debugHUD';
-            hud.style.cssText = 'position:fixed;bottom:10px;right:10px;background:rgba(0,0,0,0.8);color:#0f0;padding:8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:4px;';
-            document.body.appendChild(hud);
-        }
-        hud.innerHTML = `
-            activeTab: ${currentSkin}<br>
-            inputLen: ${dom.input.value.length}<br>
-            packId: ${currentPack ? currentPack.id.substring(0, 8) : 'null'}<br>
-            packText: ${currentPack ? currentPack.text.substring(0, 15) : 'null'}
-        `;
     }
 
     function setSkin(skinId) {
@@ -2376,6 +2345,53 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('SKIN_BTN_CLICK', { skin: btn.dataset.skin });
         setSkin(btn.dataset.skin);
     }));
+
+    // Settings Menu Toggle
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsDropdown = document.getElementById('settingsDropdown');
+    if (settingsBtn && settingsDropdown) {
+        settingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            settingsDropdown.classList.toggle('open');
+        });
+        document.addEventListener('click', () => {
+            settingsDropdown.classList.remove('open');
+        });
+    }
+
+    // Data Clear Button
+    const clearDataBtn = document.getElementById('clearDataBtn');
+    if (clearDataBtn) {
+        clearDataBtn.addEventListener('click', () => {
+            if (confirm('ローカルに保存された履歴・通知を削除します。よろしいですか？')) {
+                // Clear all app-related localStorage
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (key.includes('sns-praise') || key.includes('line') || key.includes('history') || key.includes('inbox') || key.includes('thread') || key.includes('conversation'))) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(k => localStorage.removeItem(k));
+
+                // Also clear specific known keys
+                localStorage.removeItem('sns-praise-history');
+                localStorage.removeItem('sns-praise-conversations');
+
+                // Reset state
+                currentPack = null;
+                dom.input.value = '';
+                conversationManager.init(); // Reinit
+
+                // Refresh UI
+                render();
+                updateHistoryUI();
+
+                alert('データを削除しました。');
+                settingsDropdown.classList.remove('open');
+            }
+        });
+    }
 
     setSkin(currentSkin);
     updateHistoryUI();
