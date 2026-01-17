@@ -614,32 +614,40 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function send(text) {
-        console.log('ON_SEND_START', { activeTab: currentSkin, textLen: text ? text.length : 0, textPreview: text ? text.substring(0, 20) : '' });
+        try {
+            console.log('ON_SEND_START', { activeTab: currentSkin, textLen: text ? text.length : 0, textPreview: text ? text.substring(0, 20) : '' });
 
-        if (!text || !text.trim()) {
-            console.log('ON_SEND_GUARD_RETURN', { reason: 'text empty or whitespace' });
-            return;
+            if (!text || !text.trim()) {
+                console.log('ON_SEND_GUARD_RETURN', { reason: 'text empty or whitespace' });
+                return;
+            }
+
+            console.log('ON_SEND_GENERATING_PACK');
+            currentPack = engine.generatePack(text.trim());
+            console.log('ON_SEND_PACK_GENERATED', { eventId: currentPack.id });
+
+            // Update Conversations (Inbox Logic)
+            try {
+                conversationManager.receiveUpdates(currentPack);
+                console.log('ON_SEND_CONVERSATIONS_UPDATED');
+            } catch (convErr) {
+                console.error('ON_SEND_CONVERSATION_ERROR', convErr);
+            }
+
+            saveToHistory(currentPack);
+
+            // Clear input BEFORE render to ensure it's cleared
+            dom.input.value = '';
+            console.log('ON_SEND_INPUT_CLEARED', { inputValueAfterClear: dom.input.value });
+
+            render();
+
+            updateHistoryUI();
+            updateDebugHUD();
+            console.log('ON_SEND_DONE', { eventId: currentPack.id, currentEventText: currentPack.text });
+        } catch (err) {
+            console.error('ON_SEND_ERROR', err);
         }
-
-        console.log('ON_SEND_GENERATING_PACK');
-        currentPack = engine.generatePack(text.trim());
-        console.log('ON_SEND_PACK_GENERATED', { eventId: currentPack.id });
-
-        // Update Conversations (Inbox Logic)
-        conversationManager.receiveUpdates(currentPack);
-        console.log('ON_SEND_CONVERSATIONS_UPDATED');
-
-        saveToHistory(currentPack);
-
-        // Clear input BEFORE render to ensure it's cleared
-        dom.input.value = '';
-        console.log('ON_SEND_INPUT_CLEARED', { inputValueAfterClear: dom.input.value });
-
-        render();
-
-        updateHistoryUI();
-        updateDebugHUD();
-        console.log('ON_SEND_DONE', { eventId: currentPack.id, currentEventText: currentPack.text });
     }
 
     const renderer = new SkinRenderer('displayArea', send, conversationManager);
