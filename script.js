@@ -719,33 +719,58 @@ class PraiseEngine {
         // Join with separator
         const tickerText = tickerItems.join(" /// ");
 
-        // Pins - always at least 6
-        const pinCount = Math.max(6, randInt(ed.pinCountRange[0], ed.pinCountRange[1]));
+        // Pins - city-based, always 6
+        const pinCount = 6;
         const pins = [];
-        for (let i = 0; i < pinCount; i++) {
-            let valid = false;
-            let x, y;
-            let safety = 0;
+
+        // Pick unique cities
+        const cities = ed.cities || [];
+        const shuffled = [...cities].sort(() => rng() - 0.5);
+        const selectedCities = shuffled.slice(0, pinCount);
+
+        selectedCities.forEach((cityData, i) => {
+            // Generate position within globe circle
+            let x, y, valid = false, safety = 0;
             while (!valid && safety < 100) {
                 safety++;
-                x = randInt(120, 680); // bound rect
-                y = randInt(120, 680);
+                x = randInt(150, 650);
+                y = randInt(150, 650);
                 const dist = Math.sqrt(Math.pow(x - 400, 2) + Math.pow(y - 400, 2));
-                if (dist < 260) valid = true;
+                if (dist < 250) valid = true;
             }
             if (valid) {
-                // Label
                 const pct = randInt(5, 40);
-                const label = pick(ed.pinTemplates).replace(/{n}/g, pct);
-                const words = ed.pinLabelWords || ["Hope", "Life"];
-                const shortLabel = `${pick(words)} +${pct}%`;
-                pins.push({ x, y, label, shortLabel, pct });
+                const word = pick(ed.pinLabelWords || ["Hope", "Life"]);
+                const effectLabel = `${word} +${pct}%`;
+                // Combined label: "City — Effect"
+                const shortLabel = `${cityData.city} — ${effectLabel}`;
+                // Label offset based on position (avoid overlap)
+                const labelOffsetY = y > 400 ? -20 : 10;
+
+                pins.push({
+                    x, y,
+                    city: cityData.city,
+                    country: cityData.country,
+                    lat: cityData.lat,
+                    lon: cityData.lon,
+                    effectLabel,
+                    shortLabel,
+                    pct,
+                    labelOffsetY
+                });
             }
-        }
+        });
+
+        // Focus city for LOC display (first one)
+        const focusCity = pins[0] || { city: "Unknown", lat: 0, lon: 0 };
+        const latDir = focusCity.lat >= 0 ? "N" : "S";
+        const lonDir = focusCity.lon >= 0 ? "E" : "W";
+        const locDisplay = `LOC: ${Math.abs(focusCity.lat).toFixed(1)}${latDir} ${Math.abs(focusCity.lon).toFixed(1)}${lonDir} (${focusCity.city})`;
 
         return {
             region, viewers, recovery, trust, tickerText, pins,
-            recoveryIndex: { before: riBefore, delta: riDelta, after: riAfter }
+            recoveryIndex: { before: riBefore, delta: riDelta, after: riAfter },
+            locDisplay, focusCity
         };
     }
 }
@@ -1993,15 +2018,16 @@ class SkinRenderer {
             </g>
         `).join('');
 
-        // --- Pins & Labels ---
+        // --- Pins & Labels (with position-based offset) ---
         const pinsHtml = (ed.pins || []).map((p, idx) => {
-            const w = (p.shortLabel || "").length * 5 + 16;
+            const w = Math.min(160, (p.shortLabel || "").length * 5 + 16);
+            const offsetY = p.labelOffsetY || (p.y > 400 ? -20 : 10);
             return `
             <g class="pin-group" transform="translate(${p.x} ${p.y})">
                 <circle r="5" class="pin-core"/>
                 <circle r="14" class="pin-ring"/>
                 <circle r="22" class="pin-wave" style="animation-delay: -${idx * 0.4}s"/>
-                <g class="pin-label" transform="translate(14 -14)" opacity="0.9">
+                <g class="pin-label" transform="translate(14 ${offsetY})" opacity="0.95">
                     <rect x="0" y="-12" width="${w}" height="16" rx="4" fill="rgba(0,0,0,0.6)" stroke="rgba(255,255,255,0.3)" stroke-width="0.5"/>
                     <text x="4" y="0" fill="#fff" font-size="9" font-family="sans-serif" font-weight="bold">${p.shortLabel || ""}</text>
                 </g>
@@ -2079,9 +2105,16 @@ class SkinRenderer {
             <line x1="560" y1="120" x2="560" y2="680"/>
         </g>
         <g class="land">
-            <path d="M245,365 C275,320 332,300 360,330 C382,360 360,412 320,425 C282,437 238,412 245,365 Z"/>
-            <path d="M470,292 C520,282 568,320 555,365 C540,415 478,440 448,398 C425,365 435,303 470,292 Z"/>
-            <path d="M470,495 C520,465 565,502 553,542 C540,592 480,604 452,563 C430,535 440,510 470,495 Z"/>
+            <!-- North America (large, top-left) -->
+            <ellipse cx="260" cy="300" rx="70" ry="50" fill="rgba(90,255,180,0.18)" stroke="rgba(90,255,180,0.25)" stroke-width="1" transform="rotate(-10 260 300)"/>
+            <!-- Eurasia (wide, top-right) -->
+            <ellipse cx="520" cy="290" rx="100" ry="40" fill="rgba(90,255,180,0.18)" stroke="rgba(90,255,180,0.25)" stroke-width="1" transform="rotate(5 520 290)"/>
+            <!-- Africa (vertical, center-bottom) -->
+            <ellipse cx="440" cy="440" rx="35" ry="60" fill="rgba(90,255,180,0.18)" stroke="rgba(90,255,180,0.25)" stroke-width="1" transform="rotate(10 440 440)"/>
+            <!-- South America (small, bottom-left) -->
+            <ellipse cx="280" cy="520" rx="30" ry="50" fill="rgba(90,255,180,0.18)" stroke="rgba(90,255,180,0.25)" stroke-width="1" transform="rotate(-15 280 520)"/>
+            <!-- Australia (medium, bottom-right) -->
+            <ellipse cx="560" cy="530" rx="40" ry="30" fill="rgba(90,255,180,0.18)" stroke="rgba(90,255,180,0.25)" stroke-width="1" transform="rotate(8 560 530)"/>
         </g>
         <g class="cloud-layer">
             <rect x="120" y="120" width="560" height="560" filter="url(#cloudNoise)" class="clouds"/>
@@ -2106,6 +2139,7 @@ class SkinRenderer {
                   <div class="earthcam-live"><span class="earthcam-dot"></span>LIVE</div>
                   <div class="earthcam-tag">EarthCam</div>
                   <div class="earthcam-tag" id="earthcam-region">${ed.region}</div>
+                  <div class="earthcam-tag" id="earthcam-loc">${ed.locDisplay || "LOC: --"}</div>
                   <div class="earthcam-tag" id="earthcam-utc">UTC --:--:--</div>
                   <div class="earthcam-tag" id="earthcam-viewers">${ed.viewers}</div>
                   <div class="earthcam-tag" id="earthcam-recover">${ed.recovery}</div>

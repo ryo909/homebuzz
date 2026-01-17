@@ -3084,6 +3084,12 @@ body {
   stroke-width: 2;
 }
 
+.pin-label text {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .pin-wave {
   fill: none;
   stroke: rgba(255, 226, 91, 0.22);
