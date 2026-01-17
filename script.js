@@ -1694,8 +1694,42 @@ document.addEventListener('DOMContentLoaded', () => {
         sendBtn: document.getElementById('sendBtn'),
         historyList: document.getElementById('historyList'),
         historyArea: document.getElementById('historyArea'),
-        skinBtns: document.querySelectorAll('.skin-btn')
+        skinSwitcher: document.querySelector('.skin-switcher') // Changed from skinBtns selection
     };
+
+    // --- Tab Generation Logic (Patch) ---
+    const fallbackTabs = [
+        { id: "dm", label: "LINE" },
+        { id: "x", label: "X" },
+        { id: "news", label: "速報" },
+        { id: "newsDigital", label: "新聞" },
+        { id: "youtube", label: "YouTube" },
+        { id: "stock", label: "株価" }
+    ];
+
+    // Use data.navItems if array, else fallback
+    let tabs = Array.isArray(PRAISE_DATA.navItems) ? PRAISE_DATA.navItems : fallbackTabs;
+
+    // Normalize
+    tabs = tabs.map(t => ({
+        id: t.id ?? t.skinId,
+        label: t.label ?? t.name ?? t.title
+    }));
+
+    // Ensure newsDigital exists
+    if (!tabs.some(t => t.id === "newsDigital")) {
+        tabs.push({ id: "newsDigital", label: "新聞" });
+    }
+
+    // Render Tabs
+    if (dom.skinSwitcher) {
+        dom.skinSwitcher.innerHTML = tabs.map(t =>
+            `<button class="skin-btn ${t.id === currentSkin ? 'active' : ''}" data-skin="${t.id}">${t.label}</button>`
+        ).join('');
+    }
+
+    // Update dom ref
+    dom.skinBtns = document.querySelectorAll('.skin-btn');
 
     function send(text) {
         try {
