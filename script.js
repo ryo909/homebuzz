@@ -2309,83 +2309,113 @@ class SkinRenderer {
         const refDate = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
         const refNum = String(Math.abs(pack.id ? pack.id.charCodeAt(0) * 100 : 1234)).padStart(4, '0');
 
-        // SVG Ribbon (Curved to look realistic)
-        const cordSvg = `
-        <svg viewBox="0 0 420 34" preserveAspectRatio="none" style="width:100%; height:100%; overflow:visible;">
-            <defs>
-                <filter id="cordDrop" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-color="#000" flood-opacity="0.3"/>
-                </filter>
-            </defs>
-            <path d="M0,8 Q180,28 210,28" fill="none" stroke="#8b2920" stroke-width="4" stroke-linecap="round" filter="url(#cordDrop)"/>
-            <path d="M420,8 Q240,28 210,28" fill="none" stroke="#8b2920" stroke-width="4" stroke-linecap="round" filter="url(#cordDrop)"/>
-            <circle cx="210" cy="28" r="4" fill="#8b2920" filter="url(#cordDrop)"/>
+        // Wax Seal SVG (realistic irregular edge with emboss)
+        const waxSealSvg = `
+        <svg class="popeWaxSeal" viewBox="0 0 220 220" aria-hidden="true">
+          <defs>
+            <radialGradient id="waxG" cx="35%" cy="30%" r="70%">
+              <stop offset="0%" stop-color="#7b1f1f" stop-opacity="1"/>
+              <stop offset="55%" stop-color="#5a1515" stop-opacity="1"/>
+              <stop offset="100%" stop-color="#3b0d0d" stop-opacity="1"/>
+            </radialGradient>
+            <filter id="waxShadow" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#000" flood-opacity="0.35"/>
+            </filter>
+            <filter id="waxNoise" x="-10%" y="-10%" width="120%" height="120%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" />
+              <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.20 0"/>
+              <feComposite operator="in" in2="SourceGraphic"/>
+            </filter>
+            <filter id="emboss" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
+              <feSpecularLighting in="blur" surfaceScale="3" specularConstant="0.6" specularExponent="18" lighting-color="#ffffff" result="spec">
+                <feDistantLight azimuth="315" elevation="35"/>
+              </feSpecularLighting>
+              <feComposite in="spec" in2="SourceAlpha" operator="in" result="spec2"/>
+              <feComposite in="SourceGraphic" in2="spec2" operator="arithmetic" k1="1" k2="0.6" k3="0" k4="0"/>
+            </filter>
+          </defs>
+          <path filter="url(#waxShadow)" d="M110,16 C150,16 187,40 200,78 C212,114 202,158 174,184 C145,210 95,216 60,198 C26,180 8,134 18,94 C28,55 70,16 110,16Z" fill="url(#waxG)"/>
+          <path d="M78,45 C95,30 125,30 143,45 C122,42 98,48 78,45Z" fill="#ffffff" opacity="0.10"/>
+          <path d="M110,16 C150,16 187,40 200,78 C212,114 202,158 174,184 C145,210 95,216 60,198 C26,180 8,134 18,94 C28,55 70,16 110,16Z" fill="#000" opacity="0.12" filter="url(#waxNoise)"/>
+          <g filter="url(#emboss)" opacity="0.95">
+            <circle cx="110" cy="112" r="44" fill="none" stroke="#2a0808" stroke-opacity="0.35" stroke-width="3"/>
+            <path d="M110 78 L110 146" stroke="#2a0808" stroke-opacity="0.45" stroke-width="7" stroke-linecap="round"/>
+            <path d="M84 112 L136 112" stroke="#2a0808" stroke-opacity="0.45" stroke-width="7" stroke-linecap="round"/>
+          </g>
+        </svg>
+        `;
+
+        // Watermark SVG (subtle centered emblem)
+        const watermarkSvg = `
+        <svg viewBox="0 0 200 200" class="popeWatermarkSvg">
+          <circle cx="100" cy="100" r="70" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          <circle cx="100" cy="100" r="58" stroke="currentColor" stroke-width="0.8" fill="none"/>
+          <path d="M100 40 L100 160" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M40 100 L160 100" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="100" cy="100" r="12" fill="currentColor" opacity="0.15"/>
         </svg>
         `;
 
         d.innerHTML = `
-            <div class="pope-paper">
-                <!-- Watermark -->
-                <div class="pope-watermark">
-                     <svg viewBox="0 0 100 100" style="width:60%; height:60%; margin:20%; opacity:0.6;">
-                         <circle cx="50" cy="50" r="40" stroke="#000" stroke-width="1" fill="none" opacity="0.5"/>
-                         <path d="M50 10 L50 90 M10 50 L90 50" stroke="#000" stroke-width="1" opacity="0.5"/>
-                         <path d="M30 30 L70 70 M70 30 L30 70" stroke="#000" stroke-width="0.5" opacity="0.3"/>
-                     </svg>
+            <div class="popePaper">
+                <!-- Watermark (single centered subtle emblem) -->
+                <div class="popeWatermark">${watermarkSvg}</div>
+
+                <!-- Diagonal REGISTERED stamp (subtle, background) -->
+                <div class="popeStampDiagonal">REGISTERED</div>
+
+                <!-- Header Block -->
+                <div class="popeHeader">
+                    <div class="popeHeaderTitle">HOLY SEE — SECRETARIAT OF STATE</div>
+                    <div class="popeHeaderSub">APOSTOLIC PALACE · VATICAN CITY</div>
+                    <!-- Meta (integrated right-aligned) -->
+                    <div class="popeHeaderMeta">
+                        <div>REF: PAP-${refDate}-${refNum}</div>
+                        <div>CLASS: Private Counsel</div>
+                        <div>UPDATED: ${safe(pd.updatedAgo) || 'Just now'}</div>
+                    </div>
                 </div>
 
-                <!-- Header -->
-                <div class="pope-header">
-                    <div class="h1">HOLY SEE — SECRETARIAT OF STATE</div>
-                    <div class="h2">APOSTOLIC PALACE · VATICAN CITY</div>
+                <!-- Small seal mark (left edge, subtle) -->
+                <div class="popeSealSmall">
+                    <svg viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="35" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <circle cx="40" cy="40" r="28" stroke="currentColor" stroke-width="0.8" fill="none"/>
+                        <text x="40" y="46" font-size="18" text-anchor="middle" fill="currentColor" font-family="serif">✝</text>
+                    </svg>
                 </div>
-
-                <!-- Meta (Right Top) -->
-                <div class="pope-meta">
-                    <div>REF: PAP-${refDate}-${refNum}</div>
-                    <div>CLASS: Private Counsel</div>
-                    <div>UPDATED: ${safe(pd.updatedAgo) || 'Just now'}</div>
-                    <!-- Removed STATUS line to reduce clutter -->
-                </div>
-
-                <!-- Seal Mark (Left Top - overlapping edge) -->
-                <div class="pope-sealmark">
-                     <svg viewBox="0 0 100 100">
-                         <circle cx="50" cy="50" r="46" stroke="currentColor" stroke-width="2" fill="none"/>
-                         <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="1" fill="none"/>
-                         <text x="50" y="55" font-size="24" text-anchor="middle" fill="currentColor" opacity="0.5" font-family="serif">✝</text>
-                     </svg>
-                </div>
-
-                <!-- REMOVED pope-stamp (REGISTERED) as requested -->
 
                 <!-- Body -->
-                <div class="pope-body">
-                    <div class="to">To: YOU</div>
-                    <div class="subject">Subject: Counsel regarding <span class="jp">"${safe(pack.text)}"</span></div>
-                    <div class="divider"></div>
+                <div class="popeBody">
+                    <div class="popeTo">To: YOU</div>
+                    <div class="popeSubject">Subject: Counsel regarding <span class="jp">"${safe(pack.text)}"</span></div>
+                    <div class="popeDivider"></div>
                     <p>Dear You,</p>
                     <p>${safe(pd.invitationBody).replace(/\n/g, '</p><p>')}</p>
                     <p>Your compliance with this request is duly noted and appreciated.</p>
                 </div>
 
                 <!-- Statement Under Seal -->
-                <div class="pope-underseal">
-                    <div class="label">Statement Under Seal</div>
-                    <blockquote class="quote jp">${safe(pd.counsel)}</blockquote>
-                    <div class="adopted">ADOPTED</div>
+                <div class="popeUnderseal">
+                    <div class="popeUndersealLabel">Statement Under Seal</div>
+                    <blockquote class="popeQuote jp">${safe(pd.counsel)}</blockquote>
+                    <div class="popeAdopted">ADOPTED</div>
                 </div>
 
-                <!-- Signature Area -->
-                <div class="pope-signarea">
-                    <div class="pope-cord">
-                        ${cordSvg}
+                <!-- Signature Area with SVG Wax Seal -->
+                <div class="popeSignarea">
+                    <div class="popeWaxCord"></div>
+                    ${waxSealSvg}
+                    <div class="popeSignText">
+                        <div class="popeSignRole">For the Secretariat of State (Fictional)</div>
+                        <div class="popeSignDept">Office of Ceremonial Coordination</div>
                     </div>
-                    <div class="pope-wax"></div>
-                    <div style="margin-top:16px; font-size:11px; letter-spacing:0.1em; opacity:0.8;">
-                        <div style="text-transform:uppercase; margin-bottom:4px;">For the Secretariat of State (Fictional)</div>
-                        <div style="font-style:italic; opacity:0.7;">Office of Ceremonial Coordination</div>
-                    </div>
+                </div>
+
+                <!-- Fiction Notice -->
+                <div class="popeFooter">
+                    <span>※この文書はパロディです。実在の組織・人物・儀礼とは関係ありません。</span>
                 </div>
             </div>
         `;
