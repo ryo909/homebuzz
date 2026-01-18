@@ -851,10 +851,10 @@ const PRAISE_DATA = {
     ],
 
     "invitationTemplates": [
-      "To: You\n\nWe respectfully acknowledge the recent act of \"{text}\".\nIts implications have been observed beyond ordinary expectations.\n\nYou are hereby invited to a private audience to offer your counsel.\n\nIssued under seal by {dept}.",
-      "To: You\n\nThis note concerns the matter of \"{text}\".\nMultiple observers report an unusual clarity following this act.\n\nWe request your counsel in a private audience.\n\nBy order of {dept}.",
-      "To: You\n\nWe write regarding \"{text}\".\nWhile modest in form, the signal has been unmistakable.\n\nPlease attend a private audience and provide your recommendation.\n\n— {dept}",
-      "To: You\n\nThe act of \"{text}\" has been recorded.\nA measured response requires wisdom, not noise.\n\nYou are invited for counsel.\n\nIssued by {dept}."
+      "This communication concerns the matter of \"{text}\".\nIts implications have been observed beyond ordinary expectations.\n\nYou are hereby invited to a private audience to offer your counsel.\n\nIssued under seal by {dept}.",
+      "We respectfully acknowledge the recent act of \"{text}\".\nMultiple observers report an unusual clarity following this act.\n\nWe request your counsel in a private audience.\n\nBy order of {dept}.",
+      "We write regarding \"{text}\".\nWhile modest in form, the signal has been unmistakable.\n\nPlease attend a private audience and provide your recommendation.\n\n— {dept}",
+      "The act of \"{text}\" has been recorded.\nA measured response requires wisdom, not noise.\n\nYou are invited for counsel.\n\nIssued by {dept}."
     ],
 
     "agendaTitlePresets": ["AGENDA", "ORDER OF DISCERNMENT", "SESSION OUTLINE"],

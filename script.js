@@ -2480,7 +2480,23 @@ class SkinRenderer {
                 <!-- Watermark (center, behind content) -->
                 <div class="papal-watermark" aria-hidden="true">${watermarkSvg}</div>
 
-                <!-- REGISTERED stamp (top-left, angled) -->
+                <!-- Official circular seal (top-left, faded) -->
+                <div class="papal-official-seal" aria-hidden="true">
+                    <svg viewBox="0 0 100 100" class="official-seal-svg">
+                        <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="1"/>
+                        <circle cx="50" cy="50" r="32" fill="none" stroke="currentColor" stroke-width="0.5" stroke-dasharray="3 2"/>
+                        <text x="50" y="24" text-anchor="middle" font-size="5" font-weight="600" fill="currentColor">SANCTA SEDES</text>
+                        <g transform="translate(50, 50)">
+                            <line x1="-10" y1="0" x2="10" y2="0" stroke="currentColor" stroke-width="2"/>
+                            <line x1="0" y1="-10" x2="0" y2="10" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="0" cy="0" r="3" fill="currentColor"/>
+                        </g>
+                        <text x="50" y="78" text-anchor="middle" font-size="4.5" fill="currentColor">• REGISTRAVIT •</text>
+                    </svg>
+                </div>
+
+                <!-- REGISTERED stamp (top-right, angled) -->
                 <div class="papal-stamp" aria-hidden="true">REGISTERED</div>
 
                 <!-- Authority Header -->
@@ -2508,7 +2524,6 @@ class SkinRenderer {
                     <div class="papal-to">To: You</div>
                     <div class="papal-subject">Subject: Counsel regarding <span class="jp">"${safe(pack.text)}"</span></div>
                     
-                    <p>We write regarding the matter stated above in accordance with established protocol.</p>
                     <p>${safe(pd.invitationBody).replace(/\n/g, '</p><p>')}</p>
                     <p>Your compliance with this request is duly noted and appreciated.</p>
                 </div>
@@ -2520,9 +2535,63 @@ class SkinRenderer {
                     <div class="papal-adopted">ADOPTED</div>
                 </div>
 
-                <!-- Ribbon band + Wax Seal -->
-                <div class="papal-ribbon-band" aria-hidden="true"></div>
-                <div class="papal-wax">${waxSealSvg}</div>
+                <!-- Thin ribbon with knot + Embossed Seal -->
+                <div class="papal-ribbon-thin" aria-hidden="true">
+                    <svg viewBox="0 0 300 50" class="ribbon-svg">
+                        <defs>
+                            <linearGradient id="ribbonGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#6d1a16"/>
+                                <stop offset="50%" stop-color="#8b2920"/>
+                                <stop offset="100%" stop-color="#6d1a16"/>
+                            </linearGradient>
+                            <filter id="ribbonShadow">
+                                <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-color="#000" flood-opacity="0.25"/>
+                            </filter>
+                        </defs>
+                        <!-- Left ribbon -->
+                        <path d="M40 28 C80 24, 110 26, 140 28" stroke="url(#ribbonGrad)" stroke-width="3" fill="none" stroke-linecap="round" filter="url(#ribbonShadow)"/>
+                        <!-- Right ribbon -->
+                        <path d="M160 28 C190 26, 220 24, 260 28" stroke="url(#ribbonGrad)" stroke-width="3" fill="none" stroke-linecap="round" filter="url(#ribbonShadow)"/>
+                        <!-- Knot -->
+                        <ellipse cx="150" cy="26" rx="14" ry="10" fill="#7b1215" filter="url(#ribbonShadow)"/>
+                        <ellipse cx="150" cy="24" rx="10" ry="6" fill="#a63a33"/>
+                        <ellipse cx="148" cy="22" rx="4" ry="2" fill="rgba(255,255,255,0.25)"/>
+                    </svg>
+                </div>
+                
+                <!-- Embossed seal impression (subtle, paper-blended) -->
+                <div class="papal-emboss-seal" aria-hidden="true">
+                    <svg viewBox="0 0 100 100" class="emboss-svg">
+                        <defs>
+                            <filter id="embossFilter" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur"/>
+                                <feOffset in="blur" dx="1" dy="1" result="lightOffset"/>
+                                <feOffset in="blur" dx="-1" dy="-1" result="darkOffset"/>
+                                <feComposite in="lightOffset" in2="darkOffset" operator="arithmetic" k2="1" k3="-1" result="inner"/>
+                                <feColorMatrix in="inner" type="matrix"
+                                    values="0 0 0 0 0.4
+                                            0 0 0 0 0.35
+                                            0 0 0 0 0.3
+                                            0 0 0 0.6 0"/>
+                                <feComposite in2="SourceGraphic" operator="over"/>
+                            </filter>
+                        </defs>
+                        <g filter="url(#embossFilter)" opacity="0.6">
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="#8b8070" stroke-width="3"/>
+                            <circle cx="50" cy="50" r="34" fill="none" stroke="#8b8070" stroke-width="1.5"/>
+                            <!-- Crossed keys abstraction -->
+                            <g transform="translate(50, 50)" stroke="#8b8070" stroke-width="4" stroke-linecap="round" fill="none">
+                                <line x1="-18" y1="18" x2="18" y2="-18"/>
+                                <line x1="-18" y1="-18" x2="18" y2="18"/>
+                            </g>
+                            <!-- Small cross -->
+                            <g transform="translate(50, 50)" fill="#8b8070">
+                                <rect x="-3" y="-12" width="6" height="24" rx="1"/>
+                                <rect x="-12" y="-3" width="24" height="6" rx="1"/>
+                            </g>
+                        </g>
+                    </svg>
+                </div>
 
                 <!-- Signature block -->
                 <div class="papal-signature">

@@ -3965,6 +3965,17 @@ body {
   text-shadow: 0.25px 0.25px 0 rgba(0, 0, 0, 0.08);
 }
 
+/* paper noise texture */
+.skin-papal .papal-paper-texture::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.08;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
 /* ============================
    PAPAL: WATERMARK + STAMP
    ============================ */
@@ -3976,7 +3987,7 @@ body {
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  opacity: 0.10;
+  opacity: 0.15;
   transform: translateY(10px);
   z-index: 0;
 }
@@ -4150,39 +4161,63 @@ body {
 }
 
 /* ============================
-   PAPAL: RIBBON BAND + SEAL
+   PAPAL: OFFICIAL CIRCULAR SEAL (top-left)
    ============================ */
 
-/* CSS ribbon band (物体化) */
-.skin-papal .papal-ribbon-band {
-  width: 260px;
-  height: 26px;
-  margin: 18px auto 0;
-  border-radius: 999px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(0, 0, 0, .20)),
-    linear-gradient(90deg, #6d1a16, #a63a33 40%, #6d1a16);
-  box-shadow: 0 10px 18px rgba(0, 0, 0, .25);
-  transform: rotate(-2deg);
-  opacity: 0.85;
+.skin-papal .papal-official-seal {
+  position: absolute;
+  top: 70px;
+  left: 40px;
+  width: 70px;
+  height: 70px;
+  color: rgba(120, 100, 80, 0.35);
+  transform: rotate(6deg);
+  z-index: 1;
+  pointer-events: none;
+  filter: blur(0.3px);
+  mix-blend-mode: multiply;
+}
+
+.skin-papal .papal-official-seal .official-seal-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================
+   PAPAL: THIN RIBBON + KNOT
+   ============================ */
+
+.skin-papal .papal-ribbon-thin {
+  display: flex;
+  justify-content: center;
+  margin: 20px auto 0;
   position: relative;
   z-index: 1;
 }
 
-.skin-papal .papal-wax {
+.skin-papal .papal-ribbon-thin .ribbon-svg {
+  width: 280px;
+  height: auto;
+  opacity: 0.9;
+}
+
+/* ============================
+   PAPAL: EMBOSSED SEAL IMPRESSION
+   ============================ */
+
+.skin-papal .papal-emboss-seal {
   display: flex;
   justify-content: center;
-  margin-top: -14px;
-  margin-bottom: 6px;
+  margin-top: -10px;
+  margin-bottom: 10px;
   position: relative;
   z-index: 2;
 }
 
-.skin-papal .papal-wax .waxSvg.premium {
-  width: 86px;
-  height: 86px;
-  transform: rotate(-4deg);
-  filter: saturate(1.1);
+.skin-papal .papal-emboss-seal .emboss-svg {
+  width: 80px;
+  height: 80px;
+  transform: rotate(-5deg);
 }
 
 /* ============================
