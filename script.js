@@ -2459,10 +2459,10 @@ class SkinRenderer {
         // Helper: Get Japanese city name
         const getCityJa = (cityEn) => (typeof CITY_NAME_JA !== 'undefined' && CITY_NAME_JA[cityEn]) || cityEn;
 
-        // Convert LOC display to Japanese
-        const locDisplayJa = ed.locDisplay ? ed.locDisplay.replace(/LOC:\s*[^,]+,\s*([^·\s]+)/, (match, city) => {
+        // Convert LOC display to Japanese - format: "LOC: 41.9N 87.6W (Chicago)"
+        const locDisplayJa = ed.locDisplay ? ed.locDisplay.replace(/\(([^)]+)\)/, (match, city) => {
             const cityJa = getCityJa(city.trim());
-            return match.replace(city, cityJa);
+            return `(${cityJa})`;
         }) : "LOC: --";
 
         // --- Recovery Layer (Glows under pins) ---
