@@ -2365,16 +2365,9 @@ class SkinRenderer {
                 <!-- Diagonal REGISTERED stamp (subtle, background) -->
                 <div class="popeStampDiagonal">REGISTERED</div>
 
-                <!-- Header Block -->
+                <!-- Header Block (clean - title only) -->
                 <div class="popeHeader">
                     <div class="popeHeaderTitle">HOLY SEE — SECRETARIAT OF STATE</div>
-                    <div class="popeHeaderSub">APOSTOLIC PALACE · VATICAN CITY</div>
-                    <!-- Meta (integrated right-aligned) -->
-                    <div class="popeHeaderMeta">
-                        <div>REF: PAP-${refDate}-${refNum}</div>
-                        <div>CLASS: Private Counsel</div>
-                        <div>UPDATED: ${safe(pd.updatedAgo) || 'Just now'}</div>
-                    </div>
                 </div>
 
                 <!-- Small seal mark (left edge, subtle) -->
@@ -2410,6 +2403,15 @@ class SkinRenderer {
                     <div class="popeSignText">
                         <div class="popeSignRole">For the Secretariat of State (Fictional)</div>
                         <div class="popeSignDept">Office of Ceremonial Coordination</div>
+                    </div>
+                </div>
+
+                <!-- Dossier Metadata (moved from header) -->
+                <div class="popeMetaFooter">
+                    <div class="popeMetaLabel">DOSSIER METADATA</div>
+                    <div class="popeMetaLines">
+                        <div>APOSTOLIC PALACE · VATICAN CITY</div>
+                        <div>REF: PAP-${refDate}-${refNum} · CLASS: Private Counsel · UPDATED: ${safe(pd.updatedAgo) || 'Just now'}</div>
                     </div>
                 </div>
 
