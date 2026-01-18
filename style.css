@@ -4357,23 +4357,26 @@ body {
 
 .pope-sealmark {
   position: absolute;
-  top: 18px;
-  left: 22px;
+  top: -12px;
+  left: -12px;
   width: 92px;
   height: 92px;
-  opacity: .14;
+  opacity: .18;
   filter: blur(.2px);
+  transform: rotate(-12deg);
 }
 
+/* Removed via JS, styles kept for reference but unused */
+/*
 .pope-stamp {
   position: absolute;
   top: 110px;
-  /* ヘッダー帯から離す */
   left: 80px;
   transform: rotate(-12deg);
   opacity: .10;
   pointer-events: none;
 }
+*/
 
 .pope-body {
   margin-top: 38px;

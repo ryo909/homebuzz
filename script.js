@@ -2310,7 +2310,6 @@ class SkinRenderer {
         const refNum = String(Math.abs(pack.id ? pack.id.charCodeAt(0) * 100 : 1234)).padStart(4, '0');
 
         // SVG Ribbon (Curved to look realistic)
-        // Fits in .pope-cord (420x34)
         const cordSvg = `
         <svg viewBox="0 0 420 34" preserveAspectRatio="none" style="width:100%; height:100%; overflow:visible;">
             <defs>
@@ -2318,11 +2317,8 @@ class SkinRenderer {
                     <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-color="#000" flood-opacity="0.3"/>
                 </filter>
             </defs>
-            <!-- Left strand (dipping) -->
             <path d="M0,8 Q180,28 210,28" fill="none" stroke="#8b2920" stroke-width="4" stroke-linecap="round" filter="url(#cordDrop)"/>
-            <!-- Right strand (dipping) -->
             <path d="M420,8 Q240,28 210,28" fill="none" stroke="#8b2920" stroke-width="4" stroke-linecap="round" filter="url(#cordDrop)"/>
-            <!-- Knot center -->
             <circle cx="210" cy="28" r="4" fill="#8b2920" filter="url(#cordDrop)"/>
         </svg>
         `;
@@ -2349,10 +2345,10 @@ class SkinRenderer {
                     <div>REF: PAP-${refDate}-${refNum}</div>
                     <div>CLASS: Private Counsel</div>
                     <div>UPDATED: ${safe(pd.updatedAgo) || 'Just now'}</div>
-                    <div>STATUS: REGISTERED</div>
+                    <!-- Removed STATUS line to reduce clutter -->
                 </div>
 
-                <!-- Seal Mark (Left Top - faded) -->
+                <!-- Seal Mark (Left Top - overlapping edge) -->
                 <div class="pope-sealmark">
                      <svg viewBox="0 0 100 100">
                          <circle cx="50" cy="50" r="46" stroke="currentColor" stroke-width="2" fill="none"/>
@@ -2361,14 +2357,14 @@ class SkinRenderer {
                      </svg>
                 </div>
 
-                <!-- Stamp (Right angled, faded) -->
-                <div class="pope-stamp">REGISTERED</div>
+                <!-- REMOVED pope-stamp (REGISTERED) as requested -->
 
                 <!-- Body -->
                 <div class="pope-body">
                     <div class="to">To: YOU</div>
                     <div class="subject">Subject: Counsel regarding <span class="jp">"${safe(pack.text)}"</span></div>
                     <div class="divider"></div>
+                    <p>Dear You,</p>
                     <p>${safe(pd.invitationBody).replace(/\n/g, '</p><p>')}</p>
                     <p>Your compliance with this request is duly noted and appreciated.</p>
                 </div>
