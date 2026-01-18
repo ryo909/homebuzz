@@ -2309,18 +2309,93 @@ class SkinRenderer {
         const refDate = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
         const refNum = String(Math.abs(pack.id ? pack.id.charCodeAt(0) * 100 : 1234)).padStart(4, '0');
 
-        // Circular seal SVG
+        // Enhanced circular seal SVG (top-right, more visible)
         const sealSvg = `
         <svg viewBox="0 0 100 100" class="pope-seal-svg">
-            <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="1.2"/>
-            <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="0.8"/>
-            <text x="50" y="30" text-anchor="middle" font-size="6" fill="currentColor">HOLY SEE</text>
-            <text x="50" y="55" text-anchor="middle" font-size="10" font-weight="bold" fill="currentColor">✠</text>
-            <text x="50" y="75" text-anchor="middle" font-size="5" fill="currentColor">SECRETARIAT</text>
+            <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="1"/>
+            <circle cx="50" cy="50" r="34" fill="none" stroke="currentColor" stroke-width="0.6"/>
+            <text x="50" y="26" text-anchor="middle" font-size="6" font-weight="600" fill="currentColor" font-family="serif">SANCTA SEDES</text>
+            <g transform="translate(50, 52)">
+                <line x1="-12" y1="0" x2="12" y2="0" stroke="currentColor" stroke-width="2.5"/>
+                <line x1="0" y1="-12" x2="0" y2="12" stroke="currentColor" stroke-width="2.5"/>
+                <circle cx="0" cy="0" r="4" fill="currentColor"/>
+            </g>
+            <text x="50" y="80" text-anchor="middle" font-size="5" fill="currentColor" font-family="serif">SECRETARIAT</text>
+        </svg>`;
+
+        // Centered watermark SVG (abstract crossed keys + tiara medallion)
+        const watermarkSvg = `
+        <svg viewBox="0 0 200 200" class="pope-watermark-svg" style="fill: currentColor; stroke: currentColor;">
+            <!-- Outer ring -->
+            <circle cx="100" cy="100" r="95" fill="none" stroke-width="1.5" opacity="0.7"/>
+            <circle cx="100" cy="100" r="88" fill="none" stroke-width="0.8" opacity="0.5"/>
+            
+            <!-- Abstract crossed keys -->
+            <g transform="translate(100, 100)" opacity="0.6">
+                <!-- Left key -->
+                <g transform="rotate(-30)">
+                    <rect x="-4" y="-55" width="8" height="70" rx="2"/>
+                    <circle cx="0" cy="-55" r="12" fill="none" stroke-width="3"/>
+                    <rect x="-10" y="10" width="6" height="12" rx="1"/>
+                    <rect x="4" y="10" width="6" height="12" rx="1"/>
+                </g>
+                <!-- Right key -->
+                <g transform="rotate(30)">
+                    <rect x="-4" y="-55" width="8" height="70" rx="2"/>
+                    <circle cx="0" cy="-55" r="12" fill="none" stroke-width="3"/>
+                    <rect x="-10" y="10" width="6" height="12" rx="1"/>
+                    <rect x="4" y="10" width="6" height="12" rx="1"/>
+                </g>
+            </g>
+            
+            <!-- Abstract tiara shape above -->
+            <g transform="translate(100, 35)" opacity="0.5">
+                <ellipse cx="0" cy="0" rx="20" ry="12"/>
+                <ellipse cx="0" cy="-8" rx="16" ry="8"/>
+                <ellipse cx="0" cy="-14" rx="10" ry="5"/>
+                <circle cx="0" cy="-20" r="4"/>
+            </g>
+            
+            <!-- Decorative dots around -->
+            <circle cx="100" cy="15" r="3" opacity="0.4"/>
+            <circle cx="100" cy="185" r="3" opacity="0.4"/>
+            <circle cx="15" cy="100" r="3" opacity="0.4"/>
+            <circle cx="185" cy="100" r="3" opacity="0.4"/>
+        </svg>`;
+
+        // Red wax seal SVG (stylized, not official)
+        const waxSealSvg = `
+        <svg viewBox="0 0 80 80" class="pope-wax-svg">
+            <defs>
+                <radialGradient id="waxGrad" cx="40%" cy="35%" r="60%">
+                    <stop offset="0%" stop-color="#C44536"/>
+                    <stop offset="60%" stop-color="#8B2920"/>
+                    <stop offset="100%" stop-color="#5C1A15"/>
+                </radialGradient>
+                <filter id="waxEmboss">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="blur"/>
+                    <feOffset in="blur" dx="1.5" dy="2" result="offsetBlur"/>
+                    <feComposite in="SourceGraphic" in2="offsetBlur" operator="over"/>
+                </filter>
+            </defs>
+            <!-- Wax blob shape -->
+            <path d="M40 4 C52 4 65 10 70 20 C76 32 76 48 70 60 C65 70 52 76 40 76 C28 76 15 70 10 60 C4 48 4 32 10 20 C15 10 28 4 40 4 Z" 
+                  fill="url(#waxGrad)" filter="url(#waxEmboss)"/>
+            <!-- Inner embossed cross -->
+            <g transform="translate(40, 40)" fill="none" stroke="#F5E6D3" stroke-width="2.5" opacity="0.6">
+                <line x1="-14" y1="0" x2="14" y2="0"/>
+                <line x1="0" y1="-14" x2="0" y2="14"/>
+            </g>
+            <!-- Highlight -->
+            <ellipse cx="32" cy="28" rx="8" ry="5" fill="rgba(255,255,255,0.2)" transform="rotate(-20, 32, 28)"/>
         </svg>`;
 
         d.innerHTML = `
             <div class="pope-doc">
+                <!-- Centered watermark -->
+                <div class="pope-watermark">${watermarkSvg}</div>
+                
                 <!-- Header -->
                 <div class="pope-header">
                     <div class="pope-header-left">
@@ -2329,15 +2404,15 @@ class SkinRenderer {
                     </div>
                     <div class="pope-meta">
                         <div>REF: PAP-${refDate}-${refNum}</div>
-                        <div>CLASS: Counsel Request (Fictional)</div>
-                        <div>UPDATED: ${safe(pd.updatedAgo)}</div>
+                        <div>CLASS: Counsel Request</div>
+                        <div>UPDATED: ${safe(pd.updatedAgo) || 'Just now'}</div>
                         <div>STATUS: REGISTERED</div>
                     </div>
                 </div>
 
                 <div class="pope-rule"></div>
 
-                <!-- Seal watermark -->
+                <!-- Seal watermark (top-right) -->
                 <div class="pope-seal">${sealSvg}</div>
 
                 <!-- Body -->
@@ -2357,6 +2432,9 @@ class SkinRenderer {
                     <div class="pope-stamp">ADOPTED</div>
                 </div>
 
+                <!-- Wax Seal -->
+                <div class="pope-wax-seal">${waxSealSvg}</div>
+
                 <!-- Signature -->
                 <div class="pope-signature">
                     <div class="pope-sig-line"></div>
@@ -2366,7 +2444,7 @@ class SkinRenderer {
 
                 <!-- Footer -->
                 <div class="pope-footer">
-                    ${(pd.fictionNotice || ['This document is entirely fictional.']).map(n => `<span>${n}</span>`).join(' · ')}
+                    ${(pd.fictionNotice || ['This document is entirely fictional.', 'Not affiliated with any religious institution.']).map(n => `<span>${n}</span>`).join(' · ')}
                 </div>
             </div>
         `;
@@ -2586,7 +2664,8 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: "newsDigital", label: "新聞" },
         { id: "stock", label: "株価" },
         { id: "papal", label: "教皇" },
-        { id: "earthcam", label: "地球儀" }
+        { id: "earthcam", label: "地球儀" },
+        { id: "news", label: "速報" }
     ];
 
     // Use fixed order always
