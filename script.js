@@ -2456,6 +2456,15 @@ class SkinRenderer {
         d.className = 'skin-earthcam skin-earthcam-entry';
         const ed = pack.earthCam || {};
 
+        // Helper: Get Japanese city name
+        const getCityJa = (cityEn) => (typeof CITY_NAME_JA !== 'undefined' && CITY_NAME_JA[cityEn]) || cityEn;
+
+        // Convert LOC display to Japanese
+        const locDisplayJa = ed.locDisplay ? ed.locDisplay.replace(/LOC:\s*[^,]+,\s*([^·\s]+)/, (match, city) => {
+            const cityJa = getCityJa(city.trim());
+            return match.replace(city, cityJa);
+        }) : "LOC: --";
+
         // --- Recovery Layer (Glows under pins) ---
         const recoveryCircles = (ed.pins || []).map((p, idx) => `
             <g transform="translate(${p.x} ${p.y})">
@@ -2466,11 +2475,12 @@ class SkinRenderer {
         `).join('');
 
         // --- Pins & Labels (primary pin shows full, others show city only) ---
+        // Convert city names to Japanese
         const pinsHtml = (ed.pins || []).map((p, idx) => {
-            // Primary pin (idx=0) shows full label, others show city only
             const isPrimary = idx === 0;
-            const displayText = isPrimary ? p.shortLabel : p.city;
-            const w = Math.min(180, (displayText || "").length * 7 + 20);
+            const cityJa = getCityJa(p.city);
+            const displayText = isPrimary ? p.shortLabel.replace(p.city, cityJa) : cityJa;
+            const w = Math.min(180, (displayText || "").length * 12 + 24);
             const offsetY = p.labelOffsetY || (p.y > 400 ? -24 : 14);
             return `
             <g class="pin-group" transform="translate(${p.x} ${p.y})">
@@ -2478,8 +2488,8 @@ class SkinRenderer {
                 <circle r="16" class="pin-ring"/>
                 <circle r="26" class="pin-wave" style="animation-delay: -${idx * 0.4}s"/>
                 <g class="pin-label" transform="translate(16 ${offsetY})">
-                    <rect x="0" y="-14" width="${w}" height="20" rx="10" fill="rgba(0,0,0,0.55)" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
-                    <text x="8" y="2" fill="#fff" font-size="13" font-family="sans-serif" font-weight="600" 
+                    <rect x="0" y="-14" width="${w}" height="20" rx="10" fill="rgba(0,0,0,0.6)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+                    <text x="10" y="2" fill="#fff" font-size="12" font-family="'Hiragino Sans', 'Yu Gothic', sans-serif" font-weight="600" 
                           style="paint-order: stroke fill" stroke="rgba(0,0,0,0.6)" stroke-width="3">${displayText || ""}</text>
                 </g>
             </g>
@@ -2498,21 +2508,84 @@ class SkinRenderer {
             </div>
         `;
 
-        // SVG
+        // SVG with enhanced realistic globe
         const svg = `
 <svg viewBox="0 0 800 800" class="earth-svg" aria-label="EarthCam Globe">
   <defs>
     <clipPath id="sphereClip"><circle cx="400" cy="400" r="280"/></clipPath>
-    <radialGradient id="oceanGrad" cx="35%" cy="30%" r="75%">
-      <stop offset="0%"  stop-color="#1b6cff"/>
-      <stop offset="55%" stop-color="#0f3f9d"/>
-      <stop offset="100%" stop-color="#081b3a"/>
+    
+    <!-- Ocean gradient (deeper blue) -->
+    <radialGradient id="oceanGrad" cx="30%" cy="25%" r="80%">
+      <stop offset="0%"  stop-color="#2b7fff"/>
+      <stop offset="40%" stop-color="#1352b5"/>
+      <stop offset="75%" stop-color="#0a2d6e"/>
+      <stop offset="100%" stop-color="#051533"/>
     </radialGradient>
-    <radialGradient id="nightGrad" cx="72%" cy="40%" r="85%">
-      <stop offset="0%" stop-color="rgba(0,0,0,0)"/>
-      <stop offset="55%" stop-color="rgba(0,0,0,0.25)"/>
-      <stop offset="100%" stop-color="rgba(0,0,0,0.7)"/>
+    
+    <!-- Day-Night Terminator (major shading) -->
+    <radialGradient id="terminatorGrad" cx="25%" cy="30%" r="90%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0)"/>
+      <stop offset="30%" stop-color="rgba(255,255,255,0)"/>
+      <stop offset="55%" stop-color="rgba(0,0,0,0.15)"/>
+      <stop offset="75%" stop-color="rgba(0,0,0,0.45)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0.8)"/>
     </radialGradient>
+    
+    <!-- Rim Light (atmospheric glow at edge) -->
+    <radialGradient id="rimLight" cx="50%" cy="50%" r="50%">
+      <stop offset="85%" stop-color="rgba(150,200,255,0)"/>
+      <stop offset="94%" stop-color="rgba(150,200,255,0.25)"/>
+      <stop offset="100%" stop-color="rgba(180,220,255,0.5)"/>
+    </radialGradient>
+    
+    <!-- Specular highlight (sun reflection) -->
+    <radialGradient id="specularGrad" cx="28%" cy="25%" r="25%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.35)"/>
+      <stop offset="50%" stop-color="rgba(255,255,255,0.1)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </radialGradient>
+    
+    <!-- Atmospheric haze (inner edge softness) -->
+    <radialGradient id="atmoHaze" cx="50%" cy="50%" r="50%">
+      <stop offset="75%" stop-color="rgba(200,220,255,0)"/>
+      <stop offset="90%" stop-color="rgba(180,200,240,0.08)"/>
+      <stop offset="100%" stop-color="rgba(160,190,230,0.2)"/>
+    </radialGradient>
+    
+    <!-- Grid fade mask (fades at edges) -->
+    <radialGradient id="gridMask" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.5"/>
+      <stop offset="60%" stop-color="white" stop-opacity="0.3"/>
+      <stop offset="85%" stop-color="white" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <mask id="gridFadeMask">
+      <circle cx="400" cy="400" r="280" fill="url(#gridMask)"/>
+    </mask>
+    
+    <!-- Land texture pattern -->
+    <filter id="landTexture">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" result="noise"/>
+      <feColorMatrix in="noise" type="saturate" values="0" result="gray"/>
+      <feBlend in="SourceGraphic" in2="gray" mode="overlay" result="textured"/>
+      <feComposite in="textured" in2="SourceGraphic" operator="in"/>
+    </filter>
+    
+    <!-- Land gradient (subtle depth) -->
+    <linearGradient id="landGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(90,210,170,0.45)"/>
+      <stop offset="50%" stop-color="rgba(60,180,140,0.35)"/>
+      <stop offset="100%" stop-color="rgba(40,150,110,0.30)"/>
+    </linearGradient>
+    
+    <!-- Cloud noise filter -->
+    <filter id="cloudNoise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3" seed="12" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.18 0"/>
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+    
+    <!-- Recovery glow -->
     <radialGradient id="recoverGrad" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#0ff" stop-opacity="0.5"/>
       <stop offset="100%" stop-color="#0ff" stop-opacity="0"/>
@@ -2524,26 +2597,39 @@ class SkinRenderer {
     <filter id="recoverBlur">
       <feGaussianBlur stdDeviation="4"/>
     </filter>
-    <filter id="cloudNoise">
-      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" seed="7" result="noise"/>
-      <feColorMatrix in="noise" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.28 0" result="alphaNoise"/>
-      <feGaussianBlur in="alphaNoise" stdDeviation="1"/>
+    <filter id="gridBlur">
+      <feGaussianBlur stdDeviation="0.8"/>
     </filter>
+    
+    <!-- Vignette for camera feel -->
+    <radialGradient id="vignetteGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="60%" stop-color="rgba(0,0,0,0)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0.25)"/>
+    </radialGradient>
+    
+    <!-- Scanline overlay -->
     <linearGradient id="scanGrad" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="rgba(255,255,255,0)"/>
-      <stop offset="50%" stop-color="rgba(255,255,255,0.10)"/>
+      <stop offset="50%" stop-color="rgba(255,255,255,0.06)"/>
       <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
     </linearGradient>
   </defs>
+  
+  <!-- Background -->
   <rect x="0" y="0" width="800" height="800" class="earth-bg"/>
+  
+  <!-- Outer atmosphere glow -->
   <circle cx="400" cy="400" r="295" class="atmo-ring" filter="url(#glow)"/>
   <circle cx="400" cy="400" r="280" class="sphere-outline"/>
+  
   <g clip-path="url(#sphereClip)">
-    
     <!-- Rotating Globe Group with zoom -->
     <g class="globe-group" transform="translate(400 400) scale(1.12) translate(-400 -400)">
-        <rect x="120" y="120" width="560" height="560" fill="url(#oceanGrad)"/>
-        <g class="grid">
+        <!-- Ocean base -->
+        <circle cx="400" cy="400" r="320" fill="url(#oceanGrad)"/>
+        
+        <!-- Grid (faded, blurred, masked) -->
+        <g class="grid" mask="url(#gridFadeMask)" filter="url(#gridBlur)" opacity="0.35">
             <line x1="120" y1="220" x2="680" y2="220"/>
             <line x1="120" y1="310" x2="680" y2="310"/>
             <line x1="120" y1="400" x2="680" y2="400"/>
@@ -2555,32 +2641,72 @@ class SkinRenderer {
             <line x1="480" y1="120" x2="480" y2="680"/>
             <line x1="560" y1="120" x2="560" y2="680"/>
         </g>
+        
+        <!-- Continents (textured with highlights) -->
         <g class="land">
-            <!-- North America (large, top-left) -->
-            <ellipse cx="260" cy="300" rx="70" ry="50" fill="rgba(80,200,170,0.28)" stroke="rgba(140,255,220,0.35)" stroke-width="1.5" stroke-linejoin="round" transform="rotate(-10 260 300)"/>
-            <!-- Eurasia (wide, top-right) -->
-            <ellipse cx="520" cy="290" rx="100" ry="40" fill="rgba(80,200,170,0.28)" stroke="rgba(140,255,220,0.35)" stroke-width="1.5" stroke-linejoin="round" transform="rotate(5 520 290)"/>
-            <!-- Africa (vertical, center-bottom) -->
-            <ellipse cx="440" cy="440" rx="35" ry="60" fill="rgba(80,200,170,0.28)" stroke="rgba(140,255,220,0.35)" stroke-width="1.5" stroke-linejoin="round" transform="rotate(10 440 440)"/>
-            <!-- South America (small, bottom-left) -->
-            <ellipse cx="280" cy="520" rx="30" ry="50" fill="rgba(80,200,170,0.28)" stroke="rgba(140,255,220,0.35)" stroke-width="1.5" stroke-linejoin="round" transform="rotate(-15 280 520)"/>
-            <!-- Australia (medium, bottom-right) -->
-            <ellipse cx="560" cy="530" rx="40" ry="30" fill="rgba(80,200,170,0.28)" stroke="rgba(140,255,220,0.35)" stroke-width="1.5" stroke-linejoin="round" transform="rotate(8 560 530)"/>
+            <!-- North America -->
+            <ellipse cx="260" cy="300" rx="70" ry="50" fill="url(#landGrad)" stroke="rgba(160,255,220,0.5)" stroke-width="1.5" transform="rotate(-10 260 300)"/>
+            <ellipse cx="260" cy="300" rx="68" ry="48" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1" transform="rotate(-10 260 300)"/>
+            
+            <!-- Eurasia -->
+            <ellipse cx="520" cy="290" rx="105" ry="45" fill="url(#landGrad)" stroke="rgba(160,255,220,0.5)" stroke-width="1.5" transform="rotate(5 520 290)"/>
+            <ellipse cx="520" cy="290" rx="103" ry="43" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1" transform="rotate(5 520 290)"/>
+            
+            <!-- Africa -->
+            <ellipse cx="440" cy="440" rx="38" ry="65" fill="url(#landGrad)" stroke="rgba(160,255,220,0.5)" stroke-width="1.5" transform="rotate(10 440 440)"/>
+            <ellipse cx="440" cy="440" rx="36" ry="63" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1" transform="rotate(10 440 440)"/>
+            
+            <!-- South America -->
+            <ellipse cx="280" cy="520" rx="32" ry="55" fill="url(#landGrad)" stroke="rgba(160,255,220,0.5)" stroke-width="1.5" transform="rotate(-15 280 520)"/>
+            <ellipse cx="280" cy="520" rx="30" ry="53" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1" transform="rotate(-15 280 520)"/>
+            
+            <!-- Australia -->
+            <ellipse cx="560" cy="530" rx="42" ry="32" fill="url(#landGrad)" stroke="rgba(160,255,220,0.5)" stroke-width="1.5" transform="rotate(8 560 530)"/>
+            <ellipse cx="560" cy="530" rx="40" ry="30" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1" transform="rotate(8 560 530)"/>
         </g>
+        
+        <!-- Cloud layer with animation -->
         <g class="cloud-layer">
-            <rect x="120" y="120" width="560" height="560" filter="url(#cloudNoise)" class="clouds"/>
+            <ellipse cx="320" cy="280" rx="80" ry="25" fill="rgba(255,255,255,0.12)" filter="url(#cloudNoise)">
+              <animateTransform attributeName="transform" type="translate" values="0 0; 15 3; 0 0" dur="45s" repeatCount="indefinite"/>
+            </ellipse>
+            <ellipse cx="500" cy="380" rx="60" ry="20" fill="rgba(255,255,255,0.10)" filter="url(#cloudNoise)">
+              <animateTransform attributeName="transform" type="translate" values="0 0; -10 2; 0 0" dur="50s" repeatCount="indefinite"/>
+            </ellipse>
+            <ellipse cx="380" cy="500" rx="70" ry="22" fill="rgba(255,255,255,0.09)" filter="url(#cloudNoise)">
+              <animateTransform attributeName="transform" type="translate" values="0 0; 8 -2; 0 0" dur="55s" repeatCount="indefinite"/>
+            </ellipse>
         </g>
-        <circle cx="430" cy="395" r="320" fill="url(#nightGrad)"/>
+        
+        <!-- Day-Night terminator shading -->
+        <circle cx="400" cy="400" r="320" fill="url(#terminatorGrad)"/>
     </g>
 
+    <!-- Specular highlight (sun reflection) -->
+    <circle cx="300" cy="280" r="120" fill="url(#specularGrad)"/>
+    
+    <!-- Atmospheric haze (inner edge) -->
+    <circle cx="400" cy="400" r="280" fill="url(#atmoHaze)"/>
+    
+    <!-- Rim light (edge glow) -->
+    <circle cx="400" cy="400" r="280" fill="url(#rimLight)"/>
+
+    <!-- Recovery layer -->
     <g class="recovery-layer">
         ${recoveryCircles}
     </g>
+    
+    <!-- Pins -->
     <g class="pins">
       ${pinsHtml}
     </g>
   </g>
-  <rect x="0" y="0" width="800" height="800" fill="url(#scanGrad)" class="scanline"/>
+  
+  <!-- Vignette overlay -->
+  <circle cx="400" cy="400" r="400" fill="url(#vignetteGrad)"/>
+  
+  <!-- Subtle scanline -->
+  <rect x="0" y="0" width="800" height="800" fill="url(#scanGrad)" class="scanline" opacity="0.3"/>
 </svg>`;
 
         d.innerHTML = `
@@ -2590,7 +2716,7 @@ class SkinRenderer {
                   <div class="earthcam-live"><span class="earthcam-dot"></span>LIVE</div>
                   <div class="earthcam-tag">EarthCam</div>
                   <div class="earthcam-tag" id="earthcam-region">${ed.region}</div>
-                  <div class="earthcam-tag" id="earthcam-loc">${ed.locDisplay || "LOC: --"}</div>
+                  <div class="earthcam-tag" id="earthcam-loc">${locDisplayJa}</div>
                   <div class="earthcam-tag" id="earthcam-utc">UTC --:--:--</div>
                   <div class="earthcam-tag" id="earthcam-viewers">${ed.viewers}</div>
                   <div class="earthcam-tag" id="earthcam-recover">${ed.recovery}</div>
@@ -2660,12 +2786,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const fallbackTabs = [
         { id: "dm", label: "LINE" },
         { id: "x", label: "X" },
+        { id: "news", label: "速報" },
         { id: "youtube", label: "YouTube" },
         { id: "newsDigital", label: "新聞" },
         { id: "stock", label: "株価" },
         { id: "papal", label: "教皇" },
-        { id: "earthcam", label: "地球儀" },
-        { id: "news", label: "速報" }
+        { id: "earthcam", label: "地球儀" }
     ];
 
     // Use fixed order always
