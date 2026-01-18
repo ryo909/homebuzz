@@ -2477,55 +2477,32 @@ class SkinRenderer {
                 <!-- Paper texture layer -->
                 <div class="papal-paper-texture" aria-hidden="true"></div>
                 
-                <!-- Watermark (center, behind content) -->
+                <!-- Watermark (center, very faint) -->
                 <div class="papal-watermark" aria-hidden="true">${watermarkSvg}</div>
 
-                <!-- Official circular seal (top-left, faded) -->
-                <div class="papal-official-seal" aria-hidden="true">
-                    <svg viewBox="0 0 100 100" class="official-seal-svg">
-                        <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="2"/>
-                        <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="1"/>
-                        <circle cx="50" cy="50" r="32" fill="none" stroke="currentColor" stroke-width="0.5" stroke-dasharray="3 2"/>
-                        <text x="50" y="24" text-anchor="middle" font-size="5" font-weight="600" fill="currentColor">SANCTA SEDES</text>
-                        <g transform="translate(50, 50)">
-                            <line x1="-10" y1="0" x2="10" y2="0" stroke="currentColor" stroke-width="2"/>
-                            <line x1="0" y1="-10" x2="0" y2="10" stroke="currentColor" stroke-width="2"/>
-                            <circle cx="0" cy="0" r="3" fill="currentColor"/>
-                        </g>
-                        <text x="50" y="78" text-anchor="middle" font-size="4.5" fill="currentColor">• REGISTRAVIT •</text>
-                    </svg>
-                </div>
-
-                <!-- REGISTERED stamp (top-right, angled) -->
+                <!-- REGISTERED stamp (top-right, faded) -->
                 <div class="papal-stamp" aria-hidden="true">REGISTERED</div>
 
-                <!-- Authority Header -->
+                <!-- Meta info (single line, top-right) -->
+                <div class="papal-meta-line">
+                    REF: PAP-${refDate}-${refNum} | CLASS: Private | ${safe(pd.updatedAgo) || 'Just now'}
+                </div>
+
+                <!-- Authority Header (centered) -->
                 <div class="papal-header">
-                    <div class="papal-topline">HOLY SEE — Secretariat of State</div>
-                    <div class="papal-subline">APOSTOLIC PALACE • VATICAN CITY</div>
+                    <div class="papal-topline">HOLY SEE — SECRETARIAT OF STATE</div>
+                    <div class="papal-subline">APOSTOLIC PALACE · VATICAN CITY</div>
+                    <div class="papal-authority-line">By authority of the Secretariat of State</div>
                 </div>
 
                 <div class="papal-rule"></div>
 
-                <!-- Seal watermark (top-right) -->
-                <div class="papal-seal">${sealSvg}</div>
-
-                <!-- Meta info -->
-                <div class="papal-meta">
-                    <div class="meta-row"><span class="field-label">REF:</span> PAP-${refDate}-${refNum}</div>
-                    <div class="meta-row"><span class="field-label">CLASS:</span> Private Counsel</div>
-                    <div class="meta-row"><span class="field-label">UPDATED:</span> ${safe(pd.updatedAgo) || 'Just now'}</div>
-                    <div class="meta-row"><span class="field-label">STATUS:</span> REGISTERED</div>
-                </div>
-
                 <!-- Body (addressed) -->
                 <div class="papal-body">
-                    <div class="papal-authority-byline">By authority of the Secretariat of State</div>
-                    <div class="papal-to">To: You</div>
+                    <div class="papal-to">To: YOU</div>
                     <div class="papal-subject">Subject: Counsel regarding <span class="jp">"${safe(pack.text)}"</span></div>
                     
                     <p>${safe(pd.invitationBody).replace(/\n/g, '</p><p>')}</p>
-                    <p>Your compliance with this request is duly noted and appreciated.</p>
                 </div>
 
                 <!-- Statement Under Seal -->
@@ -2535,60 +2512,66 @@ class SkinRenderer {
                     <div class="papal-adopted">ADOPTED</div>
                 </div>
 
-                <!-- Thin ribbon with knot + Embossed Seal -->
-                <div class="papal-ribbon-thin" aria-hidden="true">
-                    <svg viewBox="0 0 300 50" class="ribbon-svg">
+                <!-- Premium Wax Seal with 2-line ribbon -->
+                <div class="papal-seal-area">
+                    <!-- Dual ribbon lines -->
+                    <svg class="papal-ribbon-svg" viewBox="0 0 300 60" aria-hidden="true">
                         <defs>
-                            <linearGradient id="ribbonGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stop-color="#6d1a16"/>
+                            <linearGradient id="rGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#5a1210"/>
                                 <stop offset="50%" stop-color="#8b2920"/>
-                                <stop offset="100%" stop-color="#6d1a16"/>
+                                <stop offset="100%" stop-color="#5a1210"/>
                             </linearGradient>
-                            <filter id="ribbonShadow">
-                                <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-color="#000" flood-opacity="0.25"/>
+                            <filter id="rShadow" x="-20%" y="-50%" width="140%" height="200%">
+                                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.18"/>
                             </filter>
                         </defs>
-                        <!-- Left ribbon -->
-                        <path d="M40 28 C80 24, 110 26, 140 28" stroke="url(#ribbonGrad)" stroke-width="3" fill="none" stroke-linecap="round" filter="url(#ribbonShadow)"/>
-                        <!-- Right ribbon -->
-                        <path d="M160 28 C190 26, 220 24, 260 28" stroke="url(#ribbonGrad)" stroke-width="3" fill="none" stroke-linecap="round" filter="url(#ribbonShadow)"/>
+                        <!-- Left ribbon pair -->
+                        <path d="M30 26 Q80 22, 135 28" stroke="url(#rGrad)" stroke-width="2" fill="none" filter="url(#rShadow)"/>
+                        <path d="M35 32 Q85 28, 138 34" stroke="url(#rGrad)" stroke-width="2" fill="none" filter="url(#rShadow)"/>
+                        <!-- Right ribbon pair -->
+                        <path d="M165 28 Q220 22, 270 26" stroke="url(#rGrad)" stroke-width="2" fill="none" filter="url(#rShadow)"/>
+                        <path d="M162 34 Q215 28, 265 32" stroke="url(#rGrad)" stroke-width="2" fill="none" filter="url(#rShadow)"/>
                         <!-- Knot -->
-                        <ellipse cx="150" cy="26" rx="14" ry="10" fill="#7b1215" filter="url(#ribbonShadow)"/>
-                        <ellipse cx="150" cy="24" rx="10" ry="6" fill="#a63a33"/>
-                        <ellipse cx="148" cy="22" rx="4" ry="2" fill="rgba(255,255,255,0.25)"/>
+                        <ellipse cx="150" cy="30" rx="18" ry="14" fill="#6a1614" filter="url(#rShadow)"/>
+                        <ellipse cx="150" cy="28" rx="12" ry="8" fill="#8b2920"/>
+                        <ellipse cx="147" cy="25" rx="5" ry="3" fill="rgba(255,255,255,0.20)"/>
                     </svg>
-                </div>
-                
-                <!-- Embossed seal impression (subtle, paper-blended) -->
-                <div class="papal-emboss-seal" aria-hidden="true">
-                    <svg viewBox="0 0 100 100" class="emboss-svg">
+
+                    <!-- Premium Wax Seal -->
+                    <svg class="papal-wax-svg" viewBox="0 0 100 100" aria-hidden="true">
                         <defs>
-                            <filter id="embossFilter" x="-20%" y="-20%" width="140%" height="140%">
-                                <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur"/>
-                                <feOffset in="blur" dx="1" dy="1" result="lightOffset"/>
-                                <feOffset in="blur" dx="-1" dy="-1" result="darkOffset"/>
-                                <feComposite in="lightOffset" in2="darkOffset" operator="arithmetic" k2="1" k3="-1" result="inner"/>
-                                <feColorMatrix in="inner" type="matrix"
-                                    values="0 0 0 0 0.4
-                                            0 0 0 0 0.35
-                                            0 0 0 0 0.3
-                                            0 0 0 0.6 0"/>
+                            <radialGradient id="waxBase" cx="35%" cy="30%" r="70%">
+                                <stop offset="0%" stop-color="#c94a42"/>
+                                <stop offset="40%" stop-color="#8b2920"/>
+                                <stop offset="100%" stop-color="#4a1410"/>
+                            </radialGradient>
+                            <radialGradient id="waxHighlight" cx="30%" cy="25%" r="40%">
+                                <stop offset="0%" stop-color="rgba(255,255,255,0.35)"/>
+                                <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+                            </radialGradient>
+                            <filter id="waxShadow" x="-30%" y="-30%" width="160%" height="180%">
+                                <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.22"/>
+                            </filter>
+                            <filter id="waxBevel" x="-10%" y="-10%" width="120%" height="120%">
+                                <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="b"/>
+                                <feOffset in="b" dx="1.5" dy="1.5" result="light"/>
+                                <feOffset in="b" dx="-1" dy="-1" result="dark"/>
+                                <feComposite in="light" in2="dark" operator="arithmetic" k2="1" k3="-1"/>
                                 <feComposite in2="SourceGraphic" operator="over"/>
                             </filter>
                         </defs>
-                        <g filter="url(#embossFilter)" opacity="0.6">
-                            <circle cx="50" cy="50" r="40" fill="none" stroke="#8b8070" stroke-width="3"/>
-                            <circle cx="50" cy="50" r="34" fill="none" stroke="#8b8070" stroke-width="1.5"/>
-                            <!-- Crossed keys abstraction -->
-                            <g transform="translate(50, 50)" stroke="#8b8070" stroke-width="4" stroke-linecap="round" fill="none">
-                                <line x1="-18" y1="18" x2="18" y2="-18"/>
-                                <line x1="-18" y1="-18" x2="18" y2="18"/>
-                            </g>
-                            <!-- Small cross -->
-                            <g transform="translate(50, 50)" fill="#8b8070">
-                                <rect x="-3" y="-12" width="6" height="24" rx="1"/>
-                                <rect x="-12" y="-3" width="24" height="6" rx="1"/>
-                            </g>
+                        <!-- Main wax body -->
+                        <circle cx="50" cy="50" r="42" fill="url(#waxBase)" filter="url(#waxShadow)"/>
+                        <!-- Inner bevel rim -->
+                        <circle cx="50" cy="50" r="36" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <!-- Highlight -->
+                        <ellipse cx="40" cy="38" rx="20" ry="14" fill="url(#waxHighlight)"/>
+                        <!-- Abstract cross/keys imprint (very subtle) -->
+                        <g filter="url(#waxBevel)" opacity="0.45">
+                            <rect x="47" y="32" width="6" height="36" rx="1" fill="#3a0e0c"/>
+                            <rect x="32" y="47" width="36" height="6" rx="1" fill="#3a0e0c"/>
                         </g>
                     </svg>
                 </div>
@@ -2624,13 +2607,14 @@ class SkinRenderer {
         }) : "LOC: --";
 
         // --- Recovery Layer (Glows under pins) ---
+        // --- Recovery Layer (Glows under pins) ---
         const recoveryCircles = (ed.pins || []).map((p, idx) => `
-            <g transform="translate(${p.x} ${p.y})">
+    <g transform="translate(${p.x} ${p.y})">
                <circle r="50" fill="#0f6" opacity="0.5" filter="url(#recoverBlur)"/>
                <circle r="30" fill="#0ff" opacity="0.4" filter="url(#recoverBlur)"/>
                <circle r="15" fill="#4f8" opacity="0.6"/>
             </g>
-        `).join('');
+    `).join('');
 
         // --- Pins & Labels (primary pin shows full, others show city only) ---
         // Convert city names to Japanese
@@ -2641,7 +2625,7 @@ class SkinRenderer {
             const w = Math.min(180, (displayText || "").length * 12 + 24);
             const offsetY = p.labelOffsetY || (p.y > 400 ? -24 : 14);
             return `
-            <g class="pin-group" transform="translate(${p.x} ${p.y})">
+    <g class="pin-group" transform="translate(${p.x} ${p.y})">
                 <circle r="6" class="pin-core"/>
                 <circle r="16" class="pin-ring"/>
                 <circle r="26" class="pin-wave" style="animation-delay: -${idx * 0.4}s"/>
@@ -2651,12 +2635,12 @@ class SkinRenderer {
                           style="paint-order: stroke fill" stroke="rgba(0,0,0,0.6)" stroke-width="3">${displayText || ""}</text>
                 </g>
             </g>
-        `}).join('');
+    `}).join('');
 
         // --- Gauge ---
         const ri = ed.recoveryIndex || { before: 50, delta: 10, after: 60 };
         const gaugeHtml = `
-            <div class="earthcam-gauge-wrap">
+    <div class="earthcam-gauge-wrap">
                 <div class="earthcam-gauge-label">GLOBAL RECOVERY INDEX</div>
                 <div class="earthcam-gauge-track">
                     <div class="earthcam-gauge-bar" style="width: ${ri.before}%"></div>
@@ -2664,11 +2648,11 @@ class SkinRenderer {
                 </div>
                 <div class="earthcam-gauge-val">${ri.before} → ${ri.after} (+${ri.delta})</div>
             </div>
-        `;
+    `;
 
         // SVG with enhanced realistic globe
         const svg = `
-<svg viewBox="0 0 800 800" class="earth-svg" aria-label="EarthCam Globe">
+    <svg viewBox="0 0 800 800" class="earth-svg" aria-label="EarthCam Globe">
   <defs>
     <clipPath id="sphereClip"><circle cx="400" cy="400" r="280"/></clipPath>
     
@@ -2773,10 +2757,10 @@ class SkinRenderer {
     </linearGradient>
   </defs>
   
-  <!-- Background -->
+  <!--Background -->
   <rect x="0" y="0" width="800" height="800" class="earth-bg"/>
   
-  <!-- Outer atmosphere glow -->
+  <!--Outer atmosphere glow-- >
   <circle cx="400" cy="400" r="295" class="atmo-ring" filter="url(#glow)"/>
   <circle cx="400" cy="400" r="280" class="sphere-outline"/>
   
@@ -2860,27 +2844,27 @@ class SkinRenderer {
     </g>
   </g>
   
-  <!-- Vignette overlay -->
+  <!--Vignette overlay-- >
   <circle cx="400" cy="400" r="400" fill="url(#vignetteGrad)"/>
   
-  <!-- Subtle scanline -->
-  <rect x="0" y="0" width="800" height="800" fill="url(#scanGrad)" class="scanline" opacity="0.3"/>
-</svg>`;
+  <!--Subtle scanline-- >
+    <rect x="0" y="0" width="800" height="800" fill="url(#scanGrad)" class="scanline" opacity="0.3" />
+</svg > `;
 
         d.innerHTML = `
-            <div class="earthcam-wrap">
-              <div class="earthcam-hud">
-                <div class="earthcam-hud-scroll">
-                  <div class="earthcam-live"><span class="earthcam-dot"></span>LIVE</div>
-                  <div class="earthcam-tag">EarthCam</div>
-                  <div class="earthcam-tag" id="earthcam-region">${ed.region}</div>
-                  <div class="earthcam-tag" id="earthcam-loc">${locDisplayJa}</div>
-                  <div class="earthcam-tag" id="earthcam-utc">UTC --:--:--</div>
-                  <div class="earthcam-tag" id="earthcam-viewers">${ed.viewers}</div>
-                  <div class="earthcam-tag" id="earthcam-recover">${ed.recovery}</div>
-                  <div class="earthcam-tag" id="earthcam-trust">${ed.trust}</div>
-                </div>
-              </div>
+    <div class="earthcam-wrap">
+        <div class="earthcam-hud">
+            <div class="earthcam-hud-scroll">
+                <div class="earthcam-live"><span class="earthcam-dot"></span>LIVE</div>
+                <div class="earthcam-tag">EarthCam</div>
+                <div class="earthcam-tag" id="earthcam-region">${ed.region}</div>
+                <div class="earthcam-tag" id="earthcam-loc">${locDisplayJa}</div>
+                <div class="earthcam-tag" id="earthcam-utc">UTC --:--:--</div>
+                <div class="earthcam-tag" id="earthcam-viewers">${ed.viewers}</div>
+                <div class="earthcam-tag" id="earthcam-recover">${ed.recovery}</div>
+                <div class="earthcam-tag" id="earthcam-trust">${ed.trust}</div>
+            </div>
+        </div>
 
               ${gaugeHtml}
 
@@ -2894,7 +2878,7 @@ class SkinRenderer {
                 </div>
               </div>
             </div>
-        `;
+    `;
 
         this.container.appendChild(d);
 
@@ -2905,7 +2889,7 @@ class SkinRenderer {
                 const h = String(now.getUTCHours()).padStart(2, '0');
                 const m = String(now.getUTCMinutes()).padStart(2, '0');
                 const s = String(now.getUTCSeconds()).padStart(2, '0');
-                el.innerText = `UTC ${h}:${m}:${s}`;
+                el.innerText = `UTC ${h}:${m}:${s} `;
             }
         };
         updateClock();
@@ -2960,13 +2944,13 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.skinSwitcher.innerHTML = tabs.map(t =>
             `<button class="skin-btn ${t.id === currentSkin ? 'active' : ''}" data-skin="${t.id}">${t.label}</button>`
         ).join('') + `
-            <div class="settings-menu-wrap">
+    <div class="settings-menu-wrap">
                 <button class="settings-btn" id="settingsBtn" title="設定">⚙</button>
                 <div class="settings-dropdown" id="settingsDropdown">
                     <button class="settings-item" id="clearDataBtn">データを削除（履歴・通知）</button>
                 </div>
             </div>
-        `;
+    `;
     }
 
     // Update dom ref
@@ -2987,12 +2971,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const highlight = eventManager.getDailyHighlight();
         if (highlight) {
             const place = highlight.interpretation?.place;
-            const placeStr = place ? `${place.city} — ${place.district}` : '';
+            const placeStr = place ? `${place.city} — ${place.district} ` : '';
             const topMetric = highlight.topMetric || { label: 'Impact', delta: '+10' };
             const title = eventManager.getDailyHighlightTitle(highlight.seed);
 
             dom.dailyHighlightSection.innerHTML = `
-                <div class="daily-highlight-card">
+    <div class="daily-highlight-card">
                     <div class="daily-highlight-title">${title}</div>
                     <div class="daily-highlight-signature">${highlight.signature || 'The world noticed.'}</div>
                     <div class="daily-highlight-text">${highlight.text}</div>
@@ -3002,7 +2986,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <button class="daily-highlight-open-btn" data-event-id="${highlight.id}">開く</button>
                 </div>
-            `;
+    `;
 
             // Attach click handler for open button
             const openBtn = dom.dailyHighlightSection.querySelector('.daily-highlight-open-btn');
@@ -3013,15 +2997,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             dom.dailyHighlightSection.innerHTML = `
-                <div class="daily-highlight-empty">今日のハイライトはまだありません</div>
-            `;
+    <div class="daily-highlight-empty">今日のハイライトはまだありません</div>
+        `;
         }
 
         // Event List
         const events = eventManager.getRecentEvents(50);
         if (events.length === 0) {
             dom.historyEventList.innerHTML = `
-                <div class="history-event-empty">履歴がありません</div>
+        <div class="history-event-empty">履歴がありません</div>
             `;
             return;
         }
@@ -3036,7 +3020,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const scale = event.interpretation?.scale;
 
             return `
-                <div class="history-event-item" data-event-id="${event.id}">
+            <div class="history-event-item" data-event-id="${event.id}">
                     <div class="history-event-text">${event.text}</div>
                     <div class="history-event-date">${dateStr}</div>
                     <div class="history-event-tags">
@@ -3047,8 +3031,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${tone ? `<span class="history-event-badge tone">${tone.label}</span>` : ''}
                         ${scale ? `<span class="history-event-badge scale">${scale.label}</span>` : ''}
                     </div>
-                </div>
-            `;
+                </div >
+    `;
         }).join('');
 
         // Attach click handlers for event items

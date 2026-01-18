@@ -3790,14 +3790,14 @@ body {
   --papal-serif-en: "EB Garamond", "Times New Roman", serif;
   --papal-display-en: "Cinzel", "Trajan Pro", serif;
   --papal-serif-jp: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif;
-  --papal-ink: rgba(20, 18, 16, 0.92);
-  --papal-muted: rgba(45, 36, 28, 0.70);
+  --papal-ink: rgba(43, 43, 43, 0.92);
+  --papal-muted: rgba(55, 48, 40, 0.65);
   --papal-rule: rgba(60, 50, 40, 0.20);
   --papal-accent: #8B6914;
   --papal-stamp: #9B3A33;
 
   background: linear-gradient(180deg, #D4C9B5 0%, #C7BBAA 100%);
-  padding: 32px 16px;
+  padding: 40px 16px;
   min-height: 100vh;
   color: var(--papal-ink);
 }
@@ -3987,7 +3987,7 @@ body {
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  opacity: 0.15;
+  opacity: 0.05;
   transform: translateY(10px);
   z-index: 0;
 }
@@ -3998,28 +3998,27 @@ body {
   filter: blur(0.2px);
 }
 
-/* stamp - ink effect */
+/* stamp - ink effect (faded) */
 .skin-papal .papal-stamp {
   position: absolute;
-  top: 110px;
-  right: 110px;
-  padding: 10px 18px;
-  border: 2px solid rgba(140, 30, 30, .65);
-  color: rgba(140, 30, 30, .75);
+  top: 52px;
+  right: 48px;
+  padding: 8px 14px;
+  border: 2px solid rgba(130, 50, 40, .50);
+  color: rgba(130, 50, 40, .60);
   font-family: "Cinzel", serif;
   font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  transform: rotate(-12deg);
-  border-radius: 4px;
-  background: repeating-linear-gradient(135deg, rgba(140, 30, 30, .10) 0 2px, rgba(0, 0, 0, 0) 2px 7px);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  transform: rotate(-10deg);
+  border-radius: 3px;
+  background: repeating-linear-gradient(135deg, rgba(130, 50, 40, .08) 0 2px, transparent 2px 6px);
   mix-blend-mode: multiply;
   text-transform: uppercase;
   pointer-events: none;
   z-index: 2;
-  opacity: 0.28;
-  filter: blur(0.2px);
-  box-shadow: 0 0 0 1px rgba(140, 30, 30, .15) inset;
+  opacity: 0.15;
+  filter: blur(0.25px);
 }
 
 /* ============================
@@ -4028,7 +4027,8 @@ body {
 
 .skin-papal .papal-header {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  padding-top: 16px;
   position: relative;
   z-index: 1;
 }
@@ -4036,46 +4036,40 @@ body {
 .skin-papal .papal-topline {
   font-size: 14px;
   font-weight: 600;
+  letter-spacing: 0.12em;
   margin-bottom: 4px;
+}
+
+.skin-papal .papal-subline {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  opacity: 0.65;
+  margin-bottom: 6px;
+}
+
+.skin-papal .papal-authority-line {
+  font-size: 9px;
+  letter-spacing: 0.10em;
+  opacity: 0.50;
+  font-style: italic;
 }
 
 .skin-papal .papal-rule {
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--papal-rule) 20%, var(--papal-rule) 80%, transparent 100%);
-  margin: 20px 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(80, 70, 60, 0.25) 15%, rgba(80, 70, 60, 0.25) 85%, transparent 100%);
+  margin: 16px 0;
 }
 
-/* Seal (top-right) */
-.skin-papal .papal-seal {
+/* Meta line (single line, top-right) */
+.skin-papal .papal-meta-line {
   position: absolute;
-  top: 52px;
-  right: 52px;
-  width: 80px;
-  height: 80px;
-  z-index: 1;
-  color: var(--papal-muted);
-  opacity: 0.65;
-}
-
-.skin-papal .papal-seal .papal-seal-svg {
-  width: 100%;
-  height: 100%;
-}
-
-/* Meta info */
-.skin-papal .papal-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 20px;
-  margin-bottom: 24px;
-  font-size: 12px;
-  color: var(--papal-muted);
-  position: relative;
-  z-index: 1;
-}
-
-.skin-papal .meta-row {
-  font-family: var(--papal-serif-en);
+  top: 28px;
+  right: 28px;
+  font-size: 9px;
+  font-family: var(--papal-display-en);
+  letter-spacing: 0.06em;
+  opacity: 0.50;
+  z-index: 2;
 }
 
 /* ============================
@@ -4184,40 +4178,28 @@ body {
 }
 
 /* ============================
-   PAPAL: THIN RIBBON + KNOT
+   PAPAL: SEAL AREA (ribbon + wax)
    ============================ */
 
-.skin-papal .papal-ribbon-thin {
-  display: flex;
-  justify-content: center;
-  margin: 20px auto 0;
+.skin-papal .papal-seal-area {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 24px auto 16px;
   z-index: 1;
 }
 
-.skin-papal .papal-ribbon-thin .ribbon-svg {
+.skin-papal .papal-ribbon-svg {
   width: 280px;
   height: auto;
-  opacity: 0.9;
+  margin-bottom: -24px;
 }
 
-/* ============================
-   PAPAL: EMBOSSED SEAL IMPRESSION
-   ============================ */
-
-.skin-papal .papal-emboss-seal {
-  display: flex;
-  justify-content: center;
-  margin-top: -10px;
-  margin-bottom: 10px;
-  position: relative;
-  z-index: 2;
-}
-
-.skin-papal .papal-emboss-seal .emboss-svg {
-  width: 80px;
-  height: 80px;
-  transform: rotate(-5deg);
+.skin-papal .papal-wax-svg {
+  width: 72px;
+  height: 72px;
+  transform: rotate(-3deg);
 }
 
 /* ============================
