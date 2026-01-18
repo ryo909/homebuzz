@@ -58,7 +58,34 @@
 
     <!-- Data & Script -->
     <script src="data.js"></script>
-    <script src="script.js?v=unified1" defer></script>
+    <!-- Debug Overlay -->
+    <script>
+        (() => {
+            const overlay = document.createElement("div");
+            overlay.id = "__force_debug_overlay__";
+            overlay.style.cssText = [
+                "position:fixed", "top:6px", "left:6px", "z-index:2147483647",
+                "background:rgba(0,0,0,.88)", "color:#ffe66d", "padding:10px 12px",
+                "font:12px/1.35 monospace", "border:1px solid rgba(255,230,109,.5)",
+                "border-radius:10px", "white-space:pre", "pointer-events:none",
+                "max-width:70vw", "max-height:45vh", "overflow:hidden"
+            ].join(";");
+            const push = (m) => { overlay.textContent = m + "\n" + overlay.textContent; console.log("[FORCE]", m); };
+            window.__forcePush = push;
+            document.addEventListener("DOMContentLoaded", () => { document.body.appendChild(overlay); push("FORCE DEBUG HTML LOADED"); });
+            window.addEventListener("error", (e) => push("ERROR: " + (e.message || e.type)));
+            window.addEventListener("unhandledrejection", (e) => push("REJECT: " + (e.reason?.message || e.reason)));
+        })();
+    </script>
+
+    <script type="module">
+        const push = window.__forcePush || ((m) => console.log(m));
+        push("APP IMPORT START");
+        import("./script.js?v=" + Date.now())
+            .then(() => push("APP IMPORT OK"))
+            .catch((err) => push("APP IMPORT FAIL: " + (err?.message || err)));
+    </script>
+    <!-- <script src="script.js?v=unified1" defer></script> -->
 </body>
 
 </html>
