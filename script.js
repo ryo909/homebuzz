@@ -2300,7 +2300,7 @@ class SkinRenderer {
     }
     renderPapal(pack) {
         const d = document.createElement('div');
-        d.className = 'skin-pope';
+        d.className = 'skin-papal';
         const pd = pack.papal || {};
         const safe = (s) => s || '';
 
@@ -2309,9 +2309,9 @@ class SkinRenderer {
         const refDate = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
         const refNum = String(Math.abs(pack.id ? pack.id.charCodeAt(0) * 100 : 1234)).padStart(4, '0');
 
-        // Enhanced circular seal SVG (top-right, more visible)
+        // Enhanced circular seal SVG (top-right)
         const sealSvg = `
-        <svg viewBox="0 0 100 100" class="pope-seal-svg">
+        <svg viewBox="0 0 100 100" class="papal-seal-svg">
             <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="1.8"/>
             <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="1"/>
             <circle cx="50" cy="50" r="34" fill="none" stroke="currentColor" stroke-width="0.6"/>
@@ -2324,126 +2324,214 @@ class SkinRenderer {
             <text x="50" y="80" text-anchor="middle" font-size="5" fill="currentColor" font-family="serif">SECRETARIAT</text>
         </svg>`;
 
-        // Centered watermark SVG (abstract crossed keys + tiara medallion)
+        // Large centered watermark SVG (abstract crossed keys + cross)
         const watermarkSvg = `
-        <svg viewBox="0 0 200 200" class="pope-watermark-svg" style="fill: currentColor; stroke: currentColor;">
-            <!-- Outer ring -->
-            <circle cx="100" cy="100" r="95" fill="none" stroke-width="1.5" opacity="0.7"/>
-            <circle cx="100" cy="100" r="88" fill="none" stroke-width="0.8" opacity="0.5"/>
-            
-            <!-- Abstract crossed keys -->
-            <g transform="translate(100, 100)" opacity="0.6">
-                <!-- Left key -->
-                <g transform="rotate(-30)">
-                    <rect x="-4" y="-55" width="8" height="70" rx="2"/>
-                    <circle cx="0" cy="-55" r="12" fill="none" stroke-width="3"/>
-                    <rect x="-10" y="10" width="6" height="12" rx="1"/>
-                    <rect x="4" y="10" width="6" height="12" rx="1"/>
-                </g>
-                <!-- Right key -->
-                <g transform="rotate(30)">
-                    <rect x="-4" y="-55" width="8" height="70" rx="2"/>
-                    <circle cx="0" cy="-55" r="12" fill="none" stroke-width="3"/>
-                    <rect x="-10" y="10" width="6" height="12" rx="1"/>
-                    <rect x="4" y="10" width="6" height="12" rx="1"/>
-                </g>
+        <svg viewBox="0 0 600 600" class="wmSvg">
+            <defs>
+                <radialGradient id="wmFade" cx="50%" cy="45%" r="60%">
+                    <stop offset="0%" stop-color="#000" stop-opacity="0.22"/>
+                    <stop offset="70%" stop-color="#000" stop-opacity="0.10"/>
+                    <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+                </radialGradient>
+            </defs>
+            <!-- outer ring -->
+            <circle cx="300" cy="300" r="230" fill="none" stroke="#000" stroke-opacity="0.18" stroke-width="2"/>
+            <circle cx="300" cy="300" r="200" fill="none" stroke="#000" stroke-opacity="0.10" stroke-width="1.5" stroke-dasharray="6 8"/>
+            <!-- abstract crossed "keys-like" strokes -->
+            <g stroke="#000" stroke-opacity="0.18" fill="none" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M210 390 C255 350, 285 320, 310 285 C330 255, 350 230, 390 210"/>
+                <path d="M195 405 L245 455"/>
+                <path d="M235 445 L260 420"/>
+                <path d="M205 210 C250 245, 285 275, 315 310 C345 345, 370 365, 410 395"/>
+                <path d="M188 195 L240 145"/>
+                <path d="M228 155 L255 182"/>
             </g>
-            
-            <!-- Abstract tiara shape above -->
-            <g transform="translate(100, 35)" opacity="0.5">
-                <ellipse cx="0" cy="0" rx="20" ry="12"/>
-                <ellipse cx="0" cy="-8" rx="16" ry="8"/>
-                <ellipse cx="0" cy="-14" rx="10" ry="5"/>
-                <circle cx="0" cy="-20" r="4"/>
+            <!-- small cross -->
+            <g fill="#000" opacity="0.20">
+                <rect x="292" y="168" width="16" height="60" rx="3"/>
+                <rect x="270" y="190" width="60" height="16" rx="3"/>
             </g>
-            
-            <!-- Decorative dots around -->
-            <circle cx="100" cy="15" r="3" opacity="0.4"/>
-            <circle cx="100" cy="185" r="3" opacity="0.4"/>
-            <circle cx="15" cy="100" r="3" opacity="0.4"/>
-            <circle cx="185" cy="100" r="3" opacity="0.4"/>
+            <circle cx="300" cy="300" r="260" fill="url(#wmFade)" opacity="0.45"/>
         </svg>`;
 
-        // Red wax seal SVG (stylized, not official)
-        const waxSealSvg = `
-        <svg viewBox="0 0 80 80" class="pope-wax-svg">
+        // Ceremonial red cord SVG
+        const cordSvg = `
+        <svg class="cordSvg" viewBox="0 0 520 120">
             <defs>
-                <radialGradient id="waxGrad" cx="40%" cy="35%" r="60%">
-                    <stop offset="0%" stop-color="#C44536"/>
-                    <stop offset="60%" stop-color="#8B2920"/>
-                    <stop offset="100%" stop-color="#5C1A15"/>
+                <linearGradient id="cordGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#6f0f12"/>
+                    <stop offset="25%" stop-color="#b11b1f"/>
+                    <stop offset="55%" stop-color="#7b1215"/>
+                    <stop offset="100%" stop-color="#560b0d"/>
+                </linearGradient>
+                <linearGradient id="cordHi" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#ffd4d0" stop-opacity="0.35"/>
+                    <stop offset="60%" stop-color="#ffffff" stop-opacity="0.05"/>
+                    <stop offset="100%" stop-color="#000000" stop-opacity="0.18"/>
+                </linearGradient>
+                <filter id="cordShadow" x="-20%" y="-40%" width="140%" height="200%">
+                    <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.22"/>
+                </filter>
+                <pattern id="cordTwist" width="10" height="10" patternUnits="userSpaceOnUse">
+                    <path d="M0 8 L10 2" stroke="#ffffff" stroke-opacity="0.06" stroke-width="2"/>
+                    <path d="M0 2 L10 8" stroke="#000000" stroke-opacity="0.06" stroke-width="2"/>
+                </pattern>
+            </defs>
+            <g filter="url(#cordShadow)" opacity="0.95">
+                <path d="M70 58 C150 40, 220 40, 260 58 C300 76, 360 82, 450 62"
+                      fill="none" stroke="url(#cordGrad)" stroke-width="10" stroke-linecap="round"/>
+                <path d="M70 58 C150 40, 220 40, 260 58 C300 76, 360 82, 450 62"
+                      fill="none" stroke="url(#cordHi)" stroke-width="10" stroke-linecap="round" opacity="0.55"/>
+                <path d="M70 58 C150 40, 220 40, 260 58 C300 76, 360 82, 450 62"
+                      fill="none" stroke="url(#cordTwist)" stroke-width="10" stroke-linecap="round" opacity="0.35"/>
+            </g>
+            <g filter="url(#cordShadow)" opacity="0.9">
+                <path d="M250 62 C240 70, 240 82, 252 88 C266 96, 282 92, 286 80 C290 68, 274 60, 250 62 Z"
+                      fill="#7b1215" opacity="0.55"/>
+                <path d="M270 62 C280 70, 280 82, 268 88 C254 96, 238 92, 234 80 C230 68, 246 60, 270 62 Z"
+                      fill="#7b1215" opacity="0.45"/>
+            </g>
+        </svg>`;
+
+        // Premium wax seal SVG
+        const waxSealSvg = `
+        <svg class="waxSvg premium" viewBox="0 0 240 240" aria-hidden="true">
+            <defs>
+                <filter id="pWaxShadow" x="-35%" y="-35%" width="170%" height="170%">
+                    <feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="#000" flood-opacity="0.32"/>
+                </filter>
+                <radialGradient id="pWaxBody" cx="36%" cy="28%" r="75%">
+                    <stop offset="0%" stop-color="#d36a61"/>
+                    <stop offset="35%" stop-color="#a2352e"/>
+                    <stop offset="72%" stop-color="#6f1f1a"/>
+                    <stop offset="100%" stop-color="#4b1512"/>
                 </radialGradient>
-                <filter id="waxEmboss">
-                    <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="blur"/>
-                    <feOffset in="blur" dx="1.5" dy="2" result="offsetBlur"/>
-                    <feComposite in="SourceGraphic" in2="offsetBlur" operator="over"/>
+                <radialGradient id="pWaxSpec" cx="34%" cy="26%" r="48%">
+                    <stop offset="0%" stop-color="#ffffff" stop-opacity="0.38"/>
+                    <stop offset="35%" stop-color="#ffffff" stop-opacity="0.12"/>
+                    <stop offset="70%" stop-color="#ffffff" stop-opacity="0.00"/>
+                </radialGradient>
+                <radialGradient id="pWaxRim" cx="55%" cy="58%" r="70%">
+                    <stop offset="0%" stop-color="#000" stop-opacity="0.00"/>
+                    <stop offset="72%" stop-color="#000" stop-opacity="0.12"/>
+                    <stop offset="100%" stop-color="#000" stop-opacity="0.22"/>
+                </radialGradient>
+                <filter id="pEmbossDeep" x="-40%" y="-40%" width="180%" height="180%">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="1.4" result="b"/>
+                    <feOffset in="b" dx="1.8" dy="1.8" result="s1"/>
+                    <feOffset in="b" dx="-1.6" dy="-1.6" result="s2"/>
+                    <feComposite in="s2" in2="s1" operator="arithmetic" k2="-1" k3="1" result="inner"/>
+                    <feColorMatrix in="inner" type="matrix"
+                        values="0 0 0 0 0.10
+                                0 0 0 0 0.07
+                                0 0 0 0 0.06
+                                0 0 0 0.95 0" result="innerColor"/>
+                    <feComposite in="innerColor" in="SourceGraphic" operator="over"/>
+                </filter>
+                <filter id="pBleed" x="-40%" y="-40%" width="180%" height="180%">
+                    <feGaussianBlur stdDeviation="1.1" />
                 </filter>
             </defs>
-            <!-- Wax blob shape -->
-            <path d="M40 4 C52 4 65 10 70 20 C76 32 76 48 70 60 C65 70 52 76 40 76 C28 76 15 70 10 60 C4 48 4 32 10 20 C15 10 28 4 40 4 Z" 
-                  fill="url(#waxGrad)" filter="url(#waxEmboss)"/>
-            <!-- Inner embossed cross -->
-            <g transform="translate(40, 40)" fill="none" stroke="#F5E6D3" stroke-width="2.5" opacity="0.6">
-                <line x1="-14" y1="0" x2="14" y2="0"/>
-                <line x1="0" y1="-14" x2="0" y2="14"/>
+            <!-- Shadow bleed -->
+            <path filter="url(#pBleed)"
+                d="M118 24 C144 22, 170 34, 186 56 C205 82, 214 110, 209 137
+                   C203 168, 185 193, 158 207 C133 221, 104 223, 77 214
+                   C47 203, 30 182, 26 154 C22 125, 30 96, 48 72
+                   C66 48, 88 28, 118 24 Z"
+                fill="#5a1512" opacity="0.22"/>
+            <!-- Main wax body -->
+            <path filter="url(#pWaxShadow)"
+                d="M120 26 C146 24, 170 36, 186 57 C204 82, 214 111, 210 137
+                   C205 169, 186 194, 159 208 C133 221, 104 224, 77 214
+                   C48 203, 30 182, 26 154 C22 126, 30 96, 48 73
+                   C66 49, 89 30, 120 26 Z"
+                fill="url(#pWaxBody)"/>
+            <!-- Rim shadow -->
+            <path
+                d="M120 26 C146 24, 170 36, 186 57 C204 82, 214 111, 210 137
+                   C205 169, 186 194, 159 208 C133 221, 104 224, 77 214
+                   C48 203, 30 182, 26 154 C22 126, 30 96, 48 73
+                   C66 49, 89 30, 120 26 Z"
+                fill="url(#pWaxRim)" opacity="0.85"/>
+            <!-- Specular highlight -->
+            <ellipse cx="98" cy="76" rx="62" ry="46" fill="url(#pWaxSpec)" opacity="0.95"/>
+            <!-- Embossed crossed keys design -->
+            <g filter="url(#pEmbossDeep)" opacity="0.92">
+                <path d="M76 152 C96 136, 112 118, 130 90" stroke="#3b0e0c" stroke-width="12" stroke-linecap="round"/>
+                <path d="M92 168 C110 150, 130 130, 156 108" stroke="#3b0e0c" stroke-width="12" stroke-linecap="round"/>
+                <path d="M130 76 L130 118" stroke="#3b0e0c" stroke-width="10" stroke-linecap="round"/>
+                <path d="M110 96 L150 96" stroke="#3b0e0c" stroke-width="10" stroke-linecap="round"/>
+                <path d="M74 150 C94 134, 110 116, 128 88" stroke="#ffd6cf" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
+                <path d="M90 166 C108 148, 128 128, 154 106" stroke="#ffd6cf" stroke-width="3" stroke-linecap="round" opacity="0.16"/>
             </g>
-            <!-- Highlight -->
-            <ellipse cx="32" cy="28" rx="8" ry="5" fill="rgba(255,255,255,0.2)" transform="rotate(-20, 32, 28)"/>
+            <!-- Wax texture dots -->
+            <g opacity="0.10" fill="#ffd8d3">
+                <circle cx="78" cy="96" r="1.2"/><circle cx="164" cy="118" r="1.0"/>
+                <circle cx="136" cy="176" r="1.4"/><circle cx="102" cy="150" r="1.1"/>
+                <circle cx="150" cy="146" r="0.9"/>
+            </g>
         </svg>`;
 
         d.innerHTML = `
-            <div class="pope-doc">
-                <!-- Centered watermark -->
-                <div class="pope-watermark">${watermarkSvg}</div>
+            <div class="papal-paper">
+                <!-- Paper texture layer -->
+                <div class="papal-paper-texture" aria-hidden="true"></div>
                 
-                <!-- Header -->
-                <div class="pope-header">
-                    <div class="pope-header-left">
-                        <div class="pope-crest">${safe(pd.crest?.svg) || '✠'}</div>
-                        <div class="pope-header-title">Vatican City · Secretariat</div>
-                    </div>
-                    <div class="pope-meta">
-                        <div>REF: PAP-${refDate}-${refNum}</div>
-                        <div>CLASS: Counsel Request</div>
-                        <div>UPDATED: ${safe(pd.updatedAgo) || 'Just now'}</div>
-                        <div>STATUS: REGISTERED</div>
-                    </div>
+                <!-- Watermark (center, behind content) -->
+                <div class="papal-watermark" aria-hidden="true">${watermarkSvg}</div>
+
+                <!-- REGISTERED stamp (top-left, angled) -->
+                <div class="papal-stamp" aria-hidden="true">REGISTERED</div>
+
+                <!-- Authority Header -->
+                <div class="papal-header">
+                    <div class="papal-topline">HOLY SEE — Secretariat of State</div>
+                    <div class="papal-subline">APOSTOLIC PALACE • VATICAN CITY</div>
                 </div>
 
-                <div class="pope-rule"></div>
+                <div class="papal-rule"></div>
 
                 <!-- Seal watermark (top-right) -->
-                <div class="pope-seal">${sealSvg}</div>
+                <div class="papal-seal">${sealSvg}</div>
 
-                <!-- Body -->
-                <div class="pope-body">
-                    <div class="pope-to">To: You</div>
-                    <div class="pope-subject">Subject: Counsel regarding <span class="jp">"${safe(pack.text)}"</span></div>
+                <!-- Meta info -->
+                <div class="papal-meta">
+                    <div class="meta-row"><span class="field-label">REF:</span> PAP-${refDate}-${refNum}</div>
+                    <div class="meta-row"><span class="field-label">CLASS:</span> Private Counsel</div>
+                    <div class="meta-row"><span class="field-label">UPDATED:</span> ${safe(pd.updatedAgo) || 'Just now'}</div>
+                    <div class="meta-row"><span class="field-label">STATUS:</span> REGISTERED</div>
+                </div>
+
+                <!-- Body (addressed) -->
+                <div class="papal-body">
+                    <div class="papal-to">To: You</div>
+                    <div class="papal-subject">Subject: Counsel regarding <span class="jp">"${safe(pack.text)}"</span></div>
                     
-                    <p>Your counsel is respectfully requested on the matter stated above.</p>
+                    <p>By direction of the Secretariat, we write regarding the matter stated above.</p>
                     <p>${safe(pd.invitationBody).replace(/\n/g, '</p><p>')}</p>
                     <p>You are hereby requested to provide counsel in accordance with established protocol.</p>
                 </div>
 
                 <!-- Statement Under Seal -->
-                <div class="pope-statement">
-                    <div class="pope-statement-title">Statement Under Seal</div>
-                    <div class="pope-quote jp">${safe(pd.counsel)}</div>
-                    <div class="pope-stamp">ADOPTED</div>
+                <div class="papal-statement">
+                    <div class="section-title">Statement Under Seal</div>
+                    <blockquote class="quote jp">${safe(pd.counsel)}</blockquote>
+                    <div class="papal-adopted">ADOPTED</div>
                 </div>
 
-                <!-- Wax Seal -->
-                <div class="pope-wax-seal">${waxSealSvg}</div>
+                <!-- Ceremonial cord + Wax Seal -->
+                <div class="papal-cord" aria-hidden="true">${cordSvg}</div>
+                <div class="papal-wax">${waxSealSvg}</div>
 
-                <!-- Signature -->
-                <div class="pope-signature">
-                    <div class="pope-sig-line"></div>
-                    <div class="pope-sig-role">Office of Ceremonial Coordination</div>
-                    <div class="pope-sig-name">Acting Secretary (Fictional)</div>
+                <!-- Signature block -->
+                <div class="papal-signature">
+                    <div class="papal-sig-line"></div>
+                    <div class="papal-sig-role">Office of Ceremonial Coordination</div>
+                    <div class="papal-sig-name">Acting Secretary (Fictional)</div>
                 </div>
 
-                <!-- Footer -->
-                <div class="pope-footer">
+                <!-- Footer disclaimer -->
+                <div class="papal-footer fineprint">
                     ${(pd.fictionNotice || ['This document is entirely fictional.', 'Not affiliated with any religious institution.']).map(n => `<span>${n}</span>`).join(' · ')}
                 </div>
             </div>

@@ -3777,3 +3777,478 @@ body {
     font-size: 18px;
   }
 }
+
+/* =============================================================================
+   PAPAL SKIN: PREMIUM AUTHORITY DOCUMENT
+   ============================================================================= */
+
+/* ============================
+   PAPAL: TYPOGRAPHY UPGRADE
+   ============================ */
+
+.skin-papal {
+  --papal-serif-en: "EB Garamond", "Times New Roman", serif;
+  --papal-display-en: "Cinzel", "Trajan Pro", serif;
+  --papal-serif-jp: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif;
+  --papal-ink: rgba(20, 18, 16, 0.92);
+  --papal-muted: rgba(45, 36, 28, 0.70);
+  --papal-rule: rgba(60, 50, 40, 0.20);
+  --papal-accent: #8B6914;
+  --papal-stamp: #9B3A33;
+
+  background: linear-gradient(180deg, #D4C9B5 0%, #C7BBAA 100%);
+  padding: 32px 16px;
+  min-height: 100vh;
+  color: var(--papal-ink);
+}
+
+/* anti-alias for premium print feel */
+.skin-papal .papal-paper {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* body copy */
+.skin-papal .papal-paper,
+.skin-papal .papal-paper p,
+.skin-papal .papal-paper li {
+  font-family: var(--papal-serif-jp), var(--papal-serif-en);
+  font-size: 15px;
+  line-height: 1.85;
+  letter-spacing: 0.02em;
+}
+
+/* header / topline / labels */
+.skin-papal .papal-header,
+.skin-papal .papal-topline {
+  font-family: var(--papal-display-en), var(--papal-serif-en);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.skin-papal .papal-subline {
+  font-family: var(--papal-display-en), var(--papal-serif-en);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  font-size: 10px;
+  opacity: 0.70;
+  margin-top: 2px;
+}
+
+.skin-papal .field-label {
+  font-family: var(--papal-display-en), var(--papal-serif-en);
+  font-size: 11px;
+  letter-spacing: 0.10em;
+  opacity: 0.80;
+  font-weight: 600;
+}
+
+/* section title */
+.skin-papal .section-title {
+  font-family: var(--papal-display-en), var(--papal-serif-en);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  font-size: 12px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.14);
+}
+
+/* quote */
+.skin-papal blockquote,
+.skin-papal .quote {
+  font-family: var(--papal-serif-en), var(--papal-serif-jp);
+  font-size: 16px;
+  line-height: 1.9;
+  letter-spacing: 0.01em;
+  font-style: italic;
+  opacity: 0.95;
+  margin: 0;
+  padding: 0;
+}
+
+/* small notes */
+.skin-papal .fineprint,
+.skin-papal .papal-footer {
+  font-size: 11px;
+  line-height: 1.6;
+  opacity: 0.70;
+  font-family: var(--papal-serif-en);
+}
+
+/* ============================
+   PAPAL: PAPER LOOK (no image)
+   ============================ */
+
+.skin-papal .papal-paper {
+  position: relative;
+  overflow: hidden;
+  max-width: 640px;
+  margin: 0 auto;
+  background: #f4efe3;
+  /* warm paper */
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  box-shadow:
+    0 18px 55px rgba(0, 0, 0, 0.18),
+    0 2px 0 rgba(255, 255, 255, 0.65) inset;
+  padding: 52px 48px;
+  border-radius: 3px;
+}
+
+/* texture layer */
+.skin-papal .papal-paper-texture {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    /* subtle paper fibers */
+    repeating-linear-gradient(0deg,
+      rgba(0, 0, 0, 0.012) 0px,
+      rgba(0, 0, 0, 0.012) 1px,
+      rgba(255, 255, 255, 0.000) 2px,
+      rgba(255, 255, 255, 0.000) 4px),
+    repeating-linear-gradient(90deg,
+      rgba(0, 0, 0, 0.010) 0px,
+      rgba(0, 0, 0, 0.010) 1px,
+      rgba(255, 255, 255, 0.000) 2px,
+      rgba(255, 255, 255, 0.000) 6px),
+    /* printing unevenness */
+    radial-gradient(900px 520px at 15% 18%, rgba(0, 0, 0, 0.06), transparent 65%),
+    radial-gradient(780px 480px at 85% 24%, rgba(0, 0, 0, 0.05), transparent 62%),
+    radial-gradient(900px 680px at 30% 92%, rgba(0, 0, 0, 0.05), transparent 66%),
+    /* edge wear */
+    radial-gradient(120% 90% at 50% 50%, rgba(0, 0, 0, 0.00) 58%, rgba(0, 0, 0, 0.12) 100%);
+  mix-blend-mode: multiply;
+}
+
+/* keep content above texture */
+.skin-papal .papal-paper>*:not(.papal-paper-texture):not(.papal-watermark) {
+  position: relative;
+  z-index: 1;
+}
+
+/* inner frame (document vibe) */
+.skin-papal .papal-paper::before {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.skin-papal .papal-paper::after {
+  content: "";
+  position: absolute;
+  inset: 22px;
+  border: 1px dashed rgba(0, 0, 0, 0.12);
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.75;
+}
+
+/* slight print bleed (subtle) */
+.skin-papal .papal-paper p,
+.skin-papal .papal-paper li {
+  text-shadow: 0.25px 0.25px 0 rgba(0, 0, 0, 0.08);
+}
+
+/* ============================
+   PAPAL: WATERMARK + STAMP
+   ============================ */
+
+.skin-papal .papal-watermark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0.10;
+  transform: translateY(10px);
+  z-index: 0;
+}
+
+.skin-papal .papal-watermark .wmSvg {
+  width: min(560px, 88%);
+  height: auto;
+  filter: blur(0.2px);
+}
+
+/* stamp */
+.skin-papal .papal-stamp {
+  position: absolute;
+  top: 70px;
+  left: 42px;
+  padding: 8px 12px;
+  border: 2px solid rgba(155, 40, 40, 0.55);
+  color: rgba(155, 40, 40, 0.55);
+  font-family: var(--papal-display-en);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  transform: rotate(-12deg);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.10);
+  mix-blend-mode: multiply;
+  text-transform: uppercase;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ============================
+   PAPAL: HEADER + META
+   ============================ */
+
+.skin-papal .papal-header {
+  text-align: center;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.skin-papal .papal-topline {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.skin-papal .papal-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--papal-rule) 20%, var(--papal-rule) 80%, transparent 100%);
+  margin: 20px 0;
+}
+
+/* Seal (top-right) */
+.skin-papal .papal-seal {
+  position: absolute;
+  top: 52px;
+  right: 52px;
+  width: 80px;
+  height: 80px;
+  z-index: 1;
+  color: var(--papal-muted);
+  opacity: 0.65;
+}
+
+.skin-papal .papal-seal .papal-seal-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Meta info */
+.skin-papal .papal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-bottom: 24px;
+  font-size: 12px;
+  color: var(--papal-muted);
+  position: relative;
+  z-index: 1;
+}
+
+.skin-papal .meta-row {
+  font-family: var(--papal-serif-en);
+}
+
+/* ============================
+   PAPAL: BODY CONTENT
+   ============================ */
+
+.skin-papal .papal-body {
+  margin-bottom: 28px;
+  position: relative;
+  z-index: 1;
+}
+
+.skin-papal .papal-to {
+  font-family: var(--papal-display-en);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.skin-papal .papal-subject {
+  font-family: var(--papal-serif-en);
+  font-size: 14px;
+  margin-bottom: 16px;
+  opacity: 0.90;
+}
+
+.skin-papal .papal-subject .jp {
+  font-family: var(--papal-serif-jp);
+}
+
+.skin-papal .papal-body p {
+  margin: 0 0 12px 0;
+}
+
+/* ============================
+   PAPAL: STATEMENT BLOCK
+   ============================ */
+
+.skin-papal .papal-statement {
+  background: linear-gradient(135deg, rgba(255, 252, 245, 0.8) 0%, rgba(248, 245, 233, 0.9) 100%);
+  border: 1px solid rgba(139, 105, 20, 0.20);
+  border-radius: 4px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.skin-papal .papal-adopted {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  transform: rotate(-8deg);
+  border: 3px solid var(--papal-stamp);
+  color: var(--papal-stamp);
+  padding: 5px 12px;
+  font-family: var(--papal-display-en);
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  font-size: 11px;
+  opacity: 0.85;
+  mix-blend-mode: multiply;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.3),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.15),
+    2px 2px 4px rgba(0, 0, 0, 0.12);
+  text-shadow:
+    1px 1px 0 rgba(255, 255, 255, 0.25),
+    -0.5px -0.5px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* ============================
+   PAPAL: CEREMONIAL CORD + SEAL
+   ============================ */
+
+.skin-papal .papal-cord {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: -26px;
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.skin-papal .papal-cord .cordSvg {
+  width: min(520px, 92%);
+  height: auto;
+  opacity: 0.92;
+}
+
+.skin-papal .papal-wax {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+  margin-bottom: 6px;
+  position: relative;
+  z-index: 2;
+}
+
+.skin-papal .papal-wax .waxSvg.premium {
+  width: 96px;
+  height: 96px;
+  transform: rotate(-7deg);
+}
+
+/* ============================
+   PAPAL: SIGNATURE BLOCK
+   ============================ */
+
+.skin-papal .papal-signature {
+  text-align: center;
+  margin-top: 28px;
+  position: relative;
+  z-index: 1;
+}
+
+.skin-papal .papal-sig-line {
+  width: 140px;
+  height: 1px;
+  background: var(--papal-ink);
+  margin: 0 auto 8px;
+  opacity: 0.4;
+}
+
+.skin-papal .papal-sig-role {
+  font-family: var(--papal-display-en);
+  font-size: 11px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.skin-papal .papal-sig-name {
+  font-family: var(--papal-serif-en);
+  font-size: 12px;
+  font-style: italic;
+  opacity: 0.60;
+  margin-top: 4px;
+}
+
+/* ============================
+   PAPAL: FOOTER
+   ============================ */
+
+.skin-papal .papal-footer {
+  text-align: center;
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 1;
+}
+
+.skin-papal .papal-footer span {
+  margin: 0 4px;
+}
+
+/* ============================
+   PAPAL: RESPONSIVE
+   ============================ */
+
+@media (max-width: 600px) {
+  .skin-papal {
+    padding: 16px 8px;
+  }
+
+  .skin-papal .papal-paper {
+    padding: 40px 24px;
+  }
+
+  .skin-papal .papal-seal {
+    width: 60px;
+    height: 60px;
+    top: 40px;
+    right: 24px;
+  }
+
+  .skin-papal .papal-stamp {
+    top: 48px;
+    left: 20px;
+    font-size: 9px;
+    padding: 6px 10px;
+  }
+
+  .skin-papal .papal-paper::before {
+    inset: 12px;
+  }
+
+  .skin-papal .papal-paper::after {
+    inset: 16px;
+  }
+}
