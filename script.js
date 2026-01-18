@@ -2504,12 +2504,13 @@ class SkinRenderer {
 
                 <!-- Body (addressed) -->
                 <div class="papal-body">
+                    <div class="papal-authority-byline">By authority of the Secretariat of State</div>
                     <div class="papal-to">To: You</div>
                     <div class="papal-subject">Subject: Counsel regarding <span class="jp">"${safe(pack.text)}"</span></div>
                     
-                    <p>By direction of the Secretariat, we write regarding the matter stated above.</p>
+                    <p>We write regarding the matter stated above in accordance with established protocol.</p>
                     <p>${safe(pd.invitationBody).replace(/\n/g, '</p><p>')}</p>
-                    <p>You are hereby requested to provide counsel in accordance with established protocol.</p>
+                    <p>Your compliance with this request is duly noted and appreciated.</p>
                 </div>
 
                 <!-- Statement Under Seal -->
@@ -2519,15 +2520,15 @@ class SkinRenderer {
                     <div class="papal-adopted">ADOPTED</div>
                 </div>
 
-                <!-- Ceremonial cord + Wax Seal -->
-                <div class="papal-cord" aria-hidden="true">${cordSvg}</div>
+                <!-- Ribbon band + Wax Seal -->
+                <div class="papal-ribbon-band" aria-hidden="true"></div>
                 <div class="papal-wax">${waxSealSvg}</div>
 
                 <!-- Signature block -->
                 <div class="papal-signature">
                     <div class="papal-sig-line"></div>
-                    <div class="papal-sig-role">Office of Ceremonial Coordination</div>
-                    <div class="papal-sig-name">Acting Secretary (Fictional)</div>
+                    <div class="papal-sig-role">Dicastery for Global Calm</div>
+                    <div class="papal-sig-name">In the name of His Holiness (Fictional)</div>
                 </div>
 
                 <!-- Footer disclaimer -->

@@ -3888,14 +3888,20 @@ body {
   overflow: hidden;
   max-width: 640px;
   margin: 0 auto;
-  background: #f4efe3;
-  /* warm paper */
-  border: 1px solid rgba(0, 0, 0, 0.10);
-  box-shadow:
-    0 18px 55px rgba(0, 0, 0, 0.18),
-    0 2px 0 rgba(255, 255, 255, 0.65) inset;
+  background:
+    /* light vignette */
+    radial-gradient(1200px 800px at 40% 10%, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 60%),
+    /* subtle shading */
+    linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(0, 0, 0, .06)),
+    /* paper fibers - very light */
+    repeating-linear-gradient(90deg, rgba(80, 70, 50, .04) 0 1px, rgba(0, 0, 0, 0) 1px 18px),
+    repeating-linear-gradient(0deg, rgba(80, 70, 50, .02) 0 1px, rgba(0, 0, 0, 0) 1px 26px),
+    #e9e1cf;
+  border: 1px solid rgba(60, 50, 35, .25);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, .25);
   padding: 52px 48px;
   border-radius: 3px;
+  font-family: "EB Garamond", serif;
 }
 
 /* texture layer */
@@ -3981,25 +3987,28 @@ body {
   filter: blur(0.2px);
 }
 
-/* stamp */
+/* stamp - ink effect */
 .skin-papal .papal-stamp {
   position: absolute;
-  top: 70px;
-  left: 42px;
-  padding: 8px 12px;
-  border: 2px solid rgba(155, 40, 40, 0.55);
-  color: rgba(155, 40, 40, 0.55);
-  font-family: var(--papal-display-en);
-  font-weight: 800;
+  top: 110px;
+  right: 110px;
+  padding: 10px 18px;
+  border: 2px solid rgba(140, 30, 30, .65);
+  color: rgba(140, 30, 30, .75);
+  font-family: "Cinzel", serif;
+  font-weight: 600;
   font-size: 11px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
   transform: rotate(-12deg);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.10);
+  border-radius: 4px;
+  background: repeating-linear-gradient(135deg, rgba(140, 30, 30, .10) 0 2px, rgba(0, 0, 0, 0) 2px 7px);
   mix-blend-mode: multiply;
   text-transform: uppercase;
   pointer-events: none;
   z-index: 2;
+  opacity: 0.28;
+  filter: blur(0.2px);
+  box-shadow: 0 0 0 1px rgba(140, 30, 30, .15) inset;
 }
 
 /* ============================
@@ -4068,6 +4077,16 @@ body {
   z-index: 1;
 }
 
+/* Authority byline */
+.skin-papal .papal-authority-byline {
+  font-family: var(--papal-display-en);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  margin-bottom: 12px;
+}
+
 .skin-papal .papal-to {
   font-family: var(--papal-display-en);
   font-weight: 600;
@@ -4131,38 +4150,39 @@ body {
 }
 
 /* ============================
-   PAPAL: CEREMONIAL CORD + SEAL
+   PAPAL: RIBBON BAND + SEAL
    ============================ */
 
-.skin-papal .papal-cord {
-  display: flex;
-  justify-content: center;
-  margin-top: 10px;
-  margin-bottom: -26px;
+/* CSS ribbon band (物体化) */
+.skin-papal .papal-ribbon-band {
+  width: 260px;
+  height: 26px;
+  margin: 18px auto 0;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(0, 0, 0, .20)),
+    linear-gradient(90deg, #6d1a16, #a63a33 40%, #6d1a16);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, .25);
+  transform: rotate(-2deg);
+  opacity: 0.85;
   position: relative;
   z-index: 1;
-  pointer-events: none;
-}
-
-.skin-papal .papal-cord .cordSvg {
-  width: min(520px, 92%);
-  height: auto;
-  opacity: 0.92;
 }
 
 .skin-papal .papal-wax {
   display: flex;
   justify-content: center;
-  margin-top: 18px;
+  margin-top: -14px;
   margin-bottom: 6px;
   position: relative;
   z-index: 2;
 }
 
 .skin-papal .papal-wax .waxSvg.premium {
-  width: 96px;
-  height: 96px;
-  transform: rotate(-7deg);
+  width: 86px;
+  height: 86px;
+  transform: rotate(-4deg);
+  filter: saturate(1.1);
 }
 
 /* ============================
