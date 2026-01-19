@@ -156,7 +156,7 @@ class Random {
 }
 
 // --- Storage Constants ---
-const SKIN_IDS = ['dm', 'x', 'youtube', 'newsDigital', 'stock', 'papal', 'earthcam'];
+const SKIN_IDS = ['dm', 'x', 'youtube', 'newsDigital', 'stock', 'earthcam', 'papal'];
 const LEGACY_KEYS = ['sns-praise-history'];
 const STORAGE_KEY_EVENTS_V2 = "homebuzz.events.v2";
 const STORAGE_KEY_DAILY = "homebuzz.dailyHighlightByDate.v1";
@@ -2764,8 +2764,8 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: "youtube", label: "YouTube" },
         { id: "newsDigital", label: "新聞" },
         { id: "stock", label: "株価" },
-        { id: "papal", label: "教皇" },
-        { id: "earthcam", label: "地球儀" }
+        { id: "earthcam", label: "地球儀" },
+        { id: "papal", label: "教皇" }
     ];
 
     // Use fixed order always
